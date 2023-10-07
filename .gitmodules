@@ -1,0 +1,3 @@
+[submodule "RedDbg/Include/Deps/Arch"]
+	path = RedDbg/Include/Deps/Arch
+	url = https://github.com/Nitr0-G/Arch
