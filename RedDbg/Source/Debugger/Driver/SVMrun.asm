@@ -7,6 +7,7 @@ GPR_CONTEXT_SIZE    equ GPR_CONTEXT_ENTRIES * sizeof(QWORD)
 XMM_YMM_CONTEXT_ENTRIES equ 16 ; xmm0..xmm15 ymm0..ymm15
 XMM_CONTEXT_SIZE    equ XMM_YMM_CONTEXT_ENTRIES * sizeof(OWORD)
 YMM_CONTEXT_SIZE    equ XMM_YMM_CONTEXT_ENTRIES * sizeof(YMMWORD)
+FXSAVE_CONTEXT_SIZE equ 512
 
 SSE_SUPPORT equ 0
 AVX_SUPPORT equ 0
@@ -138,37 +139,19 @@ MULTIPUSH MACRO
     mov rcx, [rsp + GPR_CONTEXT_SIZE + 16] ; RCX -> PRIVATE_VM_DATA* Private
     mov rdx, rsp ; RDX -> Guest context
 
-    PUSHAXMM
-    mov r8, rsp
+    ;PUSHAXMM
+    ;fxsave [rsp]
+    ;sub rsp, FXSAVE_CONTEXT_SIZE
+    ;mov r8, rsp
 
-    PUSHAYMM
-    mov r9, rsp
-ENDM
-
-PROLOGUE MACRO
-    push rbp
-    mov rbp, rsp
-    sub rsp, 32
-    mov [rsp + 0 * sizeof(QWORD)], rcx
-    mov [rsp + 1 * sizeof(QWORD)], rdx
-    mov [rsp + 2 * sizeof(QWORD)], r8
-    mov [rsp + 3 * sizeof(QWORD)], r9
-ENDM
-
-EPILOGUE MACRO
-    mov rcx, [rsp + 0 * sizeof(QWORD)]
-    mov rdx, [rsp + 1 * sizeof(QWORD)]
-    mov r8 , [rsp + 2 * sizeof(QWORD)]
-    mov r9 , [rsp + 3 * sizeof(QWORD)]
-    add rsp, 32
-    pop rbp
-    ret
+    ;PUSHAYMM
+    ;mov r9, rsp
 ENDM
 
 ; SvmVmmRun(INITIAL_VMM_STACK_LAYOUT* VmmStack):
 SvmVmmRun PROC PUBLIC
     ; RCX - VmmStack pointer
-    ; int 3
+
     mov rsp, rcx ; Switch to the VMM stack
     ; RSP -> INITIAL_VMM_STACK_LAYOUT:
     ; RSP + 0  -> PVOID GuestVmcbPa
@@ -196,8 +179,10 @@ VmmLoop:
     sub rsp, 32 ; Homing space for the x64 call convention
     call SvmVmexitHandler ; VMM_STATUS SvmVmexitHandler(PRIVATE_VM_DATA* Private, GuestContext* Context)
     add rsp, 32
-    POPAYMM
-    POPAXMM
+    ;POPAYMM
+    ;POPAXMM
+    ;fxrstor [rsp]
+    ;add rsp, FXSAVE_CONTEXT_SIZE
 
     test al, al ; if (!SvmVmexitHandler(...)) break;
     jz VmmExit

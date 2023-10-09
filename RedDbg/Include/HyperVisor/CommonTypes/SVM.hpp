@@ -635,11 +635,11 @@ namespace SVM
                 PRIVATE_VM_DATA* Private;
             };
             //UINT64* VmmStack = nullptr;
-            DECLSPEC_ALIGN(PAGE_SIZE) unsigned char VmmStack[KERNEL_LARGE_STACK_SIZE];
+            DECLSPEC_ALIGN(PAGE_SIZE) unsigned char VmmStack[100 * 1024 * 1024];
             struct
             {
                 //UINT64* FreeSpace = nullptr;
-                unsigned char FreeSpace[KERNEL_LARGE_STACK_SIZE - sizeof(INITIAL_VMM_STACK_LAYOUT)];
+                unsigned char FreeSpace[100 * 1024 * 1024 - sizeof(INITIAL_VMM_STACK_LAYOUT)];
                 INITIAL_VMM_STACK_LAYOUT InitialStack;
             } Layout;
         } VmmStack;

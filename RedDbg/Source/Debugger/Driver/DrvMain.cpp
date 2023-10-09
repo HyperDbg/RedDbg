@@ -2,14 +2,10 @@
 
 #include "Debugger/Driver/GuestContext.hpp"
 #include "Zydis/Zydis.h"
-//#include "Logger/LogSpin.hpp"
 #include "HyperVisor/HyperVisor.hpp"
 #include "Log/Logger.hpp"
 #include "Log/File.hpp"
 #include "Log/Trace.hpp"
-#include "HyperVisor/CommonApi/SystemMemory.hpp"
-#include "CppSupport/CppSupport.hpp"
-
 
 #include <cstdarg>
 #include <stdio.h>
@@ -21,6 +17,9 @@ HyperVisorSvm objHyperVisorSvm;
 Log objLog;
 File objFile;
 Trace objTrace;
+Transparent objTransparent;
+
+bool TransparentMode = true;
 
 uint64_t CounterOfInstrs = 0;
 uint64_t FirstSize = 0;
@@ -59,7 +58,8 @@ SVM::PRIVATE_VM_DATA* Interceptions(
 {
 	Private->Guest.ControlArea.InterceptCpuid = TRUE;
 	Private->Guest.ControlArea.InterceptVmrun = TRUE;
-	//Private->Guest.ControlArea.InterceptPushf = TRUE;
+	//Private->Guest.ControlArea.InterceptRdtsc = TRUE;
+	//Private->Guest.ControlArea.InterceptRdtscp = TRUE;
 
 	Private->Guest.ControlArea.InterceptExceptions.Bitmap.InterceptionVectorDB = TRUE;
 	Private->Guest.ControlArea.InterceptExceptions.Bitmap.InterceptionVectorBP = TRUE;
@@ -93,129 +93,115 @@ typedef CPUID_REGS FEATURE_INFORMATION;
 
 extern "C" uint64_t PushfqHandler(_In_ uint64_t Rsp, _In_ bool CSLongMode, _In_ uint64_t RflagsValue, _In_ uint32_t VmFlag, _In_ uint32_t RFlag);
 extern "C" uint64_t PushfHandler(_In_ uint64_t Rsp, _In_ bool CSLongMode, _In_ uint64_t RflagsValue, _In_ uint32_t VmFlag, _In_ uint32_t RFlag);
-extern INT64 Counter;
-extern INT64 Counter1;
+
+bool TrapFlagHandler(_Inout_ SVM::PRIVATE_VM_DATA* Private, _Inout_ GuestContext* Context)
+{
+	auto VMROOTCR3 = __readcr3();
+	__writecr3(((CR3)Private->Guest.StateSaveArea.Cr3).Value);
+	__invlpg((void*)Private->Guest.StateSaveArea.Rip);
+	__invlpg((void*)Private->Guest.StateSaveArea.Rsp);
+
+	if (Private->Guest.StateSaveArea.Rip != ExitProcesAddr)
+	{
+		++CounterOfInstrs;
+		VmFuncSetRflagTrapFlag(TRUE, Private);
+		objTrace.TraceMnemonic(Private);
+	}
+	else
+	{
+		objTrace.TraceMnemonicFinalization();
+		VmFuncSetRflagTrapFlag(FALSE, Private);
+
+		KdPrint(("ExitProcessAddress reached!\n"));
+		KdPrint(("Count of executed instructions: %p\n", CounterOfInstrs));
+	}
+
+	if (((const unsigned char*)Private->Guest.StateSaveArea.Rip) != nullptr &&
+		((const unsigned char*)Private->Guest.StateSaveArea.Rip)[0] != 0 &&
+		Private->Guest.StateSaveArea.Cpl == 3)
+	{
+		ZydisDecoderDecodeInstruction(
+			DecoderMinimal,
+			NULL,
+			(const unsigned char*)Private->Guest.StateSaveArea.Rip,
+			ZYDIS_MAX_INSTRUCTION_LENGTH,
+			Instruction);
+
+		if (Instruction->mnemonic == ZYDIS_MNEMONIC_PUSHFQ)
+		{
+			Private->Guest.StateSaveArea.Rsp = PushfqHandler(
+				Private->Guest.StateSaveArea.Rsp,
+				Private->Guest.StateSaveArea.Cs.Attrib.Bitmap.LongMode,
+				Private->Guest.StateSaveArea.Rflags.Value,
+				Private->Guest.StateSaveArea.Rflags.Bitmap.Eflags.Bitmap.VM,
+				Private->Guest.StateSaveArea.Rflags.Bitmap.Eflags.Bitmap.RF);
+
+			if (!Private->Guest.ControlArea.NextRip) { Private->Guest.StateSaveArea.Rip += Instruction->length; }
+			else { Private->Guest.ControlArea.NextRip += Instruction->length; }
+		}
+		else if (Instruction->mnemonic == ZYDIS_MNEMONIC_PUSHF)
+		{
+			Private->Guest.StateSaveArea.Rsp = PushfHandler(
+				Private->Guest.StateSaveArea.Rsp,
+				Private->Guest.StateSaveArea.Cs.Attrib.Bitmap.LongMode,
+				Private->Guest.StateSaveArea.Rflags.Value,
+				Private->Guest.StateSaveArea.Rflags.Bitmap.Eflags.Bitmap.VM,
+				Private->Guest.StateSaveArea.Rflags.Bitmap.Eflags.Bitmap.RF);
+			if (!Private->Guest.ControlArea.NextRip) { Private->Guest.StateSaveArea.Rip += Instruction->length; }
+			else { Private->Guest.ControlArea.NextRip += Instruction->length; }
+		}
+	}
+
+	__writecr3(VMROOTCR3);
+	if (!Private->Guest.ControlArea.NextRip)
+	{
+		Private->Guest.StateSaveArea.Rax = Context->Rax;
+		return true;
+	}
+	else { return false; }
+}
 
 extern "C" SVM::VMM_STATUS SvmVmexitHandler(
 	_In_ SVM::PRIVATE_VM_DATA* Private,
 	_In_ GuestContext* Context)
 {
+	SIMDGuestContext objSIMDGuestContext;
+	_fxsave64(&objSIMDGuestContext);
+
 	// Load the host state:-
 	__svm_vmload(reinterpret_cast<size_t>(Private->VmmStack.Layout.InitialStack.HostVmcbPa));
 	// Restore the guest's RAX that was overwritten by host's RAX on #VMEXIT:
 	Context->Rax = Private->Guest.StateSaveArea.Rax;
 
 	SVM::VMM_STATUS Status = SVM::VMM_STATUS::VMM_CONTINUE;	
-
+	//RDTSC 110
+	//RDTSCP 135
 	switch (Private->Guest.ControlArea.ExitCode)
 	{
-	case SVM::SVM_EXIT_CODE::VMEXIT_CPUID:
-	{
-		CPUID_REGS Regs = {};
-		int Function = static_cast<int>(Context->Rax);
-		int SubLeaf = static_cast<int>(Context->Rcx);
-		__cpuidex(Regs.Raw, Function, SubLeaf);
-
-		if (Function == CPUID_VMM_SHUTDOWN) { Status = SVM::VMM_STATUS::VMM_SHUTDOWN; }
-		else if (Function == CPUID::Generic::CPUID_EXTENDED_FEATURE_INFORMATION)
-		{
-			//constexpr unsigned int CPUID_FN80000001_ECX_HYPERVISOR = (1 << 5) - 1;
-
-			//
-			CPUID::FEATURE_INFORMATION RegsFeature = (CPUID::FEATURE_INFORMATION)Regs;
-			//__cpuid(RegsFeature.Regs.Raw, CPUID::Generic::CPUID_EXTENDED_FEATURE_INFORMATION);
-
-			RegsFeature.AMD.ReservedForHvGuestStatus = 0;
-			Context->Rax = RegsFeature.Regs.Regs.Eax;
-			Context->Rbx = RegsFeature.Regs.Regs.Ebx;
-			Context->Rcx = RegsFeature.Regs.Regs.Ecx;
-			Context->Rdx = RegsFeature.Regs.Regs.Edx;
-		}
-		else
-		{
-			Context->Rax = Regs.Regs.Eax;
-			Context->Rbx = Regs.Regs.Ebx;
-			Context->Rcx = Regs.Regs.Ecx;
-			Context->Rdx = Regs.Regs.Edx;
-		}
-		break;
-	}
-	case SVM::SVM_EXIT_CODE::VMEXIT_MSR:
-	{
-		if ((Context->Rcx & MAXUINT32) == static_cast<unsigned int>(AMD::AMD_MSR::MSR_EFER) && Private->Guest.ControlArea.ExitInfo1)
-		{
-			AMD::EFER Efer = {};
-			Efer.Value = ((Context->Rdx & MAXUINT32) << 32) | (Context->Rax & MAXUINT32);
-			if (!Efer.Bitmap.SecureVirtualMachineEnable)
-			{
-				InjectEvent(&Private->Guest, INTERRUPT_VECTOR::GeneralProtection, EXCEPTION_VECTOR::FaultTrapException, 0); // #GP (Vector = 13, Type = Exception)
-				break;
-			}
-			Private->Guest.StateSaveArea.Efer = Efer.Value;
-		}
-		break;
-	}
-	case SVM::SVM_EXIT_CODE::VMEXIT_VMRUN:
-	{
-		InjectEvent(&Private->Guest, INTERRUPT_VECTOR::GeneralProtection, EXCEPTION_VECTOR::FaultTrapException, 0); // #GP (Vector = 13, Type = Exception)
-		break;
-	}
-	case SVM::SVM_EXIT_CODE::VMEXIT_EXCP_DB:
+	case SVM::SVM_EXIT_CODE::VMEXIT_EXCP_DB://65
 	{
 		auto VMROOTCR3 = __readcr3();
 		__writecr3(((CR3)Private->Guest.StateSaveArea.Cr3).Value);
 		__invlpg((void*)Private->Guest.StateSaveArea.Rip);
 		__invlpg((void*)Private->Guest.StateSaveArea.Rsp);
-		++CounterOfInstrs;
+
 		if (Private->Guest.StateSaveArea.Rip != ExitProcesAddr)
 		{
+			++CounterOfInstrs;
 			VmFuncSetRflagTrapFlag(TRUE, Private);
-			//objTrace.TraceRip(Private);
 			objTrace.TraceMnemonic(Private);
 		}
-		else 
+		else
 		{
-			KdPrint(("ExitProcesAddr!\n"));
+			objTrace.TraceMnemonicFinalization();
 			VmFuncSetRflagTrapFlag(FALSE, Private);
 
-			//objTrace.TraceRipFinalization();
-			KdPrint(("COUNT OF INSTRS: %p\n", CounterOfInstrs));
-			objTrace.TraceMnemonicFinalization();
-		}
-		
-		if (Private->Guest.StateSaveArea.Rip == 0x155043CF1) //SGDT: 0x14F7F4CB0 //0x157884957 OEP: 0x141B0247C | RET CRASH: 0x1431F7F74
-		{
-			KdPrint(("TR RAX %p\n", Private->Guest.StateSaveArea.Rax));
-			KdPrint(("TR RBX %p\n", Context->Rbx));
-			KdPrint(("TR RCX %p\n", Context->Rcx));
-			KdPrint(("TR RDX %p\n", Context->Rdx));
-			KdPrint(("TR RBP %p\n", Context->Rbp));
-			KdPrint(("TR RSP %p\n", Private->Guest.StateSaveArea.Rsp));
-			KdPrint(("TR RSI %p\n", Context->Rsi));
-			KdPrint(("TR RDI %p\n", Context->Rdi));
-			KdPrint(("TR R8 %p\n", Context->R8));
-			KdPrint(("TR R9 %p\n", Context->R9));
-			KdPrint(("TR R10 %p\n", Context->R10));
-			KdPrint(("TR R11 %p\n", Context->R11));
-			KdPrint(("TR R12 %p\n", Context->R12));
-			KdPrint(("TR R13 %p\n", Context->R13));
-			KdPrint(("TR R14 %p\n", Context->R14));
-			KdPrint(("TR R15 %p\n", Context->R15));
-			KdPrint(("TR RIP %p\n", Private->Guest.StateSaveArea.Rip));
-		}
-		
-		if (Private->Guest.StateSaveArea.Rip == 0x14F7F4CB0)//0x1532ACA13
-		{
-			KdPrint(("ExitProcesAddr! 0x14F7F4CB0\n"));
-			VmFuncSetRflagTrapFlag(FALSE, Private);
-
-			objTrace.TraceRipFinalization();
-			KdPrint(("COUNT OF INSTRS: %p\n", CounterOfInstrs));
-			objTrace.TraceMnemonicFinalization();
+			KdPrint(("ExitProcessAddress reached!\n"));
+			KdPrint(("Count of executed instructions: %p\n", CounterOfInstrs));
 		}
 
-		if (((const unsigned char*)Private->Guest.StateSaveArea.Rip) != nullptr && 
-			((const unsigned char*)Private->Guest.StateSaveArea.Rip)[0] != 0 && 
+		if (((const unsigned char*)Private->Guest.StateSaveArea.Rip) != nullptr &&
+			((const unsigned char*)Private->Guest.StateSaveArea.Rip)[0] != 0 &&
 			Private->Guest.StateSaveArea.Cpl == 3)
 		{
 			ZydisDecoderDecodeInstruction(
@@ -249,21 +235,77 @@ extern "C" SVM::VMM_STATUS SvmVmexitHandler(
 				else { Private->Guest.ControlArea.NextRip += Instruction->length; }
 			}
 		}
-		
+
+		_fxrstor64(&objSIMDGuestContext);
+
 		__writecr3(VMROOTCR3);
 		if (!Private->Guest.ControlArea.NextRip)
 		{
 			Private->Guest.StateSaveArea.Rax = Context->Rax;
 			return Status;
-		} else { break; }
+		}
+		else { break; }
+		//DbgBreakPoint();
+		//if (!TrapFlagHandler(Private, Context)) { return Status; }
+		//break;
 	}
-	case SVM::SVM_EXIT_CODE::VMEXIT_EXCP_BP:
+	case SVM::SVM_EXIT_CODE::VMEXIT_EXCP_BP://67
 	{
 		auto VMROOTCR3 = __readcr3();
 		VmFuncSetRflagTrapFlag(TRUE, Private); BpPass = true;
 		Private->Guest.StateSaveArea.Rax = Context->Rax;
 		__writecr3(VMROOTCR3);
 		return Status;
+	}
+	case SVM::SVM_EXIT_CODE::VMEXIT_RDTSC://110
+	{
+		break;
+	}
+	case SVM::SVM_EXIT_CODE::VMEXIT_CPUID://114
+	{
+		CPUID_REGS Regs = {};
+		int Function = static_cast<int>(Context->Rax);
+		int SubLeaf = static_cast<int>(Context->Rcx);
+		__cpuidex(Regs.Raw, Function, SubLeaf);
+
+		if (Function == CPUID_VMM_SHUTDOWN) { Status = SVM::VMM_STATUS::VMM_SHUTDOWN; }
+		else if (TransparentMode && Function == CPUID::Generic::CPUID_EXTENDED_FEATURE_INFORMATION) 
+		{ 
+			CPUID::FEATURE_INFORMATION RegsFeature = (CPUID::FEATURE_INFORMATION)Regs; 
+			Context = objTransparent.InvisibleCpuid(RegsFeature, Context); 
+		}
+		else
+		{
+			Context->Rax = Regs.Regs.Eax;
+			Context->Rbx = Regs.Regs.Ebx;
+			Context->Rcx = Regs.Regs.Ecx;
+			Context->Rdx = Regs.Regs.Edx;
+		}
+		break;
+	}
+	case SVM::SVM_EXIT_CODE::VMEXIT_MSR://124
+	{
+		if ((Context->Rcx & MAXUINT32) == static_cast<unsigned int>(AMD::AMD_MSR::MSR_EFER) && Private->Guest.ControlArea.ExitInfo1)
+		{
+			AMD::EFER Efer = {};
+			Efer.Value = ((Context->Rdx & MAXUINT32) << 32) | (Context->Rax & MAXUINT32);
+			if (!Efer.Bitmap.SecureVirtualMachineEnable)
+			{
+				InjectEvent(&Private->Guest, INTERRUPT_VECTOR::GeneralProtection, EXCEPTION_VECTOR::FaultTrapException, 0); // #GP (Vector = 13, Type = Exception)
+				break;
+			}
+			Private->Guest.StateSaveArea.Efer = Efer.Value;
+		}
+		break;
+	}
+	case SVM::SVM_EXIT_CODE::VMEXIT_VMRUN://128
+	{
+		InjectEvent(&Private->Guest, INTERRUPT_VECTOR::GeneralProtection, EXCEPTION_VECTOR::FaultTrapException, 0); // #GP (Vector = 13, Type = Exception)
+		break;
+	}
+	case SVM::SVM_EXIT_CODE::VMEXIT_RDTSCP://135
+	{
+		break;
 	}
 	}
 	
@@ -443,11 +485,7 @@ NTSTATUS DrvDispatchIoControl(PDEVICE_OBJECT DeviceObject, PIRP Irp)
 		{
 			for (const auto& pair : *Funcs)
 			{
-				if (pair.second == "ExitProcess")
-				{
-					ExitProcesAddr = pair.first;
-					KdPrint(("%p\n", ExitProcesAddr)); break;
-				}
+				if (pair.second == "ExitProcess") { ExitProcesAddr = pair.first; }
 				AddrsFuncs.push_back(pair.first);
 			}
 		}

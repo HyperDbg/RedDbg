@@ -1,4 +1,6 @@
 #pragma once 
+#include "CppSupport/CppSupport.hpp"
+#include "TransparentMode/TransparentMode.hpp"
 #include "HyperVisor/CommonTypes/CPUID.hpp"
 #include "HyperVisor/CommonTypes/MSR.hpp"
 #include "HyperVisor/CommonTypes/Segmentation.hpp"

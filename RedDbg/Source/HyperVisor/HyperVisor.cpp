@@ -147,16 +147,7 @@ bool HyperVisorSvm::VirtualizeProcessor()
     Efer.Bitmap.SecureVirtualMachineEnable = TRUE;
     __writemsr(static_cast<unsigned long>(AMD::AMD_MSR::MSR_EFER), Efer.Value);
 
-    //DbgBreakPoint();
     SVM::PRIVATE_VM_DATA* Private = reinterpret_cast<SVM::PRIVATE_VM_DATA*>(AllocPhys(sizeof(*Private)));
-    //Private->VmmStack.VmmStack = reinterpret_cast<UINT64*>(ExAllocatePool(NonPagedPool, 50 * 1024 * 1024));
-    //RtlZeroMemory(Private->VmmStack.VmmStack, 50 * 1024 * 1024);
-
-    //Private->VmmStack.VmmStack = reinterpret_cast<UINT64*>(AllocPhys(50 * 1024 * 1024));
-    //Private->VmmStack.Layout.FreeSpace = reinterpret_cast<UINT64*>(AllocPhys(50 * 1024 * 1024 - 24));
-
-    //Private->VmmStack.Layout.FreeSpace = reinterpret_cast<UINT64*>(ExAllocatePool(NonPagedPool, 50 * 1024 * 1024 - 24));
-    //RtlZeroMemory(Private->VmmStack.Layout.FreeSpace, 50 * 1024 * 1024 - 24);
 
     // Callback
     Interceptions = reinterpret_cast<_Interceptions>(PInterceptions);
@@ -220,10 +211,6 @@ bool HyperVisorSvm::VirtualizeProcessor()
     Private->VmmStack.Layout.InitialStack.GuestVmcbPa = GuestVmcbPa;
     Private->VmmStack.Layout.InitialStack.HostVmcbPa = HostVmcbPa;
     Private->VmmStack.Layout.InitialStack.Private = Private;
-    KdPrint(("RSP is in context: %p\n", Context.Rsp));
-    KdPrint(("RSP is in InitialStack: %p\n", Private->VmmStack.Layout.InitialStack));
-    KdPrint(("Vmm stack is %p\n", Private->VmmStack.VmmStack));
-    KdPrint(("Free space is %p\n", Private->VmmStack.Layout.FreeSpace));
 
     // Callback
     SvmVmmRun = reinterpret_cast<_SvmVmmRun>(PSvmVmmRun);
