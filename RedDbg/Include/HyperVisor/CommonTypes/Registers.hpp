@@ -352,4 +352,25 @@ union DR7 {
         } Bitmap;
     } x64;
 };
+
+
+
+union DbgCtl {
+    struct {
+        unsigned long long Lbr : 1;
+        unsigned long long Btf : 1;
+        unsigned long long Reserved1 : 4;
+        unsigned long long Tr : 1;
+        unsigned long long Bts : 1;
+        unsigned long long Btint : 1;
+        unsigned long long BtsOffOs : 1;
+        unsigned long long BtsOffUsr : 1;
+        unsigned long long FreezeLbrsOnPmi : 1;
+        unsigned long long FreezePerfmonOnPmi : 1;
+        unsigned long long EnableUncorePmi : 1;
+        unsigned long long FreezeWhileSmm : 1;
+        unsigned long long RtmDebugHigh : 48;
+    } fields;
+    unsigned long long Value;
+};
 #pragma pack(pop)

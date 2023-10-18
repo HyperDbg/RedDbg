@@ -35,11 +35,6 @@ private:
 	bool VirtualizeProcessor();
 	bool DevirtualizeProcessor(__out PVOID& PrivateVmData);
 
-	PVOID AllocPhys(
-		_In_ SIZE_T Size,
-		_In_ MEMORY_CACHING_TYPE CachingType,
-		_In_ ULONG MaxPhysBits);
-
 	void BuildNestedPagingTables(
 		__out SVM::NESTED_PAGING_TABLES* Npt);
 

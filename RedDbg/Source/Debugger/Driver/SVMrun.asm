@@ -1,6 +1,6 @@
 .CODE
 
-EXTERN SvmVmexitHandler: PROC
+EXTERN SvmExitHandler : PROC
 
 GPR_CONTEXT_ENTRIES equ 15 ; rax, rbx, rcx, rdx, rsi, rdi, rbp, r8..r15
 GPR_CONTEXT_SIZE    equ GPR_CONTEXT_ENTRIES * sizeof(QWORD)
@@ -177,7 +177,7 @@ VmmLoop:
     MULTIPUSH
 
     sub rsp, 32 ; Homing space for the x64 call convention
-    call SvmVmexitHandler ; VMM_STATUS SvmVmexitHandler(PRIVATE_VM_DATA* Private, GuestContext* Context)
+    call SvmExitHandler ; VMM_STATUS SvmVmexitHandler(PRIVATE_VM_DATA* Private, GuestContext* Context)
     add rsp, 32
     ;POPAYMM
     ;POPAXMM

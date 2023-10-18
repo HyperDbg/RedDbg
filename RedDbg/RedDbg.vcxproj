@@ -118,6 +118,7 @@
     <ClCompile Include="Source\Log\File.cpp" />
     <ClCompile Include="Source\Log\Log.cpp" />
     <ClCompile Include="Source\Log\Trace.cpp" />
+    <ClCompile Include="Source\Memory\MemoryMapper.cpp" />
     <ClCompile Include="Source\TransparentMode\TransparentMode.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -144,11 +145,13 @@
     <ClInclude Include="Include\HyperVisor\CommonTypes\Segmentation.hpp" />
     <ClInclude Include="Include\HyperVisor\CommonTypes\SVM.hpp" />
     <ClInclude Include="Include\HyperVisor\HyperVisor.hpp" />
+    <ClInclude Include="Include\ia32.h" />
     <ClInclude Include="Include\Log\File.hpp" />
     <ClInclude Include="Include\Log\GraphViz\GraphVizLanguage.hpp" />
     <ClInclude Include="Include\Log\Log.hpp" />
     <ClInclude Include="Include\Log\Logger.hpp" />
     <ClInclude Include="Include\Log\Trace.hpp" />
+    <ClInclude Include="Include\Memory\MemoryMapper.hpp" />
     <ClInclude Include="Include\TransparentMode\TransparentMode.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

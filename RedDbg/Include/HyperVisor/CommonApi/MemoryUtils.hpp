@@ -170,6 +170,12 @@ namespace PhysicalMemory {
     PVOID AllocPhysicalMemory(PVOID64 HighestAcceptableAddress, SIZE_T Size);
 
     _IRQL_requires_max_(DISPATCH_LEVEL)
+    PVOID AllocZeroedPhys(
+        _In_ SIZE_T Size,
+        _In_ MEMORY_CACHING_TYPE CachingType = MmCached,
+        _In_ ULONG MaxPhysBits = 0);
+
+    _IRQL_requires_max_(DISPATCH_LEVEL)
     PVOID AllocPhysicalMemorySpecifyCache(
         PVOID64 LowestAcceptableAddress,
         PVOID64 HighestAcceptableAddress,

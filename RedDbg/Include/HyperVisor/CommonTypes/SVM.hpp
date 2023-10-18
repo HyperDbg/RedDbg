@@ -1,6 +1,14 @@
+/**************REFERNCES TO READ********************/
+/*
+
+https://www.amd.com/content/dam/amd/en/documents/processor-tech-docs/programmer-references/40332.pdf
+http://www.0x04.net/doc/amd/33047.pdf
+
+*/
 #pragma once
 #include "PTE.hpp"
 #include "Registers.hpp"
+//#include "ia32.h"
 #include <ntddk.h>
 
 namespace SVM
@@ -382,8 +390,8 @@ namespace SVM
         unsigned long long Cr4;
         unsigned long long Cr3;
         unsigned long long Cr0;
-        unsigned long long Dr7;
-        unsigned long long Dr6;
+        DR7 Dr7;
+        DR6 Dr6;
         RFLAGS Rflags;
         unsigned long long Rip;
         unsigned char Reserved3[88];
@@ -401,7 +409,8 @@ namespace SVM
         unsigned long long Cr2;
         unsigned char Reserved5[32];
         unsigned long long GuestPat;     // Guest PAT - only used if nested paging enabled
-        unsigned long long DbgCtl;       // Guest debug ctl MSR - only used if HW acceleration is enabled by VMCB.LBR_VIRTUALIZATION_ENABLE
+        //unsigned long long DbgCtl;       // Guest debug ctl MSR - only used if HW acceleration is enabled by VMCB.LBR_VIRTUALIZATION_ENABLE
+        DbgCtl DbgCtl;       // Guest debug ctl MSR - only used if HW acceleration is enabled by VMCB.LBR_VIRTUALIZATION_ENABLE
         unsigned long long BrFrom;       // Guest LastBranchFromIP MSR - only used if HW acceleration of LBR virtualization is supported and enabled
         unsigned long long BrTo;         // Guest LastBranchToIP MSR - only used if HW acceleration of LBR virtualization is supported and enabled
         unsigned long long LastExcpFrom; // Guest LastIntFromIP MSR - only used if HW acceleration of LBR virtualization is supported and enabled
@@ -546,14 +555,14 @@ namespace SVM
         VMEXIT_INIT,
         VMEXIT_VINTR,
         VMEXIT_CR0_SEL_WRITE,
-        VMEXIT_IDTR_READ,
-        VMEXIT_GDTR_READ,
-        VMEXIT_LDTR_READ,
-        VMEXIT_TR_READ,
-        VMEXIT_IDTR_WRITE,
-        VMEXIT_GDTR_WRITE,
-        VMEXIT_LDTR_WRITE,
-        VMEXIT_TR_WRITE,
+        VMEXIT_IDTR_READ,//SIDT instruction
+        VMEXIT_GDTR_READ,//SGDT instruction
+        VMEXIT_LDTR_READ,//SLDT instruction
+        VMEXIT_TR_READ,//STR instruction
+        VMEXIT_IDTR_WRITE,//LIDT instruction
+        VMEXIT_GDTR_WRITE,//LGDT instruction
+        VMEXIT_LDTR_WRITE,//LLDT instruction
+        VMEXIT_TR_WRITE,//LTR instruction
         VMEXIT_RDTSC,
         VMEXIT_RDPMC,
         VMEXIT_PUSHF,
@@ -634,11 +643,9 @@ namespace SVM
                 PVOID HostVmcbPa;
                 PRIVATE_VM_DATA* Private;
             };
-            //UINT64* VmmStack = nullptr;
             DECLSPEC_ALIGN(PAGE_SIZE) unsigned char VmmStack[100 * 1024 * 1024];
             struct
             {
-                //UINT64* FreeSpace = nullptr;
                 unsigned char FreeSpace[100 * 1024 * 1024 - sizeof(INITIAL_VMM_STACK_LAYOUT)];
                 INITIAL_VMM_STACK_LAYOUT InitialStack;
             } Layout;

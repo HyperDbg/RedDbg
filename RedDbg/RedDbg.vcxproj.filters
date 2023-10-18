@@ -70,6 +70,12 @@
     <Filter Include="Header Files\Debugger\Pe">
       <UniqueIdentifier>{97a1da5c-ad36-4b8a-b647-acd19558e302}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Memory">
+      <UniqueIdentifier>{fa38cd8f-65cb-4ed8-bdac-a89ad07979ec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Memory">
+      <UniqueIdentifier>{fb321dab-9b58-4e56-843a-653703a444b4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Inf Include="RedDbg.inf">
@@ -101,9 +107,6 @@
     <ClCompile Include="Source\HyperVisor\CommonApi\SystemMemory.cpp">
       <Filter>Source Files\HyperVisor\CommonApi</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Debugger\Driver\DrvMain.cpp">
-      <Filter>Source Files\Debugger</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Log\Log.cpp">
       <Filter>Source Files\Log\Logger</Filter>
     </ClCompile>
@@ -112,6 +115,12 @@
     </ClCompile>
     <ClCompile Include="Source\CppSupport\CppSupport.cpp">
       <Filter>Source Files\CppSupport</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Memory\MemoryMapper.cpp">
+      <Filter>Source Files\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Debugger\Driver\DrvMain.cpp">
+      <Filter>Source Files\Debugger</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -197,6 +206,12 @@
     </ClInclude>
     <ClInclude Include="Include\CppSupport\CppSupport.hpp">
       <Filter>Header Files\CppSupport</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Memory\MemoryMapper.hpp">
+      <Filter>Header Files\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\ia32.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

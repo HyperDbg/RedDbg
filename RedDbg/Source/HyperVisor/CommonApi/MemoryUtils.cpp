@@ -335,6 +335,27 @@ namespace PhysicalMemory {
     }
 
     _IRQL_requires_max_(DISPATCH_LEVEL)
+    PVOID AllocZeroedPhys(
+        _In_ SIZE_T Size,
+        _In_ MEMORY_CACHING_TYPE CachingType,
+        _In_ ULONG MaxPhysBits)
+    {
+        PVOID64 HighestAcceptableAddress = MaxPhysBits
+            ? reinterpret_cast<PVOID64>((1ULL << MaxPhysBits) - 1)
+            : reinterpret_cast<PVOID64>((1ULL << 48) - 1);
+
+        PVOID Memory = PhysicalMemory::AllocPhysicalMemorySpecifyCache(
+            0,
+            HighestAcceptableAddress,
+            0,
+            Size,
+            CachingType
+        );
+        if (Memory) RtlSecureZeroMemory(Memory, Size);
+        return Memory;
+    }
+
+    _IRQL_requires_max_(DISPATCH_LEVEL)
     PVOID AllocPhysicalMemorySpecifyCache(
         PVOID64 LowestAcceptableAddress,
         PVOID64 HighestAcceptableAddress,

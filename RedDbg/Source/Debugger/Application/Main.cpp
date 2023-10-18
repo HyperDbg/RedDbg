@@ -259,7 +259,7 @@ void Attach(PEInformation& PEInformation, HANDLE hDriver)
 
 				BreakOnEntry objBreakOnEntry;
 				objBreakOnEntry.RestoreData(PEInformation,
-					0x15B28407C,//0x14398CA38,//0x14B1F7325,//0x15B28407C,
+					0x15B28407C,//0x141B0230E,//0x14398CA38,//0x14B1F7325,//0x15B28407C,
 					hDriver,
 					HANDLE_OF_CHILD_PROC,
 					objBreakOnEntry.SetBreakPoint(PEInformation, 0x15B28407C, hDriver, HANDLE_OF_CHILD_PROC), false);
@@ -271,9 +271,9 @@ void Attach(PEInformation& PEInformation, HANDLE hDriver)
 int main()
 {
 	std::unique_ptr<DRIVER> Driver; Driver = std::make_unique<DRIVER>();
-	std::string Wait;
+	std::string Wait; 
 
-	Driver->LoadDriver((LPTSTR)L"C:\\RedDbgDrv.sys", (LPTSTR)L"RedTracer", (LPTSTR)L"RedTracer", SERVICE_DEMAND_START);
+	Driver->LoadDriver((LPTSTR)L"D:\\Programs\\Soft\\Coding\\C\\VisualStudio\\Coders\\Driver\\RedDbg\\RedDbg\\RedDbg\\x64\\DebugX64Kernel\\RedDbgDrv.sys"/*L"C:\\RedDbgDrv.sys"*/, (LPTSTR)L"RedTracer", (LPTSTR)L"RedTracer", SERVICE_DEMAND_START);
 	std::cout << "Driver Started!" << std::endl;
 
 	HANDLE hDriver = CreateFileA("\\\\.\\MyHypervisorDevice",
@@ -297,7 +297,7 @@ int main()
 	
 	PEInformation PEInformation;
 	PeReader PeReader;
-	PeReader.PathToCurrentDebugging = "E:\\JustCause4\\JustCause4.exe"; //"C:\\PseudoDetectTf.exe"; //"E:\\JustCause4\\JustCause4.exe";
+	PeReader.PathToCurrentDebugging = "D:\\Programs\\Games\\JustCause4\\JustCause4\\JustCause4.exe";//"E:\\JustCause4\\JustCause4.exe"; //"C:\\PseudoDetectTf.exe"; //"E:\\JustCause4\\JustCause4.exe";
 	PeReader.Start = false;
 	PEInformation = PeReader.Pe(PEInformation);
 	

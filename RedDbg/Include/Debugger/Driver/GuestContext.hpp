@@ -61,3 +61,4 @@ DECLSPEC_ALIGN(16) struct SIMDGuestContext
 	__m128 Xmm14;
 	__m128 Xmm15;
 };
+

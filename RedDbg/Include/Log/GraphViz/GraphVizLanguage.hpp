@@ -1,11 +1,6 @@
 #pragma once
 #include <ntddk.h>
 
-#define STRCAT(dest, src, Len) \
-    strcat_s((PCH)dest, sizeof(src), src); \
-	Len += strlen(dest); \
-    dest = (PCH)(UINT64(dest) + strlen(dest))
-
 class GraphVizLanguage
 {
 public:

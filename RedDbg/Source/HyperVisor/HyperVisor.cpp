@@ -1,25 +1,5 @@
 #include "HyperVisor/HyperVisor.hpp"
 
-PVOID HyperVisorSvm::AllocPhys(
-    _In_ SIZE_T Size, 
-    _In_ MEMORY_CACHING_TYPE CachingType = MmCached,
-    _In_ ULONG MaxPhysBits = 0)
-{
-    PVOID64 HighestAcceptableAddress = MaxPhysBits
-        ? reinterpret_cast<PVOID64>((1ULL << MaxPhysBits) - 1)
-        : reinterpret_cast<PVOID64>((1ULL << 48) - 1);
-
-    PVOID Memory = PhysicalMemory::AllocPhysicalMemorySpecifyCache(
-        0,
-        HighestAcceptableAddress,
-        0,
-        Size,
-        CachingType
-    );
-    if (Memory) RtlSecureZeroMemory(Memory, Size);
-    return Memory;
-}
-
 CpuVendor HyperVisorSvm::GetCpuVendor()
 {
     static CpuVendor CpuVendor; CPUID_REGS Regs;
@@ -147,7 +127,7 @@ bool HyperVisorSvm::VirtualizeProcessor()
     Efer.Bitmap.SecureVirtualMachineEnable = TRUE;
     __writemsr(static_cast<unsigned long>(AMD::AMD_MSR::MSR_EFER), Efer.Value);
 
-    SVM::PRIVATE_VM_DATA* Private = reinterpret_cast<SVM::PRIVATE_VM_DATA*>(AllocPhys(sizeof(*Private)));
+    SVM::PRIVATE_VM_DATA* Private = reinterpret_cast<SVM::PRIVATE_VM_DATA*>(PhysicalMemory::AllocZeroedPhys(sizeof(*Private)));
 
     // Callback
     Interceptions = reinterpret_cast<_Interceptions>(PInterceptions);
