@@ -23,7 +23,7 @@ union EFLAGS {
         unsigned int OF : 1; // Overflow flag
         unsigned int IOPL : 2; // Input-output privilege level
         unsigned int NT : 1; // Nested task
-        unsigned int MustBe0Bit15 : 1;
+        unsigned int MD : 1; //Mode flag (NEC V-series only), reserved on all Intel CPUs. Always 1 on 8086/186, 0 on 286 and later.
         unsigned int RF : 1; // Resume flag
         unsigned int VM : 1; // Virtual-8086 mode
         unsigned int AC : 1; // Alignment-check / access control
@@ -38,8 +38,8 @@ union EFLAGS {
         unsigned int MustBe0Bit27 : 1;
         unsigned int MustBe0Bit28 : 1;
         unsigned int MustBe0Bit29 : 1;
-        unsigned int MustBe0Bit30 : 1;
-        unsigned int MustBe0Bit31 : 1;
+        unsigned int AESKSLF : 1;//AES key schedule loaded flag (CPUs with VIA PadLock only)
+        unsigned int AI : 1;//Alternate Instruction Set enabled (VIA C5XL processors only)
     } Bitmap;
 };
 

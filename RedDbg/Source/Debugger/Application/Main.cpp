@@ -273,9 +273,9 @@ int main()
 	std::unique_ptr<DRIVER> Driver; Driver = std::make_unique<DRIVER>();
 	std::string Wait; 
 
-	Driver->LoadDriver((LPTSTR)L"D:\\Programs\\Soft\\Coding\\C\\VisualStudio\\Coders\\Driver\\RedDbg\\RedDbg\\RedDbg\\x64\\DebugX64Kernel\\RedDbgDrv.sys"/*L"C:\\RedDbgDrv.sys"*/, (LPTSTR)L"RedTracer", (LPTSTR)L"RedTracer", SERVICE_DEMAND_START);
+	Driver->LoadDriver((LPTSTR)L"C:\\RedDbgDrv.sys", (LPTSTR)L"RedTracer", (LPTSTR)L"RedTracer", SERVICE_DEMAND_START);
 	std::cout << "Driver Started!" << std::endl;
-
+	///*"D:\\Programs\\Soft\\Coding\\C\\VisualStudio\\Coders\\Driver\\RedDbg\\RedDbg\\RedDbg\\x64\\DebugX64Kernel\\RedDbgDrv.sys"/* /*L"C:\\RedDbgDrv.sys"*/
 	HANDLE hDriver = CreateFileA("\\\\.\\MyHypervisorDevice",
 		GENERIC_READ | GENERIC_WRITE,
 		FILE_SHARE_READ |
@@ -297,8 +297,10 @@ int main()
 	
 	PEInformation PEInformation;
 	PeReader PeReader;
-	PeReader.PathToCurrentDebugging = "D:\\Programs\\Games\\JustCause4\\JustCause4\\JustCause4.exe";//"E:\\JustCause4\\JustCause4.exe"; //"C:\\PseudoDetectTf.exe"; //"E:\\JustCause4\\JustCause4.exe";
-	PeReader.Start = false;
+	//PeReader.PathToCurrentDebugging = "D:\\Programs\\Games\\JustCause4\\JustCause4\\JustCause4.exe";//"E:\\JustCause4\\JustCause4.exe"; //"C:\\PseudoDetectTf.exe"; //"E:\\JustCause4\\JustCause4.exe";
+	//PeReader.PathToCurrentDebugging = "D:\\Programs\\Soft\\Coding\\C\\VisualStudio\\Coders\\Driver\\RedDbg\\RedDbg\\Samples\\prog1.vmp.themida.packer.maxoptions.exe";
+	PeReader.PathToCurrentDebugging = "C:\\prog1.exe";
+	PeReader.Start = true;
 	PEInformation = PeReader.Pe(PEInformation);
 	
 	NTSTATUS Status = DeviceIoControl(
@@ -312,9 +314,9 @@ int main()
 		NULL
 	);
 	
-	Attach(PEInformation, hDriver);
+	//Attach(PEInformation, hDriver);
 
-	/*
+	
 	BreakOnEntry objBreakOnEntry;
 	objBreakOnEntry.RestoreData(PEInformation,
 		PEInformation.pImageNTHeaderOfPe->OptionalHeader.AddressOfEntryPoint + PEInformation.pImageNTHeaderOfPe->OptionalHeader.ImageBase,
@@ -322,7 +324,7 @@ int main()
 		PEInformation.ProcessInfo.hProcess, 
 		objBreakOnEntry.SetBreakPoint(PEInformation, PEInformation.pImageNTHeaderOfPe->OptionalHeader.AddressOfEntryPoint + PEInformation.pImageNTHeaderOfPe->OptionalHeader.ImageBase,
 		hDriver, PEInformation.ProcessInfo.hProcess), true);
-	*/
+	
 	
 	std::cout << "Press any key to unload driver...\n";
     getline(std::cin, Wait, '\n');
