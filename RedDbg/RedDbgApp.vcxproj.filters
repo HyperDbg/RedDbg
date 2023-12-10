@@ -13,22 +13,208 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Source Files\Pe">
-      <UniqueIdentifier>{e0f6581a-c640-47cc-9124-0aec8c47b7a9}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Main">
       <UniqueIdentifier>{3170ccaa-f2e4-4f7b-aea1-83b6728a5b05}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\Pe">
       <UniqueIdentifier>{044ec35a-b5a9-44c6-bb75-c812f4ade82d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\GUI">
+      <UniqueIdentifier>{978ad89b-3854-4330-a6af-f560a99744be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GUI">
+      <UniqueIdentifier>{9f2bd0f7-8d92-4b34-944c-c049b5b7eb69}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GUI\UI">
+      <UniqueIdentifier>{4c2f9e64-5483-4e67-8601-0bc22f1a90ea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GUI\UI\ImGui">
+      <UniqueIdentifier>{14944817-22b5-4a54-bd44-3e34f6354e2c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\GUI\UI">
+      <UniqueIdentifier>{ff6e102b-bde5-4e10-a557-9010e0fe69aa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\GUI\UI\ImGui">
+      <UniqueIdentifier>{78d21739-64c7-4c9f-a53c-04dbf1a84fff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\GUI\UI\ImGui\OpenGl3&amp;WinApi">
+      <UniqueIdentifier>{4f138064-acd7-4fa4-92b2-ec47e8c979c3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GUI\UI\ImGui\OpenGl3&amp;WinApi">
+      <UniqueIdentifier>{8d987139-fc98-4289-bdd8-6548fc957f2b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\GUI\CustomTitleBar">
+      <UniqueIdentifier>{8fc36ee8-fe6f-4ece-9b9f-671a99cc8e0c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GUI\CustomTitleBar">
+      <UniqueIdentifier>{ae46faae-e3d5-49a4-bab3-cdcf210a2454}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GUI\UI\ImGui\FileDialog">
+      <UniqueIdentifier>{d9396554-a47a-48fd-8ca6-45c8926b40d7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\GUI\UI\ImGui\FileDialog">
+      <UniqueIdentifier>{2f8c1e2c-9c11-43fb-9aee-305e3937672b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\GUI\MenuOfMainTabs">
+      <UniqueIdentifier>{ef3eeddf-d10c-4da9-951a-bd231fc829bd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GUI\MenuOfMainTabs">
+      <UniqueIdentifier>{1ebbb322-0132-4ade-ad85-2b9a2d559bc8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GUI\MenuOfMainTabs\CPUMenuBegin">
+      <UniqueIdentifier>{2d3fa3a3-ffcd-4e46-af5a-c2d61c69428a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\GUI\MenuOfMainTabs\CPUMenuBegin">
+      <UniqueIdentifier>{24abd91f-a81b-4c8f-b4ed-f1c47c1bc322}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\GUI\General">
+      <UniqueIdentifier>{3c39d13f-4bf5-47b2-b865-14419d661287}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\GUI\MenuOfMainTabs\StackMapMenuBegin">
+      <UniqueIdentifier>{1d74356d-77bf-4ebc-94af-ebbd3b0b07c0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GUI\MenuOfMainTabs\StackMapMenuBegin">
+      <UniqueIdentifier>{a84af36b-683f-4654-a1cd-cacae109223c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GUI\MenuOfMainTabs\ThreadsMenuBegin">
+      <UniqueIdentifier>{6c7c48aa-1d8a-4923-b92c-14dbc172e678}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\GUI\MenuOfMainTabs\ThreadsMenuBegin">
+      <UniqueIdentifier>{578c5e90-81fe-4987-b9e6-fecdd6941d64}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GUI\General">
+      <UniqueIdentifier>{ab4f5a0e-2c8c-4437-9bc5-4a6135445cfc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GUI\MenuOfMainTabs\CallStackMenuBegin">
+      <UniqueIdentifier>{bf182520-5665-4a59-9d53-61288f589c03}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\GUI\MenuOfMainTabs\CallStackMenuBegin">
+      <UniqueIdentifier>{54da8f14-cb07-4e53-8ab9-8e1c85a96dc9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GUI\MenuOfMainTabs\MemoryMapMenuBegin">
+      <UniqueIdentifier>{975c09fa-6f0b-4f16-b5b9-9d5257b72577}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\GUI\MenuOfMainTabs\MemoryMapMenuBegin">
+      <UniqueIdentifier>{59b7fc1a-a8ee-4ccf-a467-87f0716523f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GUI\MenuOfMainTabs\SEHMenuBegin">
+      <UniqueIdentifier>{e1f035e5-5fe9-42ae-bba4-830836419cf7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\GUI\MenuOfMainTabs\SEHMenuBegin">
+      <UniqueIdentifier>{0fef0efd-ae9b-40dc-8793-102d1e197819}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GUI\MenuOfMainTabs\PeMenuBegin">
+      <UniqueIdentifier>{59f16fae-4af6-4c4e-8687-8ce13243a3c7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\GUI\MenuOfMainTabs\PeMenuBegin">
+      <UniqueIdentifier>{804bda93-ed92-4a42-9092-f9123f638bf5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GUI\MenuOfMainTabs\PeMenuBegin\PeParser">
+      <UniqueIdentifier>{8b3fee69-f217-49ae-9779-cfcf553a488a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GUI\MenuOfMainTabs\PeMenuBegin\Nodes">
+      <UniqueIdentifier>{b0f580a5-0614-4323-8297-0f6229a73766}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GUI\MenuOfMainTabs\PeMenuBegin\Nodes\Section">
+      <UniqueIdentifier>{aa78c72d-a1c8-4c07-b653-3ad1b64cadf0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Debugger\Application\Main.cpp">
       <Filter>Source Files\Main</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Debugger\Application\PEReader.cpp">
-      <Filter>Source Files\Pe</Filter>
+    <ClCompile Include="Source\GUI\UI\ImGui\Opengl3&amp;WinApi\imgui_impl_opengl3.cpp">
+      <Filter>Source Files\GUI\UI\ImGui\OpenGl3&amp;WinApi</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GUI\UI\ImGui\Opengl3&amp;WinApi\imgui_impl_win32.cpp">
+      <Filter>Source Files\GUI\UI\ImGui\OpenGl3&amp;WinApi</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GUI\UI\ImGui\imgui.cpp">
+      <Filter>Source Files\GUI\UI\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GUI\UI\ImGui\imgui_demo.cpp">
+      <Filter>Source Files\GUI\UI\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GUI\UI\ImGui\imgui_draw.cpp">
+      <Filter>Source Files\GUI\UI\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GUI\UI\ImGui\imgui_tables.cpp">
+      <Filter>Source Files\GUI\UI\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GUI\UI\ImGui\imgui_widgets.cpp">
+      <Filter>Source Files\GUI\UI\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GUI\CustomTitleBar.cpp">
+      <Filter>Source Files\GUI\CustomTitleBar</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GUI\UI\ImGui\FileDialog\ImGuiFileDialog.cpp">
+      <Filter>Source Files\GUI\UI\ImGui\FileDialog</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GUI\MenuOfMainTabs\MenuGeneral.cpp">
+      <Filter>Source Files\GUI\MenuOfMainTabs</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GUI\MenuOfMainTabs\CPUMenuBegin\CPUTab.cpp">
+      <Filter>Source Files\GUI\MenuOfMainTabs\CPUMenuBegin</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GUI\MenuOfMainTabs\StackMapMenuBegin\StackMapTab.cpp">
+      <Filter>Source Files\GUI\MenuOfMainTabs\StackMapMenuBegin</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GUI\MenuOfMainTabs\ThreadsMenuBegin\ThreadsTab.cpp">
+      <Filter>Source Files\GUI\MenuOfMainTabs\ThreadsMenuBegin</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GUI\General.cpp">
+      <Filter>Source Files\GUI\General</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GUI\Window.cpp">
+      <Filter>Source Files\GUI\General</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GUI\WindowGeneralSizes.cpp">
+      <Filter>Source Files\GUI\General</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GUI\MenuOfMainTabs\CallStackMenuBegin\CallStackTab.cpp">
+      <Filter>Source Files\GUI\MenuOfMainTabs\CallStackMenuBegin</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GUI\MenuOfMainTabs\MemoryMapMenuBegin\MemoryMapTab.cpp">
+      <Filter>Source Files\GUI\MenuOfMainTabs\MemoryMapMenuBegin</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GUI\MenuOfMainTabs\SEHMenuBegin\SehTab.cpp">
+      <Filter>Source Files\GUI\MenuOfMainTabs\SEHMenuBegin</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GUI\MenuOfMainTabs\PeMenuBegin\PeTab.cpp">
+      <Filter>Source Files\GUI\MenuOfMainTabs\PeMenuBegin</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GUI\MenuOfMainTabs\PeMenuBegin\Parser\PEReader.cpp">
+      <Filter>Source Files\GUI\MenuOfMainTabs\PeMenuBegin\PeParser</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GUI\MenuOfMainTabs\PeMenuBegin\Nodes\COFFFileHeaderNode.cpp">
+      <Filter>Source Files\GUI\MenuOfMainTabs\PeMenuBegin\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GUI\MenuOfMainTabs\PeMenuBegin\Nodes\DataDirectoriesNode.cpp">
+      <Filter>Source Files\GUI\MenuOfMainTabs\PeMenuBegin\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GUI\MenuOfMainTabs\PeMenuBegin\Nodes\DoSHeaderNode.cpp">
+      <Filter>Source Files\GUI\MenuOfMainTabs\PeMenuBegin\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GUI\MenuOfMainTabs\PeMenuBegin\Nodes\FileInfoNode.cpp">
+      <Filter>Source Files\GUI\MenuOfMainTabs\PeMenuBegin\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GUI\MenuOfMainTabs\PeMenuBegin\Nodes\ImportDirectoryNode.cpp">
+      <Filter>Source Files\GUI\MenuOfMainTabs\PeMenuBegin\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GUI\MenuOfMainTabs\PeMenuBegin\Nodes\NtHeaderNode.cpp">
+      <Filter>Source Files\GUI\MenuOfMainTabs\PeMenuBegin\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GUI\MenuOfMainTabs\PeMenuBegin\Nodes\OptionalHeaderNode.cpp">
+      <Filter>Source Files\GUI\MenuOfMainTabs\PeMenuBegin\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GUI\MenuOfMainTabs\PeMenuBegin\Nodes\RichHeaderNode.cpp">
+      <Filter>Source Files\GUI\MenuOfMainTabs\PeMenuBegin\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GUI\MenuOfMainTabs\PeMenuBegin\Nodes\Section\Entropy.cpp">
+      <Filter>Source Files\GUI\MenuOfMainTabs\PeMenuBegin\Nodes\Section</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GUI\MenuOfMainTabs\PeMenuBegin\Nodes\Section\SectionHeaderNode.cpp">
+      <Filter>Source Files\GUI\MenuOfMainTabs\PeMenuBegin\Nodes\Section</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -37,6 +223,87 @@
     </ClInclude>
     <ClInclude Include="Include\Debugger\Application\Pe\PEReader.hpp">
       <Filter>Header Files\Pe</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\GUI\UI\ImGui\Opengl3&amp;WinApi\imgui_impl_win32.h">
+      <Filter>Header Files\GUI\UI\ImGui\OpenGl3&amp;WinApi</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\GUI\UI\ImGui\Opengl3&amp;WinApi\imgui_impl_opengl3.h">
+      <Filter>Header Files\GUI\UI\ImGui\OpenGl3&amp;WinApi</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\GUI\UI\ImGui\Opengl3&amp;WinApi\imgui_impl_opengl3_loader.h">
+      <Filter>Header Files\GUI\UI\ImGui\OpenGl3&amp;WinApi</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\GUI\UI\ImGui\imconfig.h">
+      <Filter>Header Files\GUI\UI\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\GUI\UI\ImGui\imgui.h">
+      <Filter>Header Files\GUI\UI\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\GUI\UI\ImGui\imgui_internal.h">
+      <Filter>Header Files\GUI\UI\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\GUI\UI\ImGui\imstb_rectpack.h">
+      <Filter>Header Files\GUI\UI\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\GUI\UI\ImGui\imstb_textedit.h">
+      <Filter>Header Files\GUI\UI\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\GUI\UI\ImGui\imstb_truetype.h">
+      <Filter>Header Files\GUI\UI\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\GUI\CustomTitleBar.hpp">
+      <Filter>Header Files\GUI\CustomTitleBar</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\GUI\Window.hpp">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\GUI\UI\ImGui\FileDialog\ImGuiFileDialog.h">
+      <Filter>Header Files\GUI\UI\ImGui\FileDialog</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\GUI\UI\ImGui\FileDialog\ImGuiFileDialogConfig.h">
+      <Filter>Header Files\GUI\UI\ImGui\FileDialog</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\GUI\MenuOfMainTabs\MenuGeneral.hpp">
+      <Filter>Header Files\GUI\MenuOfMainTabs</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\GUI\MenuOfMainTabs\CPUMenuBegin\CPUTab.hpp">
+      <Filter>Header Files\GUI\MenuOfMainTabs\CPUMenuBegin</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\GUI\General.hpp">
+      <Filter>Header Files\GUI\General</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\GUI\Names.hpp">
+      <Filter>Header Files\GUI\General</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\GUI\GlobalClass.hpp">
+      <Filter>Header Files\GUI\General</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\GUI\DimensionsesOfWindowses.hpp">
+      <Filter>Header Files\GUI\General</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\GUI\WindowCodes.hpp">
+      <Filter>Header Files\GUI\General</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\GUI\MenuOfMainTabs\StackMapMenuBegin\StackMapTab.hpp">
+      <Filter>Header Files\GUI\MenuOfMainTabs\StackMapMenuBegin</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\GUI\MenuOfMainTabs\ThreadsMenuBegin\ThreadsTab.hpp">
+      <Filter>Header Files\GUI\MenuOfMainTabs\ThreadsMenuBegin</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\GUI\MenuOfMainTabs\CallStackMenuBegin\CallStackTab.hpp">
+      <Filter>Header Files\GUI\MenuOfMainTabs\CallStackMenuBegin</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\GUI\MenuOfMainTabs\MemoryMapMenuBegin\MemoryMapTab.hpp">
+      <Filter>Header Files\GUI\MenuOfMainTabs\MemoryMapMenuBegin</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\GUI\MenuOfMainTabs\SEHMenuBegin\SehTab.hpp">
+      <Filter>Header Files\GUI\MenuOfMainTabs\SEHMenuBegin</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\GUI\MenuOfMainTabs\PeMenuBegin\PeTab.hpp">
+      <Filter>Header Files\GUI\MenuOfMainTabs\PeMenuBegin</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\GUI\ClickedCodesOfTreeNodes.hpp">
+      <Filter>Header Files\GUI\General</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -18,7 +18,6 @@ std::wstring StringToWideString(
 	return wideStr;
 }
 
-
 PEInformation PeReader::SectionCopierOfDll64(
 	PEInformation& PEInformation,
 	std::vector<LPVOID>& BAs,
@@ -305,7 +304,7 @@ PEInformation PeReader::GetImports64(
 	while (PEInformation.pImageImportDescriptor->Name != 0)
 	{
 		std::string DllName = (char*)(dRawOffset + (PEInformation.pImageImportDescriptor->Name - PEInformation.pImageImportHeader->VirtualAddress));
-		std::wcout << L"\n\tDLL NAME: " << StringToWideString(DllName) << "\n";
+		//std::wcout << L"\n\tDLL NAME: " << StringToWideString(DllName) << "\n";
 
 		//PEInformation = Dll(StringToWideString(DllName), PathToCurrentDebugging, PEInformation);
 
@@ -315,6 +314,15 @@ PEInformation PeReader::GetImports64(
 
 		PEInformation.x64.pOriginalFirstThrunk = 
 			(PIMAGE_THUNK_DATA64(dRawOffset + (PEInformation.pImageImportDescriptor->FirstThunk - PEInformation.pImageImportHeader->VirtualAddress)));
+		PEInformation.Apis.Functions.push_back(new std::vector<DllsFuncs_*>);
+
+		PEInformation.Apis.Dlls.push_back(new DllsApi_
+			{DllName,
+			PEInformation.pImageImportDescriptor->Name, 
+			PEInformation.pImageImportDescriptor->FirstThunk, 
+			PEInformation.pImageImportDescriptor->OriginalFirstThunk,
+			PEInformation.pImageImportDescriptor->TimeDateStamp, 
+			PEInformation.pImageImportDescriptor->ForwarderChain});
 
 		while (PEInformation.x64.pOriginalFirstThrunk->u1.AddressOfData != 0)
 		{
@@ -328,7 +336,9 @@ PEInformation PeReader::GetImports64(
 				FARPROC pfnProc = GetProcAddress((HMODULE)hFileContent, (LPCSTR)PEInformation.x64.pOriginalFirstThrunk->u1.Ordinal);
 				if (pfnProc == NULL) { puts("\t\tpfnProc is null\n"); return PEInformation; }
 				PEInformation.x64.pOriginalFirstThrunk->u1.Function = (ULONGLONG)pfnProc;
-				std::cout << "\t\t Address: " << std::hex << pfnProc << " Name(Ordinal) of funcion: " << PEInformation.x64.pOriginalFirstThrunk->u1.Ordinal << "\n";
+				//std::cout << "\t\t Address: " << std::hex << pfnProc << " Name(Ordinal) of funcion: " << PEInformation.x64.pOriginalFirstThrunk->u1.Ordinal << "\n";
+
+				PEInformation.Apis.Functions[PEInformation.Apis.Functions.size() - 1]->push_back(new DllsFuncs_{ "\0",pfnProc,PEInformation.x64.pOriginalFirstThrunk->u1.Ordinal });
 			}
 			else
 			{
@@ -336,26 +346,26 @@ PEInformation PeReader::GetImports64(
 				FARPROC pfnProc = GetProcAddress((HMODULE)hFileContent, FunctionName.c_str());
 				if (pfnProc == NULL) { puts("\t\tpfnProc is null\n"); return PEInformation; }
 				PEInformation.x64.pOriginalFirstThrunk->u1.Function = (ULONG_PTR)pfnProc;
-				std::cout << "\t\t Address: " << std::hex << pfnProc << " Name(Ordinal) of funcion: " << FunctionName << "\n";
+				//std::cout << "\t\t Address: " << std::hex << pfnProc << " Name(Ordinal) of funcion: " << FunctionName << "\n";
 
-				PEInformation.Funcs.push_back(std::make_pair((ULONG_PTR)pfnProc, FunctionName));
+				PEInformation.Apis.Functions[PEInformation.Apis.Functions.size() - 1]->push_back(new DllsFuncs_{ FunctionName,pfnProc,0}); //Name = FunctionName;
 			}
 			++PEInformation.x64.pOriginalFirstThrunk;
 		}
 		++PEInformation.pImageImportDescriptor;
 	}
 
-	for (const auto& pair : PEInformation.Funcs)
-	{
-		if (pair.second == "ExitProcess")
-		{
-			return PEInformation;
-		}
-	}
+	//for (const auto& pair : PEInformation.Funcs)
+	//{
+	//	if (pair.second == "ExitProcess")
+	//	{
+	//		return PEInformation;
+	//	}
+	//}
 
-	hFileContent = GetContentOfDll(StringToWideString(Kernel32Dll), 2);
-	FARPROC pfnProc = GetProcAddress((HMODULE)hFileContent, ExitProcess.c_str());
-	PEInformation.Funcs.push_back(std::make_pair((ULONG_PTR)pfnProc, ExitProcess));
+	//hFileContent = GetContentOfDll(StringToWideString(Kernel32Dll), 2);
+	//FARPROC pfnProc = GetProcAddress((HMODULE)hFileContent, ExitProcess.c_str());
+	//PEInformation.Funcs.push_back(std::make_pair((ULONG_PTR)pfnProc, ExitProcess));
 
 	return PEInformation;
 }
@@ -368,10 +378,42 @@ PEInformation PeReader::GetExportSection64(
 		const PIMAGE_SECTION_HEADER pCurrentSectionHeader =
 			(PIMAGE_SECTION_HEADER)((DWORD64)PEInformation.pImageSectionHeader + Section * sizeof(IMAGE_SECTION_HEADER));
 
-		if (PEInformation.x64.ImageOptionalHeader64.DataDirectory[0].VirtualAddress >= pCurrentSectionHeader->VirtualAddress
-			&& PEInformation.x64.ImageOptionalHeader64.DataDirectory[0].VirtualAddress < pCurrentSectionHeader->VirtualAddress + pCurrentSectionHeader->Misc.VirtualSize)
-			PEInformation.pImageImportHeader = pCurrentSectionHeader;
+
+		if (PEInformation.x64.ImageOptionalHeader64.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress >= pCurrentSectionHeader->VirtualAddress
+			&& PEInformation.x64.ImageOptionalHeader64.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress < pCurrentSectionHeader->VirtualAddress + pCurrentSectionHeader->Misc.VirtualSize)
+		{
+			PEInformation.pImageExportHeader = pCurrentSectionHeader;		
+		}
+
+		//if (PEInformation.x64.ImageOptionalHeader64.DataDirectory[0].VirtualAddress >= pCurrentSectionHeader->VirtualAddress
+		//	&& PEInformation.x64.ImageOptionalHeader64.DataDirectory[0].VirtualAddress < pCurrentSectionHeader->VirtualAddress + pCurrentSectionHeader->Misc.VirtualSize)
+		//	PEInformation.pImageImportHeader = pCurrentSectionHeader;
 	}
+	/*
+	dRawOffset = (DWORD)pImageDOSHeader + pImageExportSection->PointerToRawData;
+	while (PEInformation.pImageExportDirectory->Name != 0)
+	{
+		std::string DllName = (char*)(dRawOffset + (PEInformation.pImageExportDirectory->Name - PEInformation.pImageExportHeader->VirtualAddress));
+
+		std::cout << DllName;
+
+		++PEInformation.pImageExportDirectory;
+	}*/
+
+	return PEInformation;
+}
+
+PEInformation PeReader::GetExports64(
+	PEInformation& PEInformation,
+	uint64_t dRawOffset)
+{
+	const auto pArrayOfFunctionsNames = (DWORD*)(dRawOffset + (PEInformation.pImageExportDirectory->AddressOfNames - PEInformation.pImageExportHeader->VirtualAddress));
+
+	for (uint64_t i = 0; i < PEInformation.pImageExportDirectory->NumberOfNames; ++i)
+	{
+		printf("\t%s\n", (char*)dRawOffset + (pArrayOfFunctionsNames[i] - PEInformation.pImageExportHeader->VirtualAddress));
+	}
+
 	return PEInformation;
 }
 
@@ -379,19 +421,31 @@ PEInformation PeReader::ParseImage64(
 	PEInformation& PEInformation)
 {
 	PEInformation.x64.pImageNTHeader64 = (PIMAGE_NT_HEADERS64)((DWORD_PTR)PEInformation.pImageDOSHeaderOfPe + PEInformation.pImageDOSHeaderOfPe->e_lfanew);
-	if (PEInformation.x64.pImageNTHeader64 == nullptr) { return PEInformation; }
+	if (PEInformation.x64.pImageNTHeader64 == nullptr) 
+	{ 
+		ErrorCode = pImageNTHeader64ContainsNullptr;
+		return PEInformation; 
+	}
 
 	PEInformation.ImageFileHeader = PEInformation.x64.pImageNTHeader64->FileHeader; PEInformation.x64.ImageOptionalHeader64 = PEInformation.x64.pImageNTHeader64->OptionalHeader;
 
 	PEInformation.pImageSectionHeader = 
 		(PIMAGE_SECTION_HEADER)((DWORD_PTR)PEInformation.x64.pImageNTHeader64 + 4 + sizeof(IMAGE_FILE_HEADER) + PEInformation.ImageFileHeader.SizeOfOptionalHeader);
-	if (PEInformation.pImageSectionHeader == nullptr) { return PEInformation; }
+	if (PEInformation.pImageSectionHeader == nullptr) 
+	{ 
+		ErrorCode = pImageSectionHeaderContainsNullptr;
+		return PEInformation;
+	}
 
 	PEInformation.FirstSize = PEInformation.x64.pImageNTHeader64->OptionalHeader.ImageBase;
 
 	PEInformation = GetSections64(PEInformation);
 
-	if (PEInformation.pImageImportHeader == nullptr) { puts("\n[-] An error when trying to retrieve PE imports !\n"); return PEInformation; }
+	if (PEInformation.pImageImportHeader == nullptr) 
+	{ 
+		ErrorCode = pImageImportHeaderContainsNullptr;
+		return PEInformation; 
+	}
 
 	uint64_t dRawOffset = (uint64_t)PEInformation.pImageDOSHeaderOfPe + PEInformation.pImageImportHeader->PointerToRawData;
 
@@ -399,13 +453,23 @@ PEInformation PeReader::ParseImage64(
 		(uint64_t(dRawOffset + (PEInformation.x64.ImageOptionalHeader64.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress) - 
 			PEInformation.pImageImportHeader->VirtualAddress)));
 
-	if (PEInformation.pImageImportDescriptor == NULL) { puts("\n[-] An error occurred when trying to retrieve PE imports descriptor!\n"); return PEInformation; }
+	if (PEInformation.pImageImportDescriptor == NULL) 
+	{ 
+		ErrorCode = pImageImportDescriptorContainsNullptr;
+		return PEInformation; 
+	}
 
-	PEInformation = GetImports64(PEInformation, dRawOffset); PEInformation = GetExportSection64(PEInformation);
+	PEInformation = GetImports64(PEInformation, dRawOffset); 
+
+
+	PEInformation = GetExportSection64(PEInformation);
+	dRawOffset = (uint64_t)PEInformation.pImageDOSHeaderOfPe + PEInformation.pImageExportHeader->PointerToRawData;
+
+	PEInformation.pImageExportDirectory = 
+		(PIMAGE_EXPORT_DIRECTORY)(dRawOffset + (PEInformation.x64.ImageOptionalHeader64.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress - PEInformation.pImageExportHeader->VirtualAddress));
+	PEInformation = GetExports64(PEInformation, dRawOffset);
 	//TO DO:
-	// NEED TO FIX BUGS WITH PACKED SAMPLES IN GetImports64
-
-	std::wcout << std::endl << L"\tEXE NAME: " << PathToCurrentDebugging.filename().wstring() << std::endl;
+	//NEED TO FIX BUGS WITH PACKED SAMPLES IN GetImports64
 
 	if (Start)
 	{
@@ -425,14 +489,14 @@ PEInformation PeReader::Pe(
 	hPeFileContent = GetFileContent();
 	if (hPeFileContent == INVALID_HANDLE_VALUE)
 	{
-		puts("[-] hPeFileContent contains INVALID_HANDLE_VALUE !\n");
+		ErrorCode = ErrorPeParseCodes_::hPeFileContainsInvalidHandleValue;
 		return PEInformation;
 	}
 
 	pImageDOSHeaderOfPe = (PIMAGE_DOS_HEADER)hPeFileContent;
 	if (pImageDOSHeaderOfPe == nullptr)
 	{
-		puts("[-] pImageDOSHeaderOfPe contains nullptr !\n");
+		ErrorCode = ErrorPeParseCodes_::pImageDOSHeaderOfPeContainsNullptr;
 		VirtualFree(hPeFileContent, 0, MEM_RELEASE);
 		CloseHandle(hPeFileContent);
 		return PEInformation;
@@ -441,7 +505,7 @@ PEInformation PeReader::Pe(
 	pImageNTHeaderOfPe = (PIMAGE_NT_HEADERS)((DWORD_PTR)hPeFileContent + pImageDOSHeaderOfPe->e_lfanew);
 	if (pImageNTHeaderOfPe == nullptr)
 	{
-		puts("[-] pImageNTHeaderOfPe contains nullptr !\n");
+		ErrorCode = ErrorPeParseCodes_::pImageNTHeaderOfPeContainsNullptr;
 		VirtualFree(hPeFileContent, 0, MEM_RELEASE);
 		CloseHandle(hPeFileContent);
 		return PEInformation;
@@ -455,7 +519,7 @@ PEInformation PeReader::Pe(
 	}
 	else if (pImageNTHeaderOfPe->OptionalHeader.Magic == IMAGE_NT_OPTIONAL_HDR32_MAGIC)
 	{
-
+		//TODO: 32 BIT
 	}
 
 	return PEInformation;

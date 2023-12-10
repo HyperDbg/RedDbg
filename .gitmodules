@@ -4,6 +4,6 @@
 [submodule "RedDbg/Source/Deps/zydis"]
 	path = RedDbg/Source/Deps/zydis
 	url = https://github.com/zyantific/zydis
-[submodule "RedDbg/Source/Deps/--recursive"]
-	path = RedDbg/Source/Deps/--recursive
-	url = https://github.com/zyantific/zydis
+[submodule "RedDbg/Source/Deps/FTXUI"]
+	path = RedDbg/Source/Deps/FTXUI
+	url = https://github.com/ArthurSonzogni/FTXUI.git

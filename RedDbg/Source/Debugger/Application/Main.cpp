@@ -1,8 +1,14 @@
+﻿#include "GUI/General.hpp"
+/*
+#include "GUI/General.hpp"
+
 #include "DriverLoader/include/DriverLoader.hpp"
 #include "Debugger/Application/Pe/PEReader.hpp"
 #include "Debugger/Application/Pe/PEInformation.hpp"
 
 #include <Windows.h>
+#include <memory>  
+#include <thread>
 
 #include <iostream>
 #include <string>
@@ -267,7 +273,8 @@ void Attach(PEInformation& PEInformation, HANDLE hDriver)
 		}
 	}
 }
-
+*/
+/*
 int main()
 {
 	std::unique_ptr<DRIVER> Driver; Driver = std::make_unique<DRIVER>();
@@ -275,7 +282,7 @@ int main()
 
 	Driver->LoadDriver((LPTSTR)L"C:\\RedDbgDrv.sys", (LPTSTR)L"RedTracer", (LPTSTR)L"RedTracer", SERVICE_DEMAND_START);
 	std::cout << "Driver Started!" << std::endl;
-	///*"D:\\Programs\\Soft\\Coding\\C\\VisualStudio\\Coders\\Driver\\RedDbg\\RedDbg\\RedDbg\\x64\\DebugX64Kernel\\RedDbgDrv.sys"/* /*L"C:\\RedDbgDrv.sys"*/
+	//"D:\\Programs\\Soft\\Coding\\C\\VisualStudio\\Coders\\Driver\\RedDbg\\RedDbg\\RedDbg\\x64\\DebugX64Kernel\\RedDbgDrv.sys"/* /*L"C:\\RedDbgDrv.sys"
 	HANDLE hDriver = CreateFileA("\\\\.\\MyHypervisorDevice",
 		GENERIC_READ | GENERIC_WRITE,
 		FILE_SHARE_READ |
@@ -348,4 +355,22 @@ int main()
 	TerminateProcess(PEInformation.ProcessInfo.hProcess, NULL);
 	
 	return true;
+}
+*/
+
+static GeneralGUI_ GeneralGUI;
+void GeneralGUI_::UIRender()
+{
+	GeneralGUI.CustomTitleBar.CustomTitleBarRender();
+	GeneralGUI.InterfaceGeneral.MainInterfaceRender();
+	//MainInterfaceRender();
+}
+
+int main()
+{
+	if (!GeneralGUI.OpenGl3Init()) { return FALSE; }
+	GeneralGUI.OpenGlRenderMainLoop();
+	GeneralGUI.OpenGl3DeInit(); 
+
+	return TRUE;
 }

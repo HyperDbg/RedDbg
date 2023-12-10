@@ -1,9 +1,23 @@
+#pragma once
 #include "PEInformation.hpp"
+#include "GUI/UI/ImGui/imgui.h"
 
 #include <vector>
 #include <string>
 #include <Windows.h>
 #include <filesystem> 
+
+enum ErrorPeParseCodes_
+{
+	AllOk,
+	hPeFileContainsInvalidHandleValue,
+	pImageDOSHeaderOfPeContainsNullptr,
+	pImageNTHeaderOfPeContainsNullptr,
+	pImageNTHeader64ContainsNullptr,
+	pImageSectionHeaderContainsNullptr,
+	pImageImportHeaderContainsNullptr,
+	pImageImportDescriptorContainsNullptr,
+};
 
 class PeReader
 {
@@ -13,6 +27,8 @@ private:
 private:
 	HANDLE hFileContent;
 	HANDLE hPeFileContent;
+public:
+	uint64_t ErrorCode = 0;
 private:
 	PIMAGE_DOS_HEADER pImageDOSHeaderOfPe;
 	PIMAGE_NT_HEADERS pImageNTHeaderOfPe;
@@ -42,11 +58,15 @@ private:
 	PEInformation GetImports64(
 		PEInformation& PEInformation,
 		uint64_t dRawOffset);
+	PEInformation GetExports64(
+		PEInformation& PEInformation,
+		uint64_t dRawOffset);
 	PEInformation GetImportsOfDll64(
 		PEInformation& PEInformation,
 		uint64_t dRawOffset,
 		const std::wstring& DllName);
 public:
+	float CalcEntropy(char* ptr, int start, int end);
 	PEInformation Dll(
 		const std::wstring DllName,
 		PEInformation& PEInformation);

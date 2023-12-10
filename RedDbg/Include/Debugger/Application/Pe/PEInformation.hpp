@@ -7,10 +7,45 @@
 #include <utility>
 #include <TlHelp32.h>
 
+class DllsApi_
+{
+public:
+	std::string Name;
+	DWORD dwRvaToName;
+	DWORD dwFirstThink;
+	DWORD dwOriginalFirstThink;
+	DWORD dwTimeDataStamp;
+	DWORD dwForwaderChain;
+
+	DllsApi_(std::string LibName, DWORD RvaToName, DWORD FirstThink, DWORD OriginalFirstThink, DWORD TimeDataStamp, DWORD ForwaderChain)
+		: Name(LibName), dwRvaToName(RvaToName), dwFirstThink(FirstThink), dwOriginalFirstThink(OriginalFirstThink), dwTimeDataStamp(TimeDataStamp), dwForwaderChain(ForwaderChain) { }
+};
+
+class DllsFuncs_
+{
+public:
+	std::string Name;
+	FARPROC ptr;
+	ULONGLONG qwOrdinal;
+
+	DllsFuncs_(std::string FuncName, FARPROC Ptr, ULONGLONG Ordinal)
+		: Name(FuncName), ptr(Ptr), qwOrdinal(Ordinal) { }
+};
+
+class Apis_
+{
+public:
+	std::vector<DllsApi_*> Dlls;
+	std::vector<std::vector<DllsFuncs_*>*> Functions;
+	//std::vector<std::pair<std::pair<const dwName, const dwOriginalFirstThink>, std::pair<const dwNameRva, const dwFirstThink>>> Dlls;
+	//std::vector<std::pair<std::pair<const dwName, const dwOriginalFirstThink>, const dwFirstThink>> Functions;
+};
+
 class PEInformation
 {
 public:
-	std::vector<std::pair<ULONG_PTR, const std::string>> Funcs;
+	//std::vector<std::pair<ULONG_PTR, const std::string>> Funcs;
+	Apis_ Apis;
 	uint64_t FirstSize = 0, SizeOfAll = 0;
 private:
 	class x64

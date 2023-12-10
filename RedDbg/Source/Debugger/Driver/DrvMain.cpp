@@ -60,11 +60,11 @@ SVM::PRIVATE_VM_DATA* Interceptions(
 	Private->Guest.ControlArea.InterceptCpuid = TRUE;
 	Private->Guest.ControlArea.InterceptVmrun = TRUE;
 
-	if (!bTrapFlagHandler)
-	{
-		Private->Guest.ControlArea.InterceptPushf = TRUE;
-		Private->Guest.ControlArea.InterceptPopf = TRUE;
-	}
+	//if (!bTrapFlagHandler)
+	//{
+	//	Private->Guest.ControlArea.InterceptPushf = TRUE;
+	//	Private->Guest.ControlArea.InterceptPopf = TRUE;
+	//}
 
 	Private->Guest.ControlArea.InterceptExceptions.Bitmap.InterceptionVectorDB = TRUE;
 	Private->Guest.ControlArea.InterceptExceptions.Bitmap.InterceptionVectorBP = TRUE;
@@ -226,6 +226,7 @@ namespace SvmDbg
 	}
 
 	bool Active = false;
+	bool Crash = false;
 	uint64_t ProCr3 = 0;
 	HANDLE TargetProcId = 0;
 
@@ -255,6 +256,36 @@ namespace SvmDbg
 		{
 		case SVM::SVM_EXIT_CODE::VMEXIT_EXCP_DB://65
 		{
+			if (!bTrapFlagHandler)
+			{
+				//KdPrint(("---------------Rip: %p\n", VMMData.Private->Guest.StateSaveArea.Rip));
+				//KdPrint(("Lbr & Btf: %p\n", VMMData.Private->Guest.StateSaveArea.DbgCtl));
+				//KdPrint(("BrFrom: %p\n", VMMData.Private->Guest.StateSaveArea.BrFrom));
+				//KdPrint(("BrTo: %p\n", VMMData.Private->Guest.StateSaveArea.BrTo));
+				//if (VMMData.Private->Guest.StateSaveArea.BrFrom == 0x1429F2F2D)
+				//{
+				//	KdPrint(("Rsp data(RET TO): %p\n", VMMData.Private->Guest.StateSaveArea.Rip));
+				//	Crash = true;
+				//}
+				//if (Crash)
+				//{
+				//	KdPrint(("BrFrom: %p\n", VMMData.Private->Guest.StateSaveArea.BrFrom));
+				//	KdPrint(("BrTo: %p\n", VMMData.Private->Guest.StateSaveArea.BrTo));
+				//}
+				VMMData = LBRHandler(VMMData);
+
+				VMMData.Private->Guest.StateSaveArea.Dr7.x64.Bitmap.G0 = 0;
+				VMMData.Private->Guest.StateSaveArea.Dr6.x64.Bitmap.BS = 0;
+			}
+			else
+			{
+				VMMData = TrapFlagHandler(VMMData);
+			}
+
+			//VmFuncSetLBR(TRUE, VMMData.Private);
+			//VmFuncSetRflagTrapFlag(TRUE, VMMData.Private);
+			//VMMData.Private->Guest.StateSaveArea.Dr7.x64.Bitmap.G0 = 0;
+			//VMMData.Private->Guest.StateSaveArea.Dr6.x64.Bitmap.BS = 0;
 			/*
 			KdPrint(("----------------BrFrom: %p\n", VMMData.Private->Guest.StateSaveArea.BrFrom));
 			KdPrint(("RAX %p\n", Private->Guest.StateSaveArea.Rax));
@@ -277,11 +308,6 @@ namespace SvmDbg
 			KdPrint(("BrTo: %p\n", VMMData.Private->Guest.StateSaveArea.BrTo));
 			KdPrint(("LBR VIRT: %p\n", Private->Guest.ControlArea.LbrVirtualizationEnable));
 			*/
-			VmFuncSetLBR(TRUE, VMMData.Private);
-			VmFuncSetRflagTrapFlag(TRUE, VMMData.Private);
-
-			VMMData.Private->Guest.StateSaveArea.Dr7.x64.Bitmap.G0 = 0;
-			VMMData.Private->Guest.StateSaveArea.Dr6.x64.Bitmap.BS = 0;
 			/*
 			else
 			{
@@ -362,10 +388,16 @@ namespace SvmDbg
 			BpPass = true;
 			break;
 		}
+		case SVM::SVM_EXIT_CODE::VMEXIT_EXCP_GP:
+		{
+			KdPrint(("BrTo: %p\n", VMMData.Private->Guest.StateSaveArea.BrTo));
+			break;
+		}
+		/*
 		case SVM::SVM_EXIT_CODE::VMEXIT_PUSHF://112
 		{
 			//HANDLE ID = PsGetCurrentProcessId();
-			__invlpg((void*)Private->Guest.StateSaveArea.Rsp);
+			//__invlpg((void*)Private->Guest.StateSaveArea.Rsp);
 
 			if (VMMData.Private->Guest.StateSaveArea.Rflags.Bitmap.Eflags.Bitmap.VM)
 			{
@@ -377,40 +409,56 @@ namespace SvmDbg
 				VMMData.Private->Guest.StateSaveArea.Rsp -= sizeof(uint16_t);
 				
 				*(uint16_t*)VMMData.Private->Guest.StateSaveArea.Rsp = (VMMData.Private->Guest.StateSaveArea.Rflags.Bitmap.Eflags.Value & UINT16_MAX);
-				break;
+				//KdPrint(("PIZDEC uint16_t\n"));
 			}
-			if (VMMData.Private->Guest.StateSaveArea.Cs.Attrib.Bitmap.LongMode)
+			else if (VMMData.Private->Guest.StateSaveArea.Cs.Attrib.Bitmap.LongMode)
 			{
 				VMMData.Private->Guest.StateSaveArea.Rsp -= sizeof(uintptr_t);
 				*(uint64_t*)VMMData.Private->Guest.StateSaveArea.Rsp = VMMData.Private->Guest.StateSaveArea.Rflags.Value;
-				//if (Active && VMMData.Private->Guest.StateSaveArea.Cpl == 3 && VMMData.Private->Guest.StateSaveArea.Cr3 == ProCr3)
-				//{
-				//	//KdPrint(("PUSHF Rip: %p\n", VMMData.Private->Guest.StateSaveArea.Rip));
-				//	((RFLAGS*)VMMData.Private->Guest.StateSaveArea.Rsp)->Bitmap.Eflags.Bitmap.TF = 0;
-				//}
 			}
 			else if (!VMMData.Private->Guest.StateSaveArea.Cs.Attrib.Bitmap.LongMode)
 			{
 				VMMData.Private->Guest.StateSaveArea.Rsp -= sizeof(uint32_t);
 				*(uint32_t*)VMMData.Private->Guest.StateSaveArea.Rsp = VMMData.Private->Guest.StateSaveArea.Rflags.Bitmap.Eflags.Value;
-				//VMMData.Private->Guest.StateSaveArea.Rip = VMMData.Private->Guest.ControlArea.NextRip;
-				//if (Active && VMMData.Private->Guest.StateSaveArea.Cpl == 3 && VMMData.Private->Guest.StateSaveArea.Cr3 == ProCr3)
-				//{
-				//	//KdPrint(("PUSHF Rip: %p\n", VMMData.Private->Guest.StateSaveArea.Rip));
-				//	((EFLAGS*)VMMData.Private->Guest.StateSaveArea.Rsp)->Bitmap.TF = 0;
-				//}
-			}
 
+				VMMData.Private->Guest.StateSaveArea.Rip = VMMData.Private->Guest.ControlArea.NextRip;
+			}
+			//else
+			//{
+			//	KdPrint(("PIZDEC\n"));
+			//}
 
 			((EFLAGS*)VMMData.Private->Guest.StateSaveArea.Rsp)->Bitmap.RF = 0;
 			((EFLAGS*)VMMData.Private->Guest.StateSaveArea.Rsp)->Bitmap.VM = 0;
 
-			break;
+			if (Active && VMMData.Private->Guest.StateSaveArea.Cpl == 3 && VMMData.Private->Guest.StateSaveArea.Cr3 == ProCr3)
+			{
+				KdPrint(("PUSHF Rip: %p\n", VMMData.Private->Guest.StateSaveArea.Rip));
+				KdPrint(("PUSHF Rsp after: %p\n", VMMData.Private->Guest.StateSaveArea.Rsp));
+				((EFLAGS*)VMMData.Private->Guest.StateSaveArea.Rsp)->Bitmap.TF = 0;
+			}
+
+			__writecr3(VMROOTCR3);
+			if (!Private->Guest.ControlArea.NextRip)
+			{
+				Private->Guest.StateSaveArea.Rax = Context->Rax;
+				return Status;
+			}
+			else
+			{
+				Private->Guest.StateSaveArea.Rax = Context->Rax;
+
+				// Go to the next instruction:
+				Private->Guest.StateSaveArea.Rip = Private->Guest.ControlArea.NextRip;
+				return Status;
+			}
+
+			//break;
 		}
 		case SVM::SVM_EXIT_CODE::VMEXIT_POPF://113
 		{
 			//HANDLE ID = PsGetCurrentProcessId();
-			__invlpg((void*)VMMData.Private->Guest.StateSaveArea.Rsp);
+			//__invlpg((void*)VMMData.Private->Guest.StateSaveArea.Rsp);
 
 			uint32_t unchanged_mask = 0x00100000 | 0x00080000 | 0x00020000;
 			//VIP && VIF && VM
@@ -436,36 +484,47 @@ namespace SvmDbg
 
 				StackRFlag.Value = (uint16_t)StackRFlag.Value | (VMMData.Private->Guest.StateSaveArea.Rflags.Value & 0xffff0000u);
 			}
-			if (VMMData.Private->Guest.StateSaveArea.Cs.Attrib.Bitmap.LongMode)
+			else if (VMMData.Private->Guest.StateSaveArea.Cs.Attrib.Bitmap.LongMode)
 			{
 				OperandSize = sizeof(uint64_t);
 				StackRFlag.Value = *(uint64_t*)VMMData.Private->Guest.StateSaveArea.Rsp;
-
-				//if (Active && VMMData.Private->Guest.StateSaveArea.Cr3 == ProCr3)
-				//{
-				//	KdPrint(("POPF Rip: %p\n", VMMData.Private->Guest.StateSaveArea.Rip));
-				//	((RFLAGS*)VMMData.Private->Guest.StateSaveArea.Rsp)->Bitmap.Eflags.Bitmap.TF = 1;
-				//}
 			}
-			else if (!VMMData.Private->Guest.StateSaveArea.Cs.Attrib.Bitmap.LongMode)
-			{
-				OperandSize = sizeof(uint32_t);
-				StackRFlag.Value = *(uint32_t*)VMMData.Private->Guest.StateSaveArea.Rsp;
 
-				//if (Active && VMMData.Private->Guest.StateSaveArea.Cr3 == ProCr3)
-				//{
-				//	KdPrint(("POPF Rip: %p\n", VMMData.Private->Guest.StateSaveArea.Rip));
-				//	((EFLAGS*)VMMData.Private->Guest.StateSaveArea.Rsp)->Bitmap.TF = 1;
-				//}
-			}
 			StackRFlag.Value &= 0x257fd5;
 			StackRFlag.Value &= unchanged_mask;
-			VMMData.Private->Guest.StateSaveArea.Rflags.Value |= (uint32_t)(StackRFlag.Value & ~unchanged_mask) | 0x2;
+			VMMData.Private->Guest.StateSaveArea.Rflags.Bitmap.Eflags.Value |= (uint32_t)(StackRFlag.Bitmap.Eflags.Value & ~unchanged_mask) | 0x2;
+
+			if (Active && VMMData.Private->Guest.StateSaveArea.Cr3 == ProCr3)
+			{
+				KdPrint(("POPF Rip: %p\n", VMMData.Private->Guest.StateSaveArea.Rip));
+				KdPrint(("POPF Rsp after: %p\n", VMMData.Private->Guest.StateSaveArea.Rsp));
+				((EFLAGS*)VMMData.Private->Guest.StateSaveArea.Rsp)->Bitmap.TF = 1;
+			}
 
 			VMMData.Private->Guest.StateSaveArea.Rflags.Bitmap.Eflags.Bitmap.RF = 0;
 			VMMData.Private->Guest.StateSaveArea.Rsp += OperandSize;
-			break;
+
+			Private = VMMData.Private;
+			Context = VMMData.Context;
+
+			__writecr3(VMROOTCR3);
+			if (!Private->Guest.ControlArea.NextRip)
+			{
+				Private->Guest.StateSaveArea.Rax = Context->Rax;
+				return Status;
+			}
+			else
+			{
+				Private->Guest.StateSaveArea.Rax = Context->Rax;
+
+				// Go to the next instruction:
+				Private->Guest.StateSaveArea.Rip = Private->Guest.ControlArea.NextRip;
+				return Status;
+			}
+
+			//break;
 		}
+		*/
 		case SVM::SVM_EXIT_CODE::VMEXIT_CPUID://114
 		{
 			CPUID_REGS Regs = {};
