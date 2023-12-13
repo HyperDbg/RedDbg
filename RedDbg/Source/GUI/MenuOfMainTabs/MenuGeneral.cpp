@@ -179,8 +179,6 @@ void MenuGeneral_::TabDispatcher(GeneralTab_ TabCode, bool* open)
         return;
     }
     }
-
-
 }
 
 void MenuGeneral_::MainInterfaceRender()

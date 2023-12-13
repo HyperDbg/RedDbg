@@ -3,9 +3,12 @@
 #include "GUI/Names.hpp"
 #include "GUI/DimensionsesOfWindowses.hpp"
 #include "GUI/Window.hpp"
+#include "MenuBarDispatcher.hpp"
 
 #include "Debugger/Application/Pe/PEReader.hpp"
 #include "Debugger/Application/Pe/PEInformation.hpp"
+
+//enum InstanceCodes
 
 class CustomTitleBar_ 
 {
@@ -14,10 +17,11 @@ private:
 	Names_ Names;
 	GlobalClassVars_ GlobalClassVars;
 	Window_ Window;
+	MenuBarDispatcher_ MenuBarDispatcher;
 private:
 	void ContentIsNullModalWindowRender(const std::string_view* Id, const std::string_view* Text, uint64_t* ErrorCode, bool* CheckBoxDontAsk);
 private:
-	void CustomWindowInTitleBarRender();
+	void CustomWindowInTitleBarRender(MenuBarDispatcher_* Instance);
 public:
 	void CustomTitleBarMenuRender();
 public:

@@ -98,8 +98,230 @@ private:
 
 			class MenuOptions_ 
 			{
+			private:
+				class Preferences_
+				{
+				private:
+					class DriverTab_
+					{
+					public:
+						const std::string_view DriverPath = "Driver path";
+						const std::string_view ALAOPF = "Automatically load after open PE file";
+						const std::string_view ModulesIsEditable = "Modules is editable";
+
+						std::vector<std::string_view> Names{
+							ALAOPF,
+							ModulesIsEditable
+						};
+					};
+
+					class EventsTab_
+					{
+					public:
+						const std::string_view BreakOn = "Break on:";
+						const std::string_view User = "User";
+						const std::string_view Kernel = "Kernel";
+						const std::string_view SystemBreakpoint = "System Breakpoint";
+						const std::string_view EntryBreakpoint = "Entry Breakpoint";
+						const std::string_view ExitBreakpoint = "Exit Breakpoint";
+						const std::string_view DebugStrings = "Debug strings";
+						const std::string_view UserTLSCallbacks = "User TLS Callbacks";
+						const std::string_view UserDLLEntry = "User DLL Entry";
+						const std::string_view UserDLLLoad = "User DLL Load";
+						const std::string_view UserDLLUnload = "User DLL Unload";
+						const std::string_view ThreadEntry = "Thread entry";
+						const std::string_view ThreadCreate = "Thread create";
+						const std::string_view ThreadExit = "Thread exit";
+						const std::string_view SetThreadNameExceptions = "SetThreadName exceptions";
+						const std::string_view SystemTLSCallBack = "System TLS CallBack";
+						const std::string_view SystemDLLEntry = "System DLL Entry";
+						const std::string_view SystemDLLLoad = "System DLL Load";
+						const std::string_view STB = "SyScall Table Breakpoint";
+						const std::string_view IDTTableBreakpoint = "IDT Table Breakpoint";
+						const std::string_view Launch = "Launch";
+						const std::string_view LoadDriver = "Load driver";
+						const std::string_view ServiceStart = "Service start";
+						const std::string_view ServiceCreate = "Service create";
+						const std::string_view KernelThreadEntry = "Kernel Thread entry";
+						const std::string_view KernelThreadCreate = "Kernel Thread Create";
+						const std::string_view KernelThreadExit = "Kernel Thread Exit";
+
+						std::vector<std::string_view> Names{
+							SystemBreakpoint,
+							EntryBreakpoint,
+							ExitBreakpoint,
+							DebugStrings,
+							UserTLSCallbacks,
+							UserDLLEntry,
+							UserDLLLoad,
+							UserDLLUnload,
+							ThreadEntry,
+							ThreadCreate,
+							ThreadExit,
+							SetThreadNameExceptions,
+							SystemTLSCallBack,
+							SystemDLLEntry,
+							SystemDLLLoad,
+							STB,
+							IDTTableBreakpoint,
+							Launch,
+							LoadDriver,
+							ServiceStart,
+							ServiceCreate,
+							KernelThreadEntry,
+							KernelThreadCreate,
+							KernelThreadExit,
+						};
+					};
+
+					class EngineTab_
+					{
+					private:
+						class DSBTypeList_
+						{
+						public:
+							const std::string_view Int3 = "INT3";
+							const std::string_view LongInt3 = "Long INT3";
+							const std::string_view UD2 = "UD2";
+							const std::string_view CLI = "CLI";
+							const std::string_view JMP = "JMP";
+						};
+						
+						class CalculationType_
+						{
+						public:
+							const std::string_view Signed = "Signed";
+							const std::string_view Unsigned = "Unsigned";
+						};
+					public:
+						const std::string_view UndecoratedSymbolNames = "Undecorated Symbol Names";
+						const std::string_view DisableAslr = "Disable ASLR";
+						const std::string_view Ring3App = "It works on Ring 3 and only when you launch PE file through the debugger";
+						const std::string_view LogIfThreadHasSwitched = "Log if thread has switched";
+						const std::string_view EnableSourceDebugging = "Enable source debugging";
+						const std::string_view SaveDataBaseInProgramDirectory = "Save Database in program directory";
+						const std::string_view IgnoreIncosistentBreakpoints = "Ignore incosistent breakpoints";
+						
+						const std::string_view DefaultMaximumTraceCount = "Default Maximum trace count";
+
+						const std::string_view AnimationPerStepInterval = "Animation per-step interval (ms)";
+
+						const std::string_view DefaultSoftwareBreakpointTypeListName = "Default Software Breakpoint Type";
+						DSBTypeList_ DSBTypeList;
+						const std::string_view CalculationTypeListName = "Calculation Type";
+						CalculationType_ CalculationType;
+
+						std::vector<std::string_view> Names{
+							UndecoratedSymbolNames,
+							DisableAslr,
+							LogIfThreadHasSwitched,
+							EnableSourceDebugging,
+							SaveDataBaseInProgramDirectory,
+							IgnoreIncosistentBreakpoints,
+							DefaultMaximumTraceCount,
+							AnimationPerStepInterval,
+							DefaultSoftwareBreakpointTypeListName,
+							CalculationTypeListName
+						};
+					};
+
+					class DisaasemblyTab_
+					{
+					public:
+						const std::string_view ArgumentSpaces = "Argument Spaces";
+						const std::string_view TabBetweenMnemonicAndArguments = "Tab between mnemonic and arguments";
+						const std::string_view HidePointerSizes = "Hide pointer sizes";
+						const std::string_view OnlyShowFSGSSegments = "Only show FS/GS segments";
+						const std::string_view MemorySpaces = "Memory spaces";
+						const std::string_view Uppercase = "Uppercase";
+						const std::string_view AutocommentsOnlyOnCIP = "Autocomments only on CIP";
+						const std::string_view DoNotHighlightOperands = "Don't highlight operands";
+						const std::string_view HideModuleNameForLocalMemoryAddresses = "Hide module name for local memory addresses";
+						const std::string_view PermanentHighlightingMode = "Permanent highlighting mode";
+						const std::string_view DisableBranchDisassemblyPreview = "Disable branch disassembly preview";
+						const std::string_view PrefixForHexValues = "0x prefix for hex values";
+						const std::string_view DoNotShowSourceLinesInComments = "Don't show source lines in comments";
+						const std::string_view AssembleIntructionOnDoubleClick = "Assemble intruction on double-click";
+
+						std::vector<std::string_view> Names{
+							ArgumentSpaces,
+							TabBetweenMnemonicAndArguments,
+							HidePointerSizes,
+							OnlyShowFSGSSegments,
+							MemorySpaces,
+							Uppercase,
+							AutocommentsOnlyOnCIP,
+							DoNotHighlightOperands,
+							HideModuleNameForLocalMemoryAddresses,
+							PermanentHighlightingMode,
+							DisableBranchDisassemblyPreview,
+							PrefixForHexValues,
+							DoNotShowSourceLinesInComments,
+							AssembleIntructionOnDoubleClick
+						};
+					};
+
+					class GuiTab_
+					{
+					public:
+						const std::string_view SFRALE = "Show FPU registers as little endian";
+						const std::string_view DNSCD = "Don't show close dialog";
+						const std::string_view ShowPIDTIDInHEX = "Show PID/TID in HEX";
+						const std::string_view GraphZoomMode = "Graph zoom mode";
+						const std::string_view ShowRVAaddressesInGraphView = "Show RVA addresses in graph view";
+						const std::string_view AutoFollowOperandInStack = "Auto follow operand in stack";
+						const std::string_view ShowExitConfirmationDialog = "Show exit confirmation dialog";
+
+						std::vector<std::string_view> Names{
+							SFRALE,
+							DNSCD,
+							ShowPIDTIDInHEX,
+							GraphZoomMode,
+							ShowRVAaddressesInGraphView,
+							AutoFollowOperandInStack,
+							ShowExitConfirmationDialog
+						};
+					};
+
+					class MiscTab_
+					{
+					public:
+						const std::string_view SymbolStore = "Symbol Store";
+						const std::string_view SymbolPath = "Symbol Path";
+						const std::string_view UseLocalHelpFile = "Use local help file";
+						const std::string_view ParseWinApi = "Parse winapi and show arguments for them";
+						const std::string_view QueryProcessCookie = "Query process cookie";
+						const std::string_view QueryWorkingSetBeforeReadingMemory = "Query working set before reading memory";
+
+						std::vector<std::string_view> Names{
+							SymbolStore,
+							SymbolPath,
+							UseLocalHelpFile,
+							ParseWinApi,
+							QueryProcessCookie,
+							QueryWorkingSetBeforeReadingMemory
+						};
+					};
+				public:
+					const std::string_view DriverTabName = "Driver";
+					DriverTab_ DriverTab;
+					const std::string_view EventsTabName = "Events";
+					EventsTab_ EventsTab;
+					const std::string_view EngineTabName = "Engine";
+					EngineTab_ EngineTab;
+					const std::string_view DisassemblyTabName = "Disassembly";
+					DisaasemblyTab_ DisaasemblyTab;
+					const std::string_view GuiTabName = "Gui";
+					GuiTab_ GuiTab;
+					const std::string_view MiscTabName = "Misc";
+					MiscTab_ MiscTab;
+
+					const std::string_view WindowId = "OptionsId";
+					const std::string_view HostTitleName = "Options";
+				};
 			public:
 				const std::string_view MenuPreferencesItemName = "Preferences";
+				Preferences_ Preferences;
 			};
 
 			class MenuHelp_ 

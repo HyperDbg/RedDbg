@@ -479,7 +479,7 @@ private:
 		ImGui::PopItemWidth();
 	}
 
-	void CheckBoxOpened(std::vector<bool>* Openeds, bool Opened, const unsigned char Index);
+	//void CheckBoxOpened(std::vector<bool>* Openeds, bool Opened, const unsigned char Index);
 
 	template <typename DataT>
 	char* ConvertToCharString(DataT value) 

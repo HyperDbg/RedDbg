@@ -133,7 +133,7 @@ void PETab_::PeFileHeaderTableRender()
                                 const bool& Opened_ = Opened[SubRows];
                                 const std::string CheckNodeId = "##CheckBox" + std::to_string(SubRows);
                                 ImGui::Checkbox(CheckNodeId.c_str(), (bool*)&Opened_);
-                                CheckBoxOpened(&Opened, Opened_, SubRows);
+                                Window.CheckBoxOpened(&Opened, Opened_, SubRows);
 
                                 ImGui::SameLine();
 

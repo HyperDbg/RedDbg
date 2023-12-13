@@ -88,7 +88,7 @@ void PETab_::PeSectionHeaderTableRender()
                     const bool& Opened_ = GlobalVarsOfPeTab::Opened[Row];
                     const std::string CheckNodeId = "##CheckBox" + std::to_string(Row);
                     ImGui::Checkbox(CheckNodeId.c_str(), (bool*)&Opened_);
-                    CheckBoxOpened(&GlobalVarsOfPeTab::Opened, Opened_, Row);
+                    Window.CheckBoxOpened(&GlobalVarsOfPeTab::Opened, Opened_, Row);
                     if (ImGui::IsItemHovered(ImGuiHoveredFlags_ForTooltip) && ImGui::BeginTooltip())
                     {
                         ImGui::SetTooltip("Section Info");
@@ -194,7 +194,7 @@ void PETab_::PeSectionHeaderTableRender()
                         const bool& Opened_ = Opened[Row];
                         const std::string CheckNodeId = "##CheckBox" + std::to_string(Row);
                         ImGui::Checkbox(CheckNodeId.c_str(), (bool*)&Opened_);
-                        CheckBoxOpened(&Opened, Opened_, Row);
+                        Window.CheckBoxOpened(&Opened, Opened_, Row);
 
                         ImGui::SameLine();
 

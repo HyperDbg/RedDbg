@@ -171,29 +171,6 @@ void PETab_::PeDoSHeaderWindowRender(const Dimensionses_::WindowGeneralSizes* Wi
         false);
 }
 
-void PETab_::CheckBoxOpened(std::vector<bool>* Openeds, bool Opened, const unsigned char Index)
-{
-    auto CheckedBox = std::find(Openeds->begin(), Openeds->end(), true);
-    ptrdiff_t OpendesIndex = std::distance(Openeds->begin(), CheckedBox);
-    if (CheckedBox != Openeds->end())
-    {
-        if (Opened && OpendesIndex != Index)
-        {
-            (*Openeds)[OpendesIndex] = false;
-            (*Openeds)[Index] = Opened;
-
-        }
-        else
-        {
-            (*Openeds)[Index] = Opened;
-        }
-    }
-    else
-    {
-        (*Openeds)[Index] = Opened;
-    }
-}
-
 void PETab_::PeRichHeaderWindowRender(const Dimensionses_::WindowGeneralSizes* WindowGeneralSizes)
 {
     Window.ChildWindowRender(

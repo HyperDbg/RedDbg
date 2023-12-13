@@ -216,6 +216,9 @@
     <ClCompile Include="Source\GUI\MenuOfMainTabs\PeMenuBegin\Nodes\Section\SectionHeaderNode.cpp">
       <Filter>Source Files\GUI\MenuOfMainTabs\PeMenuBegin\Nodes\Section</Filter>
     </ClCompile>
+    <ClCompile Include="Source\GUI\MenuBarDispatcher.cpp">
+      <Filter>Source Files\GUI\General</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\Debugger\Application\Pe\PEInformation.hpp">
@@ -303,6 +306,9 @@
       <Filter>Header Files\GUI\MenuOfMainTabs\PeMenuBegin</Filter>
     </ClInclude>
     <ClInclude Include="Include\GUI\ClickedCodesOfTreeNodes.hpp">
+      <Filter>Header Files\GUI\General</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\GUI\MenuBarDispatcher.hpp">
       <Filter>Header Files\GUI\General</Filter>
     </ClInclude>
   </ItemGroup>

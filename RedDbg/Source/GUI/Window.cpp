@@ -12,6 +12,29 @@
 
 #include <string_view>
 
+void Window_::CheckBoxOpened(std::vector<bool>* Openeds, bool Opened, const unsigned char Index)
+{
+    auto CheckedBox = std::find(Openeds->begin(), Openeds->end(), true);
+    ptrdiff_t OpendesIndex = std::distance(Openeds->begin(), CheckedBox);
+    if (CheckedBox != Openeds->end())
+    {
+        if (Opened && OpendesIndex != Index)
+        {
+            (*Openeds)[OpendesIndex] = false;
+            (*Openeds)[Index] = Opened;
+
+        }
+        else
+        {
+            (*Openeds)[Index] = Opened;
+        }
+    }
+    else
+    {
+        (*Openeds)[Index] = Opened;
+    }
+}
+
 bool Window_::SplitterHorizontal(const std::string_view id, int* posX, const int width, const ImVec2& posMin, const ImVec2& posMax, static int* startPosX)
 {
     if ((posX == nullptr) || (posMin.x >= posMax.x) || (posMin.y >= posMax.y)) { return false; }

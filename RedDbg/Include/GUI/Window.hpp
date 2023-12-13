@@ -19,6 +19,8 @@ class Window_ {
 private:
 	void ChildWindowDispatcher(const WindowCodes Code, const std::any ObjOfClass);
 public:
+	void CheckBoxOpened(std::vector<bool>* Openeds, bool Opened, const unsigned char Index);
+
 	bool SplitterVertical(const std::string_view id, int* posY, const int height, const ImVec2& posMin, const ImVec2& posMax, static int* startPosY);
 	bool SplitterHorizontal(const std::string_view id, int* posX, const int width, const ImVec2& posMin, const ImVec2& posMax, static int* startPosX);
 

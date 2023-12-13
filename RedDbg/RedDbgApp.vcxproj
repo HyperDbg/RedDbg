@@ -140,6 +140,7 @@
     <ClCompile Include="Source\Debugger\Application\Main.cpp" />
     <ClCompile Include="Source\GUI\CustomTitleBar.cpp" />
     <ClCompile Include="Source\GUI\General.cpp" />
+    <ClCompile Include="Source\GUI\MenuBarDispatcher.cpp" />
     <ClCompile Include="Source\GUI\MenuOfMainTabs\CallStackMenuBegin\CallStackTab.cpp" />
     <ClCompile Include="Source\GUI\MenuOfMainTabs\CPUMenuBegin\CPUTab.cpp" />
     <ClCompile Include="Source\GUI\MenuOfMainTabs\MemoryMapMenuBegin\MemoryMapTab.cpp" />
@@ -178,6 +179,7 @@
     <ClInclude Include="Include\GUI\DimensionsesOfWindowses.hpp" />
     <ClInclude Include="Include\GUI\General.hpp" />
     <ClInclude Include="Include\GUI\GlobalClass.hpp" />
+    <ClInclude Include="Include\GUI\MenuBarDispatcher.hpp" />
     <ClInclude Include="Include\GUI\MenuOfMainTabs\CallStackMenuBegin\CallStackTab.hpp" />
     <ClInclude Include="Include\GUI\MenuOfMainTabs\CPUMenuBegin\CPUTab.hpp" />
     <ClInclude Include="Include\GUI\MenuOfMainTabs\MemoryMapMenuBegin\MemoryMapTab.hpp" />

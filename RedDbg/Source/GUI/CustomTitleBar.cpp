@@ -25,7 +25,7 @@ void CustomTitleBar_::ContentIsNullModalWindowRender(const std::string_view* Id,
     }
 }
 
-void CustomTitleBar_::CustomWindowInTitleBarRender()
+void CustomTitleBar_::CustomWindowInTitleBarRender(MenuBarDispatcher_* Instance)
 {
     if (ImGuiFileDialog::Instance()->Display(Names.Windowses.TitleBarMenu.OpenFile.OpenID.data(), 32, ImVec2{ 1000, 400 }))
     {
@@ -44,6 +44,11 @@ void CustomTitleBar_::CustomWindowInTitleBarRender()
         }
 
         ImGuiFileDialog::Instance()->Close();
+    }
+
+    if (Instance != nullptr)
+    {
+        Instance->Display(Names.Windowses.TitleBarMenu.MenuOptions.Preferences.WindowId.data());
     }
 
     static bool dont_ask_me_next_time = false;
@@ -90,6 +95,7 @@ void CustomTitleBar_::CustomWindowInTitleBarRender()
 
 void CustomTitleBar_::CustomTitleBarMenuRender()
 {
+    static MenuBarDispatcher_* Instance = nullptr;
     ImGui::BeginMenuBar();
     if (ImGui::BeginMenu(Names.Windowses.TitleBarMenu.MenuFileName.data()))
     {
@@ -232,15 +238,9 @@ void CustomTitleBar_::CustomTitleBarMenuRender()
     {
         if (ImGui::MenuItem(Names.Windowses.TitleBarMenu.MenuOptions.MenuPreferencesItemName.data()))
         {
-            ImGui::OpenPopup("asdasdasd");
-            if (ImGui::BeginPopupModal("asdasdasd", NULL, ImGuiWindowFlags_AlwaysAutoResize))
-            {
-                ImGui::Text("Text->data()");
-                ImGui::Separator();
-
-                ImGui::SetItemDefaultFocus();
-                ImGui::EndPopup();
-            }
+            Instance = MenuBarDispatcher.OpenInstance(
+                Names.Windowses.TitleBarMenu.MenuOptions.Preferences.WindowId.data(),
+                Names.Windowses.TitleBarMenu.MenuOptions.Preferences.HostTitleName.data());
         }
         ImGui::EndMenu();
     }
@@ -276,7 +276,7 @@ void CustomTitleBar_::CustomTitleBarMenuRender()
     }
     ImGui::EndMenuBar();
 
-    CustomWindowInTitleBarRender();
+    CustomWindowInTitleBarRender(Instance);
 }
 
 void CustomTitleBar_::CustomTitleBarRender()
