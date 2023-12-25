@@ -10,32 +10,123 @@ namespace MenuBarGlobalVars
     std::vector<std::string> Titles;
     namespace DriverTabGlobalVars
     {
+        /*
+        enum Index
+        {
+            ALAOPF,
+            ModulesIsEditable,
+            UseGlobalVar
+
+        };*/
         std::vector<bool> DriverTabCheckbox(2);
         std::string DriverPath;
+
+        std::vector<std::string> ConfNames{
+            "AutomaticallyLoadAfterOpenPEFile",
+            "ModulesIsEditable"
+        };
     }
     namespace EventTabGlobalVars
     {
-        std::vector<bool> EventTabCheckbox(24);
+        std::vector<bool> EventTabCheckbox(25);
+        std::vector<std::string> ConfNames{
+            "SystemBreakpoint",
+            "EntryBreakpoint",
+            "ExitBreakpoint",
+            "DebugStrings",
+            "UserTlsCallbacks",
+            "UserDllEntry",
+            "UserDllLoad",
+            "UserDllUnload",
+            "ThreadEntry",
+            "ThreadCreate",
+            "ThreadExit",
+            "SetThreadNameExceptions",
+            "SystemTlsCallback",
+            "SystemDllEntry",
+            "SystemDllLoad",
+            "SyScallTableBreakpoint",
+            "IDTTableBreakpoint",
+            "LaunchBreakpoint",
+            "LoadDriverBreakpoint",
+            "ServiceStart",
+            "ServiceCreate",
+            "ServiceDelete",
+            "KernelThreadEntry",
+            "KernelThreadCreate",
+            "KernelThreadExit"
+        };
     }
     namespace EngineTabGlobalVars
     {
+        int64_t BreakpointType;
+        int64_t CalculationType;
+
+
         std::vector<bool> EngineTabCheckbox(6);
-        std::string TraceCount = "50000 ";
-        std::string AnimationPerStepInterval = "20 ";
+        uint64_t TraceCount;// = "50000 ";
+        uint64_t AnimationPerStepInterval;// = "14 ";
+        std::string szTraceCount;
+        std::string szAnimationPerStepInterval;
+
+        std::vector<std::string> ConfNames{
+            "UndecoratedSymbolNames",
+            "DisableASLR",
+            "LogIfThreadHasSwitched",
+            "EnableSourceDebugging",
+            "SaveDatabaseInProgramDirectory",
+            "IgnoreIncosistentBreakpoints",
+            "DefaultMaximumTraceCount",
+            "AnimationPerStepInterval",
+            "DefaultSoftwareBreakpointType",
+            "CalculationType"
+        };
     }
     namespace DisassemlyTabGlobalVars
     {
         std::vector<bool> DisassemblyTabCheckbox(14);
+        std::vector<std::string> ConfNames{
+            "ArgumentSpaces",
+            "TabBetweenMnemonicAndArguments",
+            "HidePointerSizes",
+            "OnlyShowFSAndGSSegments",
+            "MemorySpaces",
+            "UpperCase",
+            "AutocommentsOnlyOnCip",
+            "DoNotHighlightOperands",
+            "HideModuleNameForLocalMemoryAddresses",
+            "PermanentHighlightingMode",
+            "DisableBranchDisasemblyPreview",
+            "Prefix0xForHexVals",
+            "DoNotShowSourceLinesInComments",
+            "AssembleInstructionOnDoubleClick"
+        };
     }
     namespace GuiTabGlobalVars
     {
         std::vector<bool> GuiTabCheckbox(7);
+        std::vector<std::string> ConfNames{
+            "ShowFpuRegistersAsLittleEndian",
+            "DoNotShowCloseDialog",
+            "ShowPidAndTidInHex",
+            "GraphZoomMode",
+            "ShowRvaAddressesInGraphView",
+            "AutoFollowOperandInStack",
+            "ShowExitConfirmationDialog"
+        };
     }
     namespace MiscTabGlobalVars
     {
         std::vector<bool> MiscTabCheckBox(6);
-        std::string SymbolStore = "https://msdl.microsoft.com/download/symbols ";
-        std::string SymbolPath = ".\\symbols ";
+        std::vector<std::string> ConfNames{
+            "",
+            "",
+            "UseLocalHelpFile",
+            "ParseWinApiAndShowArgumentsForThem",
+            "QueryProcessCookie", 
+            "QueryWorkingSetBeforeReadingMemory"};
+        std::string SymbolStore;// = "";
+        std::string SymbolPath;// = "";
     }
 }
 
@@ -52,26 +143,74 @@ MenuBarDispatcher_* MenuBarDispatcher_::OpenInstance(std::string Id, std::string
     return Instance;
 }
 
-void MenuBarDispatcher_::DriverWindowRender()
+void MenuBarDispatcher_::ParseDriverOptions(toml::table& Tbl)
 {
-    ImGui::InputText(
-        Names.Windowses.TitleBarMenu.MenuOptions.Preferences.DriverTab.DriverPath.data(),
-        MenuBarGlobalVars::DriverTabGlobalVars::DriverPath.data(),
-        MenuBarGlobalVars::DriverTabGlobalVars::DriverPath.size(),
-        ImGuiInputTextFlags_CallbackResize,
-        reinterpret_cast<ImGuiInputTextCallback>(Callable::CallBackInputWrapper),
-        &MenuBarGlobalVars::DriverTabGlobalVars::DriverPath);
+    MenuBarGlobalVars::DriverTabGlobalVars::DriverPath = (std::string)*Tbl["DriverPath"].as_string();
+
+    MenuBarGlobalVars::DriverTabGlobalVars::DriverPath.append(" ");
+
+    for (int StringIndex = 0; StringIndex < MenuBarGlobalVars::DriverTabGlobalVars::DriverTabCheckbox.size(); ++StringIndex)
+    {
+        MenuBarGlobalVars::DriverTabGlobalVars::DriverTabCheckbox[StringIndex] =
+            (bool)*Tbl[MenuBarGlobalVars::DriverTabGlobalVars::ConfNames[StringIndex].c_str()].as_boolean();
+    }
+}
+
+void MenuBarDispatcher_::DriverWindowRender(toml::table& Tbl, std::string& Path)
+{
+    ParseDriverOptions(Tbl);
 
     for (int StringIndex = 0; StringIndex < Names.Windowses.TitleBarMenu.MenuOptions.Preferences.DriverTab.Names.size(); ++StringIndex)
     {
         const bool& Opened_ = MenuBarGlobalVars::DriverTabGlobalVars::DriverTabCheckbox[StringIndex];
         ImGui::Checkbox(Names.Windowses.TitleBarMenu.MenuOptions.Preferences.DriverTab.Names[StringIndex].data(), (bool*)&Opened_);
         MenuBarGlobalVars::DriverTabGlobalVars::DriverTabCheckbox[StringIndex] = Opened_;
+
+        if (*Tbl[MenuBarGlobalVars::DriverTabGlobalVars::ConfNames[StringIndex].c_str()].as_boolean()
+            != MenuBarGlobalVars::DriverTabGlobalVars::DriverTabCheckbox[StringIndex])
+        {
+            *Tbl[MenuBarGlobalVars::DriverTabGlobalVars::ConfNames[StringIndex].c_str()].as_boolean()
+                = MenuBarGlobalVars::DriverTabGlobalVars::DriverTabCheckbox[StringIndex];
+
+            std::ofstream ofs(Path);
+            ofs << Tbl;
+            ofs.close();
+        }
+    }
+
+    if (ImGui::InputText(
+        Names.Windowses.TitleBarMenu.MenuOptions.Preferences.DriverTab.DriverPath.data(),
+        MenuBarGlobalVars::DriverTabGlobalVars::DriverPath.data(),
+        MenuBarGlobalVars::DriverTabGlobalVars::DriverPath.size(),
+        ImGuiInputTextFlags_CallbackResize,
+        reinterpret_cast<ImGuiInputTextCallback>(Callable::CallBackInputWrapper),
+        &MenuBarGlobalVars::DriverTabGlobalVars::DriverPath))
+    {
+        std::size_t pos = MenuBarGlobalVars::DriverTabGlobalVars::DriverPath.find('\0');
+        if (pos != std::string::npos) {
+            std::string Temp = MenuBarGlobalVars::DriverTabGlobalVars::DriverPath.substr(0, pos);
+            *Tbl["DriverPath"].as_string() = Temp;
+
+            std::ofstream ofs(Path);
+            ofs << Tbl;
+            ofs.close();
+        }
     }
 }
 
-void MenuBarDispatcher_::EventsWindowRender()
+void MenuBarDispatcher_::ParseEventOptions(toml::table& Tbl)
 {
+    for (int StringIndex = 0; StringIndex < MenuBarGlobalVars::EventTabGlobalVars::EventTabCheckbox.size(); ++StringIndex)
+    {
+        MenuBarGlobalVars::EventTabGlobalVars::EventTabCheckbox[StringIndex] =
+            (bool)*Tbl[MenuBarGlobalVars::EventTabGlobalVars::ConfNames[StringIndex].c_str()].as_boolean();
+    }
+}
+
+void MenuBarDispatcher_::EventsWindowRender(toml::table& Tbl, std::string& Path)
+{
+    ParseEventOptions(Tbl);
+
     ImGui::Text(Names.Windowses.TitleBarMenu.MenuOptions.Preferences.EventsTab.BreakOn.data());
     ImGui::SeparatorText(Names.Windowses.TitleBarMenu.MenuOptions.Preferences.EventsTab.User.data());
     
@@ -84,6 +223,17 @@ void MenuBarDispatcher_::EventsWindowRender()
         if (StringIndex == 14)
         {
             ImGui::SeparatorText(Names.Windowses.TitleBarMenu.MenuOptions.Preferences.EventsTab.Kernel.data());
+        }
+
+        if (*Tbl[MenuBarGlobalVars::EventTabGlobalVars::ConfNames[StringIndex].c_str()].as_boolean()
+            != MenuBarGlobalVars::EventTabGlobalVars::EventTabCheckbox[StringIndex])
+        {
+            *Tbl[MenuBarGlobalVars::EventTabGlobalVars::ConfNames[StringIndex].c_str()].as_boolean()
+                = MenuBarGlobalVars::EventTabGlobalVars::EventTabCheckbox[StringIndex];
+
+            std::ofstream ofs(Path);
+            ofs << Tbl;
+            ofs.close();
         }
     }
     //Checkboxes
@@ -120,8 +270,37 @@ void MenuBarDispatcher_::EventsWindowRender()
     //"Thread exit"
 }
 
-void MenuBarDispatcher_::EngineWindowRender()
+void MenuBarDispatcher_::ParseEngineOptions(toml::table& Tbl)
 {
+    std::ostringstream ss;
+    std::ostringstream ss1;
+
+    MenuBarGlobalVars::EngineTabGlobalVars::TraceCount = (uint64_t)(int64_t)*Tbl["DefaultMaximumTraceCount"].as_integer();
+    ss << std::uppercase << std::hex << MenuBarGlobalVars::EngineTabGlobalVars::TraceCount;
+    MenuBarGlobalVars::EngineTabGlobalVars::szTraceCount = ss.str();
+
+    MenuBarGlobalVars::EngineTabGlobalVars::AnimationPerStepInterval = (uint64_t)(int64_t)*Tbl["AnimationPerStepInterval"].as_integer();
+    ss1 << std::uppercase << std::hex << MenuBarGlobalVars::EngineTabGlobalVars::AnimationPerStepInterval;
+    MenuBarGlobalVars::EngineTabGlobalVars::szAnimationPerStepInterval = ss1.str();
+
+    MenuBarGlobalVars::EngineTabGlobalVars::BreakpointType = (int64_t)*Tbl["DefaultSoftwareBreakpointType"].as_integer();
+    MenuBarGlobalVars::EngineTabGlobalVars::CalculationType = (int64_t)*Tbl["CalculationType"].as_integer();
+
+
+    MenuBarGlobalVars::EngineTabGlobalVars::szTraceCount.append(" ");
+    MenuBarGlobalVars::EngineTabGlobalVars::szAnimationPerStepInterval.append(" ");
+
+    for (int StringIndex = 0; StringIndex < MenuBarGlobalVars::EventTabGlobalVars::EventTabCheckbox.size(); ++StringIndex)
+    {
+        MenuBarGlobalVars::EventTabGlobalVars::EventTabCheckbox[StringIndex] =
+            (bool)*Tbl[MenuBarGlobalVars::EventTabGlobalVars::ConfNames[StringIndex].c_str()].as_boolean();
+    }
+}
+
+void MenuBarDispatcher_::EngineWindowRender(toml::table& Tbl, std::string& Path)
+{
+    ParseEngineOptions(Tbl);
+
     for (int StringIndex = 0; StringIndex < Names.Windowses.TitleBarMenu.MenuOptions.Preferences.EngineTab.Names.size(); ++StringIndex)
     {
         if (StringIndex < 6)
@@ -134,26 +313,59 @@ void MenuBarDispatcher_::EngineWindowRender()
                 ImGui::Text(Names.Windowses.TitleBarMenu.MenuOptions.Preferences.EngineTab.Ring3App.data());
                 ImGui::EndTooltip();
             }
+
+            if (*Tbl[MenuBarGlobalVars::EngineTabGlobalVars::ConfNames[StringIndex].c_str()].as_boolean()
+                != MenuBarGlobalVars::EngineTabGlobalVars::EngineTabCheckbox[StringIndex])
+            {
+                *Tbl[MenuBarGlobalVars::EngineTabGlobalVars::ConfNames[StringIndex].c_str()].as_boolean()
+                    = MenuBarGlobalVars::EngineTabGlobalVars::EngineTabCheckbox[StringIndex];
+
+                std::ofstream ofs(Path);
+                ofs << Tbl;
+                ofs.close();
+            }
         }
         else if (StringIndex < 8)
         {
             ImGui::PushItemWidth(150);
-            ImGui::InputText(
+            if (ImGui::InputText(
                 Names.Windowses.TitleBarMenu.MenuOptions.Preferences.EngineTab.Names[StringIndex].data(),
-                MenuBarGlobalVars::EngineTabGlobalVars::TraceCount.data(),
-                MenuBarGlobalVars::EngineTabGlobalVars::TraceCount.size(),
-                ImGuiInputTextFlags_CallbackResize | ImGuiInputTextFlags_CharsHexadecimal,
+                MenuBarGlobalVars::EngineTabGlobalVars::szTraceCount.data(),
+                MenuBarGlobalVars::EngineTabGlobalVars::szTraceCount.size(),
+                ImGuiInputTextFlags_CallbackResize | ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_CharsUppercase,
                 reinterpret_cast<ImGuiInputTextCallback>(Callable::CallBackInputWrapper),
-                &MenuBarGlobalVars::EngineTabGlobalVars::TraceCount);
+                &MenuBarGlobalVars::EngineTabGlobalVars::TraceCount))
+            {
+                std::size_t pos = MenuBarGlobalVars::EngineTabGlobalVars::szTraceCount.find('\0');
+                if (pos != std::string::npos) {
+                    std::string Temp = MenuBarGlobalVars::EngineTabGlobalVars::szTraceCount.substr(0, pos);
+                    *Tbl["DefaultMaximumTraceCount"].as_integer() = std::stoll(Temp, nullptr, 16);
+
+                    std::ofstream ofs(Path);
+                    ofs << Tbl;
+                    ofs.close();
+                }
+            }
 
             ++StringIndex;
-            ImGui::InputText(
+            if (ImGui::InputText(
                 Names.Windowses.TitleBarMenu.MenuOptions.Preferences.EngineTab.Names[StringIndex].data(),
-                MenuBarGlobalVars::EngineTabGlobalVars::AnimationPerStepInterval.data(),
-                MenuBarGlobalVars::EngineTabGlobalVars::AnimationPerStepInterval.size(),
-                ImGuiInputTextFlags_CallbackResize | ImGuiInputTextFlags_CharsHexadecimal,
+                MenuBarGlobalVars::EngineTabGlobalVars::szAnimationPerStepInterval.data(),
+                MenuBarGlobalVars::EngineTabGlobalVars::szAnimationPerStepInterval.size(),
+                ImGuiInputTextFlags_CallbackResize | ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_CharsUppercase,
                 reinterpret_cast<ImGuiInputTextCallback>(Callable::CallBackInputWrapper),
-                &MenuBarGlobalVars::EngineTabGlobalVars::AnimationPerStepInterval);
+                &MenuBarGlobalVars::EngineTabGlobalVars::AnimationPerStepInterval))
+            {
+                std::size_t pos = MenuBarGlobalVars::EngineTabGlobalVars::szAnimationPerStepInterval.find('\0');
+                if (pos != std::string::npos) {
+                    std::string Temp = MenuBarGlobalVars::EngineTabGlobalVars::szAnimationPerStepInterval.substr(0, pos);
+                    *Tbl["AnimationPerStepInterval"].as_integer() = std::stoll(Temp, nullptr, 16);
+
+                    std::ofstream ofs(Path);
+                    ofs << Tbl;
+                    ofs.close();
+                }
+            }
             ImGui::PopItemWidth();
         }
         else
@@ -173,17 +385,27 @@ void MenuBarDispatcher_::EngineWindowRender()
                 Names.Windowses.TitleBarMenu.MenuOptions.Preferences.EngineTab.CalculationType.Unsigned,
             };
 
-            static int CurrentTypeId1 = 0;
-
             ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4{ 0,0,0,0 });
             ImGui::PushItemWidth(100);
-            if (ImGui::BeginCombo(Names.Windowses.TitleBarMenu.MenuOptions.Preferences.EngineTab.Names[StringIndex].data(), DSBT[CurrentTypeId1].data(), ImGuiComboFlags_NoArrowButton))
+            if (ImGui::BeginCombo(Names.Windowses.TitleBarMenu.MenuOptions.Preferences.EngineTab.Names[StringIndex].data(), DSBT[MenuBarGlobalVars::EngineTabGlobalVars::BreakpointType].data(), ImGuiComboFlags_NoArrowButton))
             {
                 for (int n = 0; n < DSBT.size(); n++)
                 {
-                    const bool is_selected = (CurrentTypeId1 == n);
+                    const bool is_selected = (MenuBarGlobalVars::EngineTabGlobalVars::BreakpointType == n);
                     if (ImGui::Selectable(DSBT[n].data(), is_selected))
-                        CurrentTypeId1 = n;
+                    {
+                        MenuBarGlobalVars::EngineTabGlobalVars::BreakpointType = n;
+                        if (*Tbl["DefaultSoftwareBreakpointType"].as_integer()
+                            != MenuBarGlobalVars::EngineTabGlobalVars::BreakpointType)
+                        {
+                            *Tbl["DefaultSoftwareBreakpointType"].as_integer()
+                                = MenuBarGlobalVars::EngineTabGlobalVars::BreakpointType;
+
+                            std::ofstream ofs(Path);
+                            ofs << Tbl;
+                            ofs.close();
+                        }
+                    }
 
                     // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
                     if (is_selected)
@@ -195,16 +417,26 @@ void MenuBarDispatcher_::EngineWindowRender()
 
             ++StringIndex;
 
-            static int CurrentTypeId2 = 0;
-
             //ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4{ 0,0,0,0 });
-            if (ImGui::BeginCombo(Names.Windowses.TitleBarMenu.MenuOptions.Preferences.EngineTab.Names[StringIndex].data(), CT[CurrentTypeId2].data(), ImGuiComboFlags_NoArrowButton))
+            if (ImGui::BeginCombo(Names.Windowses.TitleBarMenu.MenuOptions.Preferences.EngineTab.Names[StringIndex].data(), CT[MenuBarGlobalVars::EngineTabGlobalVars::CalculationType].data(), ImGuiComboFlags_NoArrowButton))
             {
                 for (int n = 0; n < CT.size(); n++)
                 {
-                    const bool is_selected = (CurrentTypeId2 == n);
+                    const bool is_selected = (MenuBarGlobalVars::EngineTabGlobalVars::CalculationType == n);
                     if (ImGui::Selectable(CT[n].data(), is_selected))
-                        CurrentTypeId2 = n;
+                    {
+                        MenuBarGlobalVars::EngineTabGlobalVars::CalculationType = n;
+                        if (*Tbl["CalculationType"].as_integer()
+                            != MenuBarGlobalVars::EngineTabGlobalVars::BreakpointType)
+                        {
+                            *Tbl["CalculationType"].as_integer()
+                                = MenuBarGlobalVars::EngineTabGlobalVars::BreakpointType;
+
+                            std::ofstream ofs(Path);
+                            ofs << Tbl;
+                            ofs.close();
+                        }
+                    }
 
                     // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
                     if (is_selected)
@@ -234,13 +466,34 @@ void MenuBarDispatcher_::EngineWindowRender()
     //"Calculation Type"
 }
 
-void MenuBarDispatcher_::DisassemblyWindowRender()
+void MenuBarDispatcher_::ParseDisassemblyOptions(toml::table& Tbl)
 {
+    for (int StringIndex = 0; StringIndex < MenuBarGlobalVars::DisassemlyTabGlobalVars::DisassemblyTabCheckbox.size(); ++StringIndex)
+    {
+        MenuBarGlobalVars::DisassemlyTabGlobalVars::DisassemblyTabCheckbox[StringIndex] =
+            (bool)*Tbl[MenuBarGlobalVars::DisassemlyTabGlobalVars::ConfNames[StringIndex].c_str()].as_boolean();
+    }
+}
+
+void MenuBarDispatcher_::DisassemblyWindowRender(toml::table& Tbl, std::string& Path)
+{
+    ParseDisassemblyOptions(Tbl);
+
     for (int StringIndex = 0; StringIndex < Names.Windowses.TitleBarMenu.MenuOptions.Preferences.DisaasemblyTab.Names.size(); ++StringIndex)
     {
         const bool& Opened_ = MenuBarGlobalVars::DisassemlyTabGlobalVars::DisassemblyTabCheckbox[StringIndex];
         ImGui::Checkbox(Names.Windowses.TitleBarMenu.MenuOptions.Preferences.DisaasemblyTab.Names[StringIndex].data(), (bool*)&Opened_);
         MenuBarGlobalVars::DisassemlyTabGlobalVars::DisassemblyTabCheckbox[StringIndex] = Opened_;
+        if (*Tbl[MenuBarGlobalVars::DisassemlyTabGlobalVars::ConfNames[StringIndex].c_str()].as_boolean()
+            != MenuBarGlobalVars::DisassemlyTabGlobalVars::DisassemblyTabCheckbox[StringIndex])
+        {
+            *Tbl[MenuBarGlobalVars::DisassemlyTabGlobalVars::ConfNames[StringIndex].c_str()].as_boolean()
+                = MenuBarGlobalVars::DisassemlyTabGlobalVars::DisassemblyTabCheckbox[StringIndex];
+
+            std::ofstream ofs(Path);
+            ofs << Tbl;
+            ofs.close();
+        }
     }
     //Checkboxes
     //
@@ -260,13 +513,34 @@ void MenuBarDispatcher_::DisassemblyWindowRender()
     //"Assemble intruction on double-click"
 }
 
-void MenuBarDispatcher_::GuiWindowRender()
+void MenuBarDispatcher_::ParseGuiOptions(toml::table& Tbl)
 {
+    for (int StringIndex = 0; StringIndex < MenuBarGlobalVars::GuiTabGlobalVars::GuiTabCheckbox.size(); ++StringIndex)
+    {
+        MenuBarGlobalVars::GuiTabGlobalVars::GuiTabCheckbox[StringIndex] =
+            (bool)*Tbl[MenuBarGlobalVars::GuiTabGlobalVars::ConfNames[StringIndex].c_str()].as_boolean();
+    }
+}
+
+void MenuBarDispatcher_::GuiWindowRender(toml::table& Tbl, std::string& Path)
+{
+    ParseGuiOptions(Tbl);
+
     for (int StringIndex = 0; StringIndex < Names.Windowses.TitleBarMenu.MenuOptions.Preferences.GuiTab.Names.size(); ++StringIndex)
     {
         const bool& Opened_ = MenuBarGlobalVars::GuiTabGlobalVars::GuiTabCheckbox[StringIndex];
         ImGui::Checkbox(Names.Windowses.TitleBarMenu.MenuOptions.Preferences.GuiTab.Names[StringIndex].data(), (bool*)&Opened_);
         MenuBarGlobalVars::GuiTabGlobalVars::GuiTabCheckbox[StringIndex] = Opened_;
+        if (*Tbl[MenuBarGlobalVars::GuiTabGlobalVars::ConfNames[StringIndex].c_str()].as_boolean()
+            != MenuBarGlobalVars::GuiTabGlobalVars::GuiTabCheckbox[StringIndex])
+        {
+            *Tbl[MenuBarGlobalVars::GuiTabGlobalVars::ConfNames[StringIndex].c_str()].as_boolean()
+                = MenuBarGlobalVars::GuiTabGlobalVars::GuiTabCheckbox[StringIndex];
+
+            std::ofstream ofs(Path);
+            ofs << Tbl;
+            ofs.close();
+        }
     }
     //Checkboxes
     //
@@ -279,35 +553,95 @@ void MenuBarDispatcher_::GuiWindowRender()
     //"Show exit confirmation dialog"
 }
 
-void MenuBarDispatcher_::MiscWindowRender()
+void MenuBarDispatcher_::ParseMiscOptions(toml::table& Tbl)
 {
+    //static bool Init = false;
+    MenuBarGlobalVars::MiscTabGlobalVars::SymbolStore = (std::string)*Tbl["SymbolStore"].as_string();
+    MenuBarGlobalVars::MiscTabGlobalVars::SymbolPath = (std::string)*Tbl["SymbolPath"].as_string();
+
+    MenuBarGlobalVars::MiscTabGlobalVars::SymbolPath.append(" ");
+    MenuBarGlobalVars::MiscTabGlobalVars::SymbolStore.append(" ");
+    //if (!Init)
+    //{
+    //    MenuBarGlobalVars::MiscTabGlobalVars::SymbolPath.append(" ");
+    //    MenuBarGlobalVars::MiscTabGlobalVars::SymbolStore.append(" ");
+    //    Init = true;
+    //}
+
+    for (int StringIndex = 0; StringIndex < MenuBarGlobalVars::MiscTabGlobalVars::MiscTabCheckBox.size(); ++StringIndex)
+    {
+        if (MenuBarGlobalVars::MiscTabGlobalVars::ConfNames[StringIndex] != "")
+        {
+            MenuBarGlobalVars::MiscTabGlobalVars::MiscTabCheckBox[StringIndex] =
+                (bool)*Tbl[MenuBarGlobalVars::MiscTabGlobalVars::ConfNames[StringIndex].c_str()].as_boolean();
+        }
+    }
+}
+
+void MenuBarDispatcher_::MiscWindowRender(toml::table& Tbl, std::string& Path)
+{
+    ParseMiscOptions(Tbl);
+
     for (int StringIndex = 0; StringIndex < Names.Windowses.TitleBarMenu.MenuOptions.Preferences.MiscTab.Names.size(); ++StringIndex)
     {
         if (StringIndex < 2)
         {
-            ImGui::InputText(
+            if (ImGui::InputText(
                 Names.Windowses.TitleBarMenu.MenuOptions.Preferences.MiscTab.Names[StringIndex].data(),
                 MenuBarGlobalVars::MiscTabGlobalVars::SymbolStore.data(),
                 MenuBarGlobalVars::MiscTabGlobalVars::SymbolStore.size(),
                 ImGuiInputTextFlags_CallbackResize,
                 reinterpret_cast<ImGuiInputTextCallback>(Callable::CallBackInputWrapper),
-                &MenuBarGlobalVars::MiscTabGlobalVars::SymbolStore);
+                &MenuBarGlobalVars::MiscTabGlobalVars::SymbolStore))
+            {
+                std::size_t pos = MenuBarGlobalVars::MiscTabGlobalVars::SymbolStore.find('\0');
+                if (pos != std::string::npos) {
+                    std::string Temp = MenuBarGlobalVars::MiscTabGlobalVars::SymbolStore.substr(0, pos);
+                    *Tbl["SymbolStore"].as_string() = Temp;
+
+                    std::ofstream ofs(Path);
+                    ofs << Tbl;
+                    ofs.close();
+                }
+            }
 
             ++StringIndex;
 
-            ImGui::InputText(
+            if (ImGui::InputText(
                 Names.Windowses.TitleBarMenu.MenuOptions.Preferences.MiscTab.Names[StringIndex].data(),
                 MenuBarGlobalVars::MiscTabGlobalVars::SymbolPath.data(),
                 MenuBarGlobalVars::MiscTabGlobalVars::SymbolPath.size(),
                 ImGuiInputTextFlags_CallbackResize,
                 reinterpret_cast<ImGuiInputTextCallback>(Callable::CallBackInputWrapper),
-                &MenuBarGlobalVars::MiscTabGlobalVars::SymbolPath);
+                &MenuBarGlobalVars::MiscTabGlobalVars::SymbolPath))
+            {
+                std::size_t pos = MenuBarGlobalVars::MiscTabGlobalVars::SymbolPath.find('\0');
+                if (pos != std::string::npos) {
+                    std::string Temp = MenuBarGlobalVars::MiscTabGlobalVars::SymbolPath.substr(0, pos);
+                    *Tbl["SymbolPath"].as_string() = Temp;
+
+                    std::ofstream ofs(Path);
+                    ofs << Tbl;
+                    ofs.close();
+                }
+            }
         }
         else
         {
             const bool& Opened_ = MenuBarGlobalVars::MiscTabGlobalVars::MiscTabCheckBox[StringIndex];
             ImGui::Checkbox(Names.Windowses.TitleBarMenu.MenuOptions.Preferences.MiscTab.Names[StringIndex].data(), (bool*)&Opened_);
             MenuBarGlobalVars::MiscTabGlobalVars::MiscTabCheckBox[StringIndex] = Opened_;
+            if (*Tbl[MenuBarGlobalVars::MiscTabGlobalVars::ConfNames[StringIndex].c_str()].as_boolean()
+                != MenuBarGlobalVars::MiscTabGlobalVars::MiscTabCheckBox[StringIndex])
+            {
+                *Tbl[MenuBarGlobalVars::MiscTabGlobalVars::ConfNames[StringIndex].c_str()].as_boolean()
+                    = MenuBarGlobalVars::MiscTabGlobalVars::MiscTabCheckBox[StringIndex];
+
+                std::ofstream ofs(Path);
+                ofs << Tbl;
+                ofs.close();
+            }
+
         }
     }
     //Edit fields
@@ -326,21 +660,32 @@ void MenuBarDispatcher_::Display(std::string Id)
 {
     std::size_t str_hash = std::hash<std::string>{}(Id);
     static bool opened = true;
-    //bool lastopened = opened;
     if (!opened)
     {
         MenuBarGlobalVars::MapOfDialogs.clear();
-    //    was = false;
     }
 
     auto Iter = MenuBarGlobalVars::MapOfDialogs.find(str_hash);
     if (Iter != MenuBarGlobalVars::MapOfDialogs.end() && Iter->first == 0x2274AD5D845C5920)//"OptionsId"
     {
         ptrdiff_t Index = std::distance(MenuBarGlobalVars::MapOfDialogs.begin(), Iter);
-        //MenuBarGlobalVars::MapOfDialogs.clear();
         ImGui::OpenPopup(MenuBarGlobalVars::Titles[Index].c_str());
         if (ImGui::BeginPopupModal(MenuBarGlobalVars::Titles[Index].c_str(), &opened, ImGuiWindowFlags_NoCollapse))
         {
+            static std::string Path;
+            if (!was)
+            {
+                std::string TempBuff; TempBuff.resize(MAX_PATH);
+                GetModuleFileNameA(NULL, TempBuff.data(), MAX_PATH);
+                std::filesystem::path FullPathExeName = TempBuff;
+
+                Path = FullPathExeName.parent_path().string();
+                Path.append("\\RedDbg.toml");
+                was = true;
+            }
+
+            static toml::table Tbl = toml::parse_file(Path);
+
             ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4{ 0.00f, 0.00f, 0.00f, 0.00f });
             ImGui::PushStyleColor(ImGuiCol_Tab, ImVec4{ 0.00f, 0.00f, 0.00f, 0.00f });
 
@@ -351,46 +696,40 @@ void MenuBarDispatcher_::Display(std::string Id)
             {
                 if (ImGui::BeginTabItem("Driver"))
                 {
-                    DriverWindowRender();
+                    DriverWindowRender(Tbl, Path);
                     ImGui::EndTabItem();
                 }
                 if (ImGui::BeginTabItem("Events"))
                 {
-                    EventsWindowRender();
+                    EventsWindowRender(Tbl, Path);
                     ImGui::EndTabItem();
                 }
                 if (ImGui::BeginTabItem("Engine"))
                 {
-                    EngineWindowRender();
+                    EngineWindowRender(Tbl, Path);
                     ImGui::EndTabItem();
                 }
                 if (ImGui::BeginTabItem("Disassembly"))
                 {
-                    DisassemblyWindowRender();
+                    DisassemblyWindowRender(Tbl, Path);
                     ImGui::EndTabItem();
                 }
                 if (ImGui::BeginTabItem("Gui"))
                 {
-                    GuiWindowRender();
+                    GuiWindowRender(Tbl, Path);
                     ImGui::EndTabItem();
                 }
                 if (ImGui::BeginTabItem("Misc"))
                 {
-                    MiscWindowRender();
+                    MiscWindowRender(Tbl, Path);
                     ImGui::EndTabItem();
                 }
                 ImGui::EndTabBar();
             }
             ImGui::PopStyleColor(2);
 
-            //if (ImGui::Button("Close", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); MenuBarGlobalVars::MapOfDialogs.clear(); }
-
             ImGui::EndPopup();
         }
-        //else
-        //{
-        //    was = true;
-        //}
     }
     else
     {

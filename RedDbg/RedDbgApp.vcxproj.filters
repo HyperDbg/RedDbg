@@ -118,6 +118,9 @@
     <Filter Include="Source Files\GUI\MenuOfMainTabs\PeMenuBegin\Nodes\Section">
       <UniqueIdentifier>{aa78c72d-a1c8-4c07-b653-3ad1b64cadf0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\IOCTL">
+      <UniqueIdentifier>{63f77582-e764-4fb2-984d-55fcfa52b85f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Debugger\Application\Main.cpp">
@@ -310,6 +313,9 @@
     </ClInclude>
     <ClInclude Include="Include\GUI\MenuBarDispatcher.hpp">
       <Filter>Header Files\GUI\General</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\IOCTL\IOCTL.hpp">
+      <Filter>Header Files\IOCTL</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

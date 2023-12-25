@@ -4,3 +4,6 @@
 [submodule "RedDbg/Source/Deps/zydis"]
 	path = RedDbg/Source/Deps/zydis
 	url = https://github.com/zyantific/zydis
+[submodule "RedDbg/Include/Deps/tomlplusplus"]
+	path = RedDbg/Include/Deps/tomlplusplus
+	url = https://github.com/marzer/tomlplusplus.git

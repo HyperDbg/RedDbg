@@ -108,10 +108,15 @@ private:
 						const std::string_view DriverPath = "Driver path";
 						const std::string_view ALAOPF = "Automatically load after open PE file";
 						const std::string_view ModulesIsEditable = "Modules is editable";
+						//const std::string_view UseGlobalVar = "Use global environment var for driver path";
+						
+						const std::string_view RedDrvConfVar = "RedDrv";
+						const std::string_view HyperDrvConfVar = "HyperDrv";
 
 						std::vector<std::string_view> Names{
 							ALAOPF,
-							ModulesIsEditable
+							ModulesIsEditable,
+							//UseGlobalVar
 						};
 					};
 
@@ -142,6 +147,7 @@ private:
 						const std::string_view LoadDriver = "Load driver";
 						const std::string_view ServiceStart = "Service start";
 						const std::string_view ServiceCreate = "Service create";
+						const std::string_view ServiceDelete = "Service delete";
 						const std::string_view KernelThreadEntry = "Kernel Thread entry";
 						const std::string_view KernelThreadCreate = "Kernel Thread Create";
 						const std::string_view KernelThreadExit = "Kernel Thread Exit";
@@ -168,6 +174,7 @@ private:
 							LoadDriver,
 							ServiceStart,
 							ServiceCreate,
+							ServiceDelete,
 							KernelThreadEntry,
 							KernelThreadCreate,
 							KernelThreadExit,
@@ -241,7 +248,7 @@ private:
 						const std::string_view DisableBranchDisassemblyPreview = "Disable branch disassembly preview";
 						const std::string_view PrefixForHexValues = "0x prefix for hex values";
 						const std::string_view DoNotShowSourceLinesInComments = "Don't show source lines in comments";
-						const std::string_view AssembleIntructionOnDoubleClick = "Assemble intruction on double-click";
+						const std::string_view AssembleIntructionOnDoubleClick = "Assemble instruction on double-click";
 
 						std::vector<std::string_view> Names{
 							ArgumentSpaces,

@@ -6,6 +6,8 @@
 #include "Log/Logger.hpp"
 #include "Log/File.hpp"
 #include "Log/Trace.hpp"
+#include "IOCTL/IOCTL.hpp"
+#include "Local/Functions.hpp"
 
 #include <cstdarg>
 #include <stdio.h>
@@ -620,6 +622,7 @@ NTSTATUS DrvCreate(PDEVICE_OBJECT DeviceObject, PIRP Irp)
 {
 	UNREFERENCED_PARAMETER(DeviceObject);
 
+	/*
 	objHyperVisorSvm.PInterceptions = &Interceptions;
 	objHyperVisorSvm.PSvmVmmRun = &SvmVmmRun;
 
@@ -635,6 +638,7 @@ NTSTATUS DrvCreate(PDEVICE_OBJECT DeviceObject, PIRP Irp)
 			FILE_NON_DIRECTORY_FILE | FILE_SYNCHRONOUS_IO_NONALERT);
 		objHyperVisorSvm.VirtualizeAllProcessors(); 
 	}
+	*/
 
 	Irp->IoStatus.Status = STATUS_SUCCESS;
 	Irp->IoStatus.Information = 0;
@@ -646,14 +650,49 @@ NTSTATUS DrvCreate(PDEVICE_OBJECT DeviceObject, PIRP Irp)
 NTSTATUS DrvDispatchIoControl(PDEVICE_OBJECT DeviceObject, PIRP Irp)
 {
 	PIO_STACK_LOCATION IrpStack;
+	IoCtlDispatcher_ IoCtlDispatcher;
 	PREGISTER_EVENT RegisterEvent;
 	NTSTATUS Status = STATUS_SUCCESS;
 	UNREFERENCED_PARAMETER(DeviceObject);
+
+	ULONG InBuffLength;
+	ULONG OutBuffLength;
+	PUSERMODE_LOADED_MODULE_DETAILS DebuggerUsermodeModulesRequest;
 
 	IrpStack = IoGetCurrentIrpStackLocation(Irp);
 
 	switch (IrpStack->Parameters.DeviceIoControl.IoControlCode)
 	{
+	case IoCtlCode::ProcessUserLevel::GetMemoryMap:
+	{
+		//
+		// First validate the parameters.
+		//
+		if (IrpStack->Parameters.DeviceIoControl.InputBufferLength < sizeof(USERMODE_LOADED_MODULE_DETAILS) || Irp->AssociatedIrp.SystemBuffer == NULL)
+		{
+			Status = STATUS_INVALID_PARAMETER;
+			LogError("Err, invalid parameter to IOCTL dispatcher");
+			break;
+		}
+
+		InBuffLength = IrpStack->Parameters.DeviceIoControl.InputBufferLength;
+		OutBuffLength = IrpStack->Parameters.DeviceIoControl.OutputBufferLength;
+
+		if (!InBuffLength || !OutBuffLength)
+		{
+			Status = STATUS_INVALID_PARAMETER;
+			break;
+		}
+
+		//
+		// Both usermode and to send to usermode and the coming buffer are
+		// at the same place
+		//
+		DebuggerUsermodeModulesRequest = (PUSERMODE_LOADED_MODULE_DETAILS)Irp->AssociatedIrp.SystemBuffer;
+
+		IoCtlDispatcher.ProcessUserLevel.GetMemoryMap(DebuggerUsermodeModulesRequest, OutBuffLength);
+	}
+	/*
 	case IOCTL_REGISTER_EVENT:
 	{
 		if (IrpStack->Parameters.DeviceIoControl.InputBufferLength < SIZEOF_REGISTER_EVENT || Irp->AssociatedIrp.SystemBuffer == NULL) {
@@ -755,6 +794,7 @@ NTSTATUS DrvDispatchIoControl(PDEVICE_OBJECT DeviceObject, PIRP Irp)
 
 		break;
 	}
+	*/
 	}
 	return Status;
 }
@@ -776,6 +816,7 @@ extern "C" NTSTATUS DriverEntry(_In_ PDRIVER_OBJECT DriverObject, PUNICODE_STRIN
 	PDEVICE_OBJECT DeviceObject = NULL; UNICODE_STRING DriverName, DosDeviceName;
 	__crt_init();
 
+	UnexportedFunctions_ UnexportedFunctions;
 	if (!objLog.LogInitialize()) { DbgPrint("[*] Log buffer is not initialized !\n"); DbgBreakPoint(); }
 	if (!objTrace.TraceInitializeMnemonic()) { DbgPrint("[*] Trace buffer is not initialized !\n"); DbgBreakPoint(); }
 	if (!SvmDbg::SvmDebuggerAllocator()) { DbgPrint("[*] SvmExitCodesAllocator buffer is not initialized !\n"); DbgBreakPoint(); }

@@ -76,6 +76,18 @@
     <Filter Include="Source Files\Memory">
       <UniqueIdentifier>{fb321dab-9b58-4e56-843a-653703a444b4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\IOCTL">
+      <UniqueIdentifier>{e841f299-7627-428b-8d1e-9012893d0764}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\IOCTL">
+      <UniqueIdentifier>{673e13f3-29dc-4366-b545-f6cb8a88c35e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Local">
+      <UniqueIdentifier>{bb2cde28-ec04-4661-a084-5d2cffb6ef4e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Local">
+      <UniqueIdentifier>{30482355-4c25-4f12-ac36-c547ceb506f3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Inf Include="RedDbg.inf">
@@ -121,6 +133,12 @@
     </ClCompile>
     <ClCompile Include="Source\Debugger\Driver\DrvMain.cpp">
       <Filter>Source Files\Debugger</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\IOCTL\IOCTL.cpp">
+      <Filter>Source Files\IOCTL</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Local\Functions.cpp">
+      <Filter>Source Files\Local</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -212,6 +230,15 @@
     </ClInclude>
     <ClInclude Include="Include\ia32.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\IOCTL\IOCTL.hpp">
+      <Filter>Header Files\IOCTL</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Local\Functions.hpp">
+      <Filter>Header Files\Local</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Local\winternl.h">
+      <Filter>Header Files\Local</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -99,14 +99,85 @@ void CustomTitleBar_::CustomTitleBarMenuRender()
     ImGui::BeginMenuBar();
     if (ImGui::BeginMenu(Names.Windowses.TitleBarMenu.MenuFileName.data()))
     {
-        if (ImGui::MenuItem(Names.Windowses.TitleBarMenu.MenuFile.MenuOpenItemName.data(), Names.Windowses.TitleBarMenu.MenuFile.Shortcut.MenuOpenItemShortcutName.data(), false))
+        if (ImGui::BeginMenu("User debug"))
         {
-            ImGuiFileDialog::Instance()->OpenDialog(
-                Names.Windowses.TitleBarMenu.OpenFile.OpenID.data(), 
-                Names.Windowses.TitleBarMenu.OpenFile.OpenTitle.data(), 
-                Names.Windowses.TitleBarMenu.OpenFile.Filter.data(), 
-                "D:\\Programs\\Games\\JustCause4\\JustCause4", 
-                "");
+            if (ImGui::MenuItem(Names.Windowses.TitleBarMenu.MenuFile.MenuOpenItemName.data(), Names.Windowses.TitleBarMenu.MenuFile.Shortcut.MenuOpenItemShortcutName.data(), false))
+            {
+                ImGuiFileDialog::Instance()->OpenDialog(
+                    Names.Windowses.TitleBarMenu.OpenFile.OpenID.data(),
+                    Names.Windowses.TitleBarMenu.OpenFile.OpenTitle.data(),
+                    Names.Windowses.TitleBarMenu.OpenFile.Filter.data(),
+                    "D:\\Programs\\Games\\JustCause4\\JustCause4",
+                    "");
+            }
+
+            ImGui::Separator();
+
+            if (ImGui::MenuItem(Names.Windowses.TitleBarMenu.MenuFile.MenuAttachItemName.data(), Names.Windowses.TitleBarMenu.MenuFile.Shortcut.MenuAttachItemShortcutName.data()))
+            {
+
+            }
+            if (ImGui::MenuItem(Names.Windowses.TitleBarMenu.MenuFile.MenuDetachItemName.data(), Names.Windowses.TitleBarMenu.MenuFile.Shortcut.MenuDetachItemShortcutName.data()))
+            {
+
+            }
+
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("Kernel debug"))
+        {
+            if (ImGui::MenuItem(Names.Windowses.TitleBarMenu.MenuFile.MenuOpenItemName.data(), Names.Windowses.TitleBarMenu.MenuFile.Shortcut.MenuOpenItemShortcutName.data(), false))
+            {
+                ImGuiFileDialog::Instance()->OpenDialog(
+                    Names.Windowses.TitleBarMenu.OpenFile.OpenID.data(),
+                    Names.Windowses.TitleBarMenu.OpenFile.OpenTitle.data(),
+                    Names.Windowses.TitleBarMenu.OpenFile.Filter.data(),
+                    "D:\\Programs\\Games\\JustCause4\\JustCause4",
+                    "");
+            }
+            ImGui::Separator();
+            if (ImGui::BeginMenu("System"))
+            {
+                if (ImGui::MenuItem("NET"))
+                {
+
+                }
+                if (ImGui::MenuItem("USB"))
+                {
+
+                }
+                if (ImGui::MenuItem("1394"))
+                {
+
+                }
+                if (ImGui::MenuItem("Local"))
+                {
+
+                }
+                if (ImGui::MenuItem("COM"))
+                {
+
+                }
+                ImGui::EndMenu();
+            }
+
+            if (ImGui::MenuItem("Local"))
+            {
+
+            }
+            ImGui::Separator();
+
+            if (ImGui::MenuItem(Names.Windowses.TitleBarMenu.MenuFile.MenuAttachItemName.data(), Names.Windowses.TitleBarMenu.MenuFile.Shortcut.MenuAttachItemShortcutName.data()))
+            {
+
+            }
+            if (ImGui::MenuItem(Names.Windowses.TitleBarMenu.MenuFile.MenuDetachItemName.data(), Names.Windowses.TitleBarMenu.MenuFile.Shortcut.MenuDetachItemShortcutName.data()))
+            {
+
+            }
+
+            ImGui::EndMenu();
         }
 
         {
@@ -116,16 +187,6 @@ void CustomTitleBar_::CustomTitleBarMenuRender()
 
                 ImGui::EndMenu();
             }
-            ImGui::Separator();
-        }
-
-        if (ImGui::MenuItem(Names.Windowses.TitleBarMenu.MenuFile.MenuAttachItemName.data(), Names.Windowses.TitleBarMenu.MenuFile.Shortcut.MenuAttachItemShortcutName.data()))
-        {
-
-        }
-        if (ImGui::MenuItem(Names.Windowses.TitleBarMenu.MenuFile.MenuDetachItemName.data(), Names.Windowses.TitleBarMenu.MenuFile.Shortcut.MenuDetachItemShortcutName.data()))
-        {
-
         }
 
         {

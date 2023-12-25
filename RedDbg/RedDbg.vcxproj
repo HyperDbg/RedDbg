@@ -115,6 +115,8 @@
     <ClCompile Include="Source\HyperVisor\CommonApi\Spinlock.cpp" />
     <ClCompile Include="Source\HyperVisor\CommonApi\SystemMemory.cpp" />
     <ClCompile Include="Source\HyperVisor\HyperVisor.cpp" />
+    <ClCompile Include="Source\IOCTL\IOCTL.cpp" />
+    <ClCompile Include="Source\Local\Functions.cpp" />
     <ClCompile Include="Source\Log\File.cpp" />
     <ClCompile Include="Source\Log\Log.cpp" />
     <ClCompile Include="Source\Log\Trace.cpp" />
@@ -146,6 +148,9 @@
     <ClInclude Include="Include\HyperVisor\CommonTypes\SVM.hpp" />
     <ClInclude Include="Include\HyperVisor\HyperVisor.hpp" />
     <ClInclude Include="Include\ia32.h" />
+    <ClInclude Include="Include\IOCTL\IOCTL.hpp" />
+    <ClInclude Include="Include\Local\Functions.hpp" />
+    <ClInclude Include="Include\Local\winternl.h" />
     <ClInclude Include="Include\Log\File.hpp" />
     <ClInclude Include="Include\Log\GraphViz\GraphVizLanguage.hpp" />
     <ClInclude Include="Include\Log\Log.hpp" />
