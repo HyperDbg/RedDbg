@@ -1,5 +1,7 @@
 #include "Local/Functions.hpp"
 
+PsGetProcessPeb_ UnexportedFunctions_::PsGetProcessPeb;
+PsGetProcessWow64Process_ UnexportedFunctions_::PsGetProcessWow64Process;
 UnexportedFunctions_::UnexportedFunctions_()
 {
 	for (unsigned char Index = 0; Index < Names.size(); ++Index)

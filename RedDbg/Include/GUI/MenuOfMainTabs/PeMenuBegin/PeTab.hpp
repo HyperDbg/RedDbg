@@ -1,4 +1,7 @@
 #pragma once
+//#include "pe-parse/parse.h"
+#include "GUI/MenuOfMainTabs/PeMenuBegin/Parser/PEReader.hpp"
+
 #include "GUI/UI/ImGui/imgui.h"
 
 #include "GUI/GlobalClass.hpp"
@@ -6,8 +9,8 @@
 #include "GUI/DimensionsesOfWindowses.hpp"
 #include "GUI/Window.hpp"
 
-#include "Debugger/Application/Pe/PEReader.hpp"
-#include "Debugger/Application/Pe/PEInformation.hpp"
+//#include "Debugger/Application/Pe/PEReader.hpp"
+//#include "Debugger/Application/Pe/PEInformation.hpp"
 
 #include <vector>
 
@@ -515,6 +518,9 @@ private:
 
 		return nullptr;
 	}
+
+	bool OptionalBitnessRowModeChooserA(int Row);
+	bool OptionalBitnessRowModeChooserB(int Row);
 public:
 	void PeWindowRender();
 

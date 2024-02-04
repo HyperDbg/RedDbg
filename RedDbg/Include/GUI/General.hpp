@@ -5,6 +5,7 @@
 #include "GUI/MenuOfMainTabs/MenuGeneral.hpp"
 #include "GUI/Names.hpp"
 #include "GUI/GlobalClass.hpp"
+#include "Debugger/TomlParser.hpp"
 
 #include <Windows.h>
 

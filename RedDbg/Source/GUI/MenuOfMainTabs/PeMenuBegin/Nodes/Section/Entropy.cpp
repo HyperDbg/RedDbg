@@ -1,11 +1,12 @@
 #include <omp.h>
 
-#include "Debugger/Application/Pe/PEReader.hpp"
+//#include "Debugger/Application/Pe/PEReader.hpp"
+#include "GUI/MenuOfMainTabs/PeMenuBegin/Parser/PEReader.hpp"
 
-namespace GlobalVarsOfPeTab {
-    extern PEInformation objPEInformation;
-    extern PeReader objPeReader;
-}
+//namespace GlobalVarsOfPeTab {
+//    extern PEInformation objPEInformation;
+//    extern PeReader objPeReader;
+//}
 
 /*
 * The get_entropy function calculates the entropy of a range of data in a file.
@@ -58,7 +59,8 @@ static double loga(double n, double base) {
 	return double(log(n) / log(base));
 }
 
-float PeReader::CalcEntropy(char* ptr, int start, int end)
+double CalcEntropy(uint8_t* ptr, int start, int end)
+//double CalcEntropy(uint8_t* ptr, int start, int end, peparse::bounded_buffer* Data)
 {
 	if ((end - start) == 0) { return 0; }
 	int length = end - start;

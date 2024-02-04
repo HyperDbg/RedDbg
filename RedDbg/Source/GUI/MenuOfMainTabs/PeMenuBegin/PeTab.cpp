@@ -7,8 +7,8 @@ namespace GlobalVarsOfPeTab {
     static std::vector<bool> Nodes{ false };
     static bool Init = false;
 
-    extern PEInformation objPEInformation;
-    extern PeReader objPeReader;
+    extern std::shared_ptr<PeReader> objPEInformation;
+    //extern PeReader objPeReader;
 }
 
 void PETab_::PeInfoNodesDispatcher(const Dimensionses_::WindowGeneralSizes* WindowGeneralSizes)
@@ -42,7 +42,7 @@ void PETab_::PeInfoNodesDispatcher(const Dimensionses_::WindowGeneralSizes* Wind
 
 void PETab_::PeWindowRender()
 {
-    if (GlobalVarsOfPeTab::objPEInformation.pImageDOSHeaderOfPe == nullptr || GlobalVarsOfPeTab::objPEInformation.pImageNTHeaderOfPe == nullptr) { return; }
+    if (GlobalVarsOfPeTab::objPEInformation->Pe->fileBuffer->buf == nullptr) { return; }
     if (!GlobalVarsOfPeTab::Init) { GlobalVarsOfPeTab::Nodes.resize(Dimensionses.CountOfAllNodes); GlobalVarsOfPeTab::Init = true; }
 
     static float PEVerticalSpliiterRelPosX = 0.2f;
@@ -84,7 +84,7 @@ void PETab_::PeWindowRender()
 void PETab_::PeTreeNodeRender()
 {
     bool Open = false;
-    if (ImGui::TreeNodeEx(Names.Windowses.MainDebuggerInterface.MainTabs.PETab.PENodes.PEFileNodeName.data(), 
+    if (ImGui::TreeNodeEx(Names.Windowses.MainDebuggerInterface.MainTabs.PETab.PENodes.PEFileNodeName.data(),
         ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_SpanFullWidth))
     {
         Open = Window.ClickOnTreeNode(Open, ClickCodesOfTreeNodes_::FileTreeNodeClicked, &GlobalVarsOfPeTab::Nodes);
@@ -104,7 +104,7 @@ void PETab_::PeTreeNodeRender()
             Open = Window.ClickOnTreeNode(Open, ClickCodesOfTreeNodes_::FileHeaderClicked, &GlobalVarsOfPeTab::Nodes);
 
 
-            if (ImGui::TreeNodeEx(Names.Windowses.MainDebuggerInterface.MainTabs.PETab.PENodes.PEOptionalHeaderNodeName.data(), 
+            if (ImGui::TreeNodeEx(Names.Windowses.MainDebuggerInterface.MainTabs.PETab.PENodes.PEOptionalHeaderNodeName.data(),
                 ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_SpanFullWidth))
             {
                 Open = Window.ClickOnTreeNode(Open, ClickCodesOfTreeNodes_::OptionalHeaderTreeNodeClicked, &GlobalVarsOfPeTab::Nodes);

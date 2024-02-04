@@ -4,8 +4,8 @@
 #include <sstream>
 
 namespace GlobalVarsOfPeTab {
-    extern PEInformation objPEInformation;
-    extern PeReader objPeReader;
+    //extern PEInformation objPEInformation;
+    extern std::shared_ptr<PeReader> objPEInformation;
 }
 
 void PETab_::PeDoSHeaderTableRender()
@@ -16,36 +16,66 @@ void PETab_::PeDoSHeaderTableRender()
     static bool Init = false;
 
     static std::vector<WORD*> DoSVals{
-        &GlobalVarsOfPeTab::objPEInformation.pImageDOSHeaderOfPe->e_magic,
-        &GlobalVarsOfPeTab::objPEInformation.pImageDOSHeaderOfPe->e_cblp,
-        &GlobalVarsOfPeTab::objPEInformation.pImageDOSHeaderOfPe->e_cp,
-        &GlobalVarsOfPeTab::objPEInformation.pImageDOSHeaderOfPe->e_crlc,
-        &GlobalVarsOfPeTab::objPEInformation.pImageDOSHeaderOfPe->e_cparhdr,
-        &GlobalVarsOfPeTab::objPEInformation.pImageDOSHeaderOfPe->e_minalloc,
-        &GlobalVarsOfPeTab::objPEInformation.pImageDOSHeaderOfPe->e_maxalloc,
-        &GlobalVarsOfPeTab::objPEInformation.pImageDOSHeaderOfPe->e_ss,
-        &GlobalVarsOfPeTab::objPEInformation.pImageDOSHeaderOfPe->e_sp,
-        &GlobalVarsOfPeTab::objPEInformation.pImageDOSHeaderOfPe->e_csum,
-        &GlobalVarsOfPeTab::objPEInformation.pImageDOSHeaderOfPe->e_ip,
-        &GlobalVarsOfPeTab::objPEInformation.pImageDOSHeaderOfPe->e_cs,
-        &GlobalVarsOfPeTab::objPEInformation.pImageDOSHeaderOfPe->e_lfarlc,
-        &GlobalVarsOfPeTab::objPEInformation.pImageDOSHeaderOfPe->e_ovno,
-        &GlobalVarsOfPeTab::objPEInformation.pImageDOSHeaderOfPe->e_res[0],
-        &GlobalVarsOfPeTab::objPEInformation.pImageDOSHeaderOfPe->e_res[1],
-        &GlobalVarsOfPeTab::objPEInformation.pImageDOSHeaderOfPe->e_res[2],
-        &GlobalVarsOfPeTab::objPEInformation.pImageDOSHeaderOfPe->e_res[3],
-        &GlobalVarsOfPeTab::objPEInformation.pImageDOSHeaderOfPe->e_oemid,
-        &GlobalVarsOfPeTab::objPEInformation.pImageDOSHeaderOfPe->e_oeminfo,
-        &GlobalVarsOfPeTab::objPEInformation.pImageDOSHeaderOfPe->e_res2[0],
-        &GlobalVarsOfPeTab::objPEInformation.pImageDOSHeaderOfPe->e_res2[1],
-        &GlobalVarsOfPeTab::objPEInformation.pImageDOSHeaderOfPe->e_res2[2],
-        &GlobalVarsOfPeTab::objPEInformation.pImageDOSHeaderOfPe->e_res2[3],
-        &GlobalVarsOfPeTab::objPEInformation.pImageDOSHeaderOfPe->e_res2[4],
-        &GlobalVarsOfPeTab::objPEInformation.pImageDOSHeaderOfPe->e_res2[5],
-        &GlobalVarsOfPeTab::objPEInformation.pImageDOSHeaderOfPe->e_res2[6],
-        &GlobalVarsOfPeTab::objPEInformation.pImageDOSHeaderOfPe->e_res2[7],
-        &GlobalVarsOfPeTab::objPEInformation.pImageDOSHeaderOfPe->e_res2[8],
-        &GlobalVarsOfPeTab::objPEInformation.pImageDOSHeaderOfPe->e_res2[9],
+        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_magic,
+        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_cblp,
+        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_cp,
+        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_crlc,
+        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_cparhdr,
+        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_minalloc,
+        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_maxalloc,
+        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_ss,
+        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_sp,
+        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_csum,
+        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_ip,
+        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_cs,
+        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_lfarlc,
+        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_ovno,
+        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_res[0],
+        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_res[1],
+        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_res[2],
+        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_res[3],
+        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_oemid,
+        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_oeminfo,
+        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_res2[0],
+        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_res2[1],
+        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_res2[2],
+        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_res2[3],
+        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_res2[4],
+        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_res2[5],
+        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_res2[6],
+        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_res2[7],
+        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_res2[8],
+        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_res2[9],
+        &GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.dos.e_magic,
+        &GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.dos.e_cblp,
+        &GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.dos.e_cp,
+        &GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.dos.e_crlc,
+        &GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.dos.e_cparhdr,
+        &GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.dos.e_minalloc,
+        &GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.dos.e_maxalloc,
+        &GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.dos.e_ss,
+        &GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.dos.e_sp,
+        &GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.dos.e_csum,
+        &GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.dos.e_ip,
+        &GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.dos.e_cs,
+        &GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.dos.e_lfarlc,
+        &GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.dos.e_ovno,
+        &GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.dos.e_res[0],
+        &GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.dos.e_res[1],
+        &GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.dos.e_res[2],
+        &GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.dos.e_res[3],
+        &GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.dos.e_oemid,
+        &GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.dos.e_oeminfo,
+        &GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.dos.e_res2[0],
+        &GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.dos.e_res2[1],
+        &GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.dos.e_res2[2],
+        &GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.dos.e_res2[3],
+        &GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.dos.e_res2[4],
+        &GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.dos.e_res2[5],
+        &GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.dos.e_res2[6],
+        &GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.dos.e_res2[7],
+        &GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.dos.e_res2[8],
+        &GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.dos.e_res2[9],
     };
 
     static std::vector<std::string> InputStrings;
@@ -116,17 +146,17 @@ void PETab_::PeDoSHeaderTableRender()
                 else if (Column == 3)
                 {
                     std::stringstream Ss;
-                    if (GlobalVarsOfPeTab::objPEInformation.x64.pImageNTHeader64 != nullptr)
+                    if (GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.nt.OptionalMagic == IMAGE_NT_OPTIONAL_HDR64_MAGIC)
                     {
                         Ss << std::uppercase << std::setfill('0') <<
                             std::setw(sizeof(uint64_t) * 2) << std::hex <<
-                            GlobalVarsOfPeTab::objPEInformation.x64.pImageNTHeader64->OptionalHeader.ImageBase + PeStruct::DoSHeader::DoSHeaderOffsets[Row];
+                            GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.nt.OptionalHeader64.ImageBase + PeStruct::DoSHeader::DoSHeaderOffsets[Row];
                     }
                     else
                     {
                         Ss << std::uppercase << std::setfill('0') <<
                             std::setw(sizeof(uint32_t) * 2) << std::hex <<
-                            GlobalVarsOfPeTab::objPEInformation.x32.pImageNTHeader32->OptionalHeader.ImageBase + PeStruct::DoSHeader::DoSHeaderOffsets[Row];
+                            GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.nt.OptionalHeader.ImageBase + PeStruct::DoSHeader::DoSHeaderOffsets[Row];
                     }
                     ImGui::Selectable(Ss.str().c_str());
                 }
@@ -144,10 +174,10 @@ void PETab_::PeDoSHeaderTableRender()
                     else
                     {
                         static std::string a;
-                        EditField<LONG>(
+                        EditField<uint32_t>(
                             "##" + std::to_string(Row),
                             InputStrings[Row],
-                            &GlobalVarsOfPeTab::objPEInformation.pImageDOSHeaderOfPe->e_lfanew, 9);
+                            &GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.dos.e_lfanew, 9);
                     }
                     ImGui::PopStyleColor();
                 }
@@ -155,7 +185,7 @@ void PETab_::PeDoSHeaderTableRender()
                 {
                     if (Row == PeStruct::DoSHeader::DoSHeaderRows::Emagic)
                     {
-                        ImGui::Selectable(ConvertToCharString(GlobalVarsOfPeTab::objPEInformation.pImageDOSHeaderOfPe->e_magic));
+                        ImGui::Selectable(ConvertToCharString(GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.dos.e_magic));
                     }
                 }
                 ImGui::PopStyleColor(2);

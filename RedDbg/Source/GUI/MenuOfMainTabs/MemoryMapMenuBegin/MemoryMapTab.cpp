@@ -1,6 +1,13 @@
 #include "GUI/MenuOfMainTabs/MemoryMapMenuBegin/MemoryMapTab.hpp"
 
 #include <vector>
+#include <Debugger/ErrorCodes.hpp>
+//#include <IOCTL/IOCTL.hpp>
+
+namespace CustomTitleBarGlobalVars {
+    extern HANDLE hDriver;
+    extern DWORD Pid;
+}
 
 void MemoryMapTab_::MemoryMapWindowRender()
 {
@@ -50,6 +57,180 @@ void MemoryMapTab_::MemoryMapTableRender()
 {
     if (ImGui::BeginTable(Names.Windowses.MainDebuggerInterface.MainTabs.MemoryMapTab.MemoryMapTableName.data(), Dimensionses.CountOfMemoryMapColumns, DefaultTableFlags))
     {
+        static int i = 0;
+        if (i == 0)
+        {
+            Parse.GetMemoryMapOfUserProcess();
+            ++i;
+        }
+        //static int i = 0;
+        //if (CustomTitleBarGlobalVars::hDriver != nullptr && i < 1)
+        //{
+        //    ULONG                           ReturnedLength;
+        //    UINT32                          ModuleDetailsSize = 0;
+        //    UINT32                          ModulesCount = 0;
+        //    PUSERMODE_LOADED_MODULE_DETAILS ModuleDetailsRequest = NULL;
+        //    PUSERMODE_LOADED_MODULE_SYMBOLS Modules = NULL;
+        //    USERMODE_LOADED_MODULE_DETAILS  ModuleCountRequest = { 0 };
+        //
+        //    ModuleCountRequest.ProcessId = CustomTitleBarGlobalVars::Pid;
+        //    ModuleCountRequest.OnlyCountModules = TRUE;
+        //    ModuleCountRequest.TypeOfLoad = ModuleLoadType::InitOrder;
+        //
+        //    bool Status = DeviceIoControl(
+        //        CustomTitleBarGlobalVars::hDriver,
+        //        0, 
+        //        &ModuleCountRequest,                    // Input Buffer to driver.
+        //        sizeof(USERMODE_LOADED_MODULE_DETAILS), // Input buffer length
+        //        &ModuleCountRequest,                    // Output Buffer from driver.
+        //        sizeof(USERMODE_LOADED_MODULE_DETAILS), // Length of output
+        //        // buffer in bytes.
+        //        &ReturnedLength,                        // Bytes placed in buffer.
+        //        NULL);
+        //
+        //    if (!Status)
+        //    {
+        //        printf("ioctl failed with code 0x%x\n", GetLastError());
+        //    }
+        //
+        //    //
+        //    // Check if counting modules was successful or not
+        //    //
+        //    if (ModuleCountRequest.Result == SuccessCodes::DEBUGGER_OPERATION_WAS_SUCCESSFUL)
+        //    {
+        //        ModulesCount = ModuleCountRequest.ModulesCount;
+        //
+        //        printf("Count of modules : 0x%x\n", ModuleCountRequest.ModulesCount);
+        //
+        //        ModuleDetailsSize = sizeof(USERMODE_LOADED_MODULE_DETAILS) +
+        //            (ModuleCountRequest.ModulesCount * sizeof(USERMODE_LOADED_MODULE_SYMBOLS));
+        //
+        //        ModuleDetailsRequest = (PUSERMODE_LOADED_MODULE_DETAILS)malloc(ModuleDetailsSize);
+        //
+        //        if (ModuleDetailsRequest == NULL)
+        //        {
+        //            printf("ModuleDetailsRequest is NULL\n");
+        //        }
+        //
+        //        //RtlZeroMemory(ModuleDetailsRequest, ModuleDetailsSize);
+        //
+        //        //
+        //        // Set the module details to get the modules (not count)
+        //        //
+        //        ModuleDetailsRequest->ProcessId = CustomTitleBarGlobalVars::Pid;
+        //        ModuleDetailsRequest->OnlyCountModules = FALSE;
+        //        ModuleDetailsRequest->TypeOfLoad = ModuleLoadType::InitOrder;
+        //        //
+        //        // Send the request to the kernel
+        //        //
+        //        Status = DeviceIoControl(
+        //            CustomTitleBarGlobalVars::hDriver, // Handle to device
+        //            0, // IO Control
+        //            // code
+        //            ModuleDetailsRequest,                   // Input Buffer to driver.
+        //            sizeof(USERMODE_LOADED_MODULE_DETAILS), // Input buffer length
+        //            ModuleDetailsRequest,                   // Output Buffer from driver.
+        //            ModuleDetailsSize,                      // Length of output
+        //            // buffer in bytes.
+        //            &ReturnedLength,                        // Bytes placed in buffer.
+        //            NULL                                    // synchronous call
+        //        );
+        //
+        //        if (!Status)
+        //        {
+        //            free(ModuleDetailsRequest);
+        //            printf("ioctl failed with code 0x%x\n", GetLastError());
+        //        }
+        //
+        //        //
+        //        // Show modules list
+        //        //
+        //        if (ModuleCountRequest.Result == DEBUGGER_OPERATION_WAS_SUCCESSFUL)
+        //        {
+        //            Modules = (PUSERMODE_LOADED_MODULE_SYMBOLS)((UINT64)ModuleDetailsRequest +
+        //                sizeof(USERMODE_LOADED_MODULE_DETAILS));
+        //            printf("user mode\n");
+        //            printf("start\t\t\tentrypoint\t\tpath\n\n");
+        //
+        //            /*
+        //            if (SearchModule != NULL)
+        //            {
+        //                CharSize = strlen(SearchModule) + 1;
+        //                WcharBuff = (wchar_t*)malloc(CharSize * 2);
+        //
+        //                if (WcharBuff == NULL)
+        //                {
+        //                    return FALSE;
+        //                }
+        //
+        //                RtlZeroMemory(WcharBuff, CharSize);
+        //
+        //                mbstowcs(WcharBuff, SearchModule, CharSize);
+        //
+        //                SearchModuleString.assign(WcharBuff, wcslen(WcharBuff));
+        //            }
+        //            */
+        //            for (size_t i = 0; i < ModulesCount; i++)
+        //            {
+        //                //
+        //                // Check if we need to search for the module or not
+        //                //
+        //                /*
+        //                if (SearchModule != NULL)
+        //                {
+        //                    //
+        //                    // Convert FullPathName to string
+        //                    //
+        //                    std::wstring FullPathName((wchar_t*)Modules[i].FilePath);
+        //
+        //                    if (FindCaseInsensitiveW(FullPathName, SearchModuleString, 0) == std::wstring::npos)
+        //                    {
+        //                        //
+        //                        // not found
+        //                        //
+        //                        continue;
+        //                    }
+        //                }
+        //                */
+        //                //
+        //                // Check if module is 32-bit or not
+        //                //
+        //                if (ModuleDetailsRequest->Is32Bit)
+        //                {
+        //                    //ShowMessages("%016llx\t%016llx\t%ws\n",
+        //                    //    Modules[i].BaseAddress,
+        //                    //    Modules[i].Entrypoint,
+        //                    //    CommandLmConvertWow64CompatibilityPaths(Modules[i].FilePath).c_str());
+        //                }
+        //                else
+        //                {
+        //                    printf("%016llx\t%016llx\t%ws\n",
+        //                        Modules[i].BaseAddress,
+        //                        Modules[i].Entrypoint,
+        //                        Modules[i].FilePath);
+        //                }
+        //            }
+        //            /*
+        //            if (SearchModule != NULL)
+        //            {
+        //                free(WcharBuff);
+        //            }
+        //            */
+        //        }
+        //        else
+        //        {
+        //            printf("2 ErrorMessage 0x%x", ModuleCountRequest.Result);
+        //        }
+        //
+        //        free(ModuleDetailsRequest);
+        //    }
+        //    else
+        //    {
+        //        printf("1 ErrorMessage 0x%x", ModuleCountRequest.Result);
+        //    }
+        //    ++i;
+        //}
+
         ImGui::TableSetupScrollFreeze(0, 1);
         ImGui::TableSetupColumn(Names.Windowses.MainDebuggerInterface.MainTabs.MemoryMapTab.MemoryMapTableAddressColumnName.data(), ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableSetupColumn(Names.Windowses.MainDebuggerInterface.MainTabs.MemoryMapTab.MemoryMapTableSizeColumnName.data(), ImGuiTableColumnFlags_WidthFixed);

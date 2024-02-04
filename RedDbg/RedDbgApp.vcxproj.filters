@@ -16,9 +16,6 @@
     <Filter Include="Source Files\Main">
       <UniqueIdentifier>{3170ccaa-f2e4-4f7b-aea1-83b6728a5b05}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Pe">
-      <UniqueIdentifier>{044ec35a-b5a9-44c6-bb75-c812f4ade82d}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\GUI">
       <UniqueIdentifier>{978ad89b-3854-4330-a6af-f560a99744be}</UniqueIdentifier>
     </Filter>
@@ -121,6 +118,15 @@
     <Filter Include="Header Files\IOCTL">
       <UniqueIdentifier>{63f77582-e764-4fb2-984d-55fcfa52b85f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\GUI\MenuOfMainTabs\MemoryMapMenuBegin\Parser">
+      <UniqueIdentifier>{6f0627fa-5e35-425f-b73f-a850d7fb7ec9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\GUI\MenuOfMainTabs\MemoryMapMenuBegin\Parser">
+      <UniqueIdentifier>{f2fe10eb-89d1-4cbb-b9fc-de916ee306dd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\GUI\MenuOfMainTabs\PeMenuBegin\Parser">
+      <UniqueIdentifier>{0f602902-4748-46ad-b56c-9cbd7c18b80e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Debugger\Application\Main.cpp">
@@ -186,9 +192,6 @@
     <ClCompile Include="Source\GUI\MenuOfMainTabs\PeMenuBegin\PeTab.cpp">
       <Filter>Source Files\GUI\MenuOfMainTabs\PeMenuBegin</Filter>
     </ClCompile>
-    <ClCompile Include="Source\GUI\MenuOfMainTabs\PeMenuBegin\Parser\PEReader.cpp">
-      <Filter>Source Files\GUI\MenuOfMainTabs\PeMenuBegin\PeParser</Filter>
-    </ClCompile>
     <ClCompile Include="Source\GUI\MenuOfMainTabs\PeMenuBegin\Nodes\COFFFileHeaderNode.cpp">
       <Filter>Source Files\GUI\MenuOfMainTabs\PeMenuBegin\Nodes</Filter>
     </ClCompile>
@@ -222,14 +225,17 @@
     <ClCompile Include="Source\GUI\MenuBarDispatcher.cpp">
       <Filter>Source Files\GUI\General</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Debugger\TomlParser.cpp">
+      <Filter>Source Files\GUI\General</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GUI\MenuOfMainTabs\MemoryMapMenuBegin\Memory.cpp">
+      <Filter>Source Files\GUI\MenuOfMainTabs\MemoryMapMenuBegin\Parser</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GUI\MenuOfMainTabs\PeMenuBegin\Parser\PEReader_.cpp">
+      <Filter>Source Files\GUI\MenuOfMainTabs\PeMenuBegin\PeParser</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Include\Debugger\Application\Pe\PEInformation.hpp">
-      <Filter>Header Files\Pe</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Debugger\Application\Pe\PEReader.hpp">
-      <Filter>Header Files\Pe</Filter>
-    </ClInclude>
     <ClInclude Include="Include\GUI\UI\ImGui\Opengl3&amp;WinApi\imgui_impl_win32.h">
       <Filter>Header Files\GUI\UI\ImGui\OpenGl3&amp;WinApi</Filter>
     </ClInclude>
@@ -316,6 +322,18 @@
     </ClInclude>
     <ClInclude Include="Include\IOCTL\IOCTL.hpp">
       <Filter>Header Files\IOCTL</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\GUI\OptionsEnums.hpp">
+      <Filter>Header Files\GUI\General</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Debugger\TomlParser.hpp">
+      <Filter>Header Files\GUI\General</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\GUI\MenuOfMainTabs\MemoryMapMenuBegin\Memory.hpp">
+      <Filter>Header Files\GUI\MenuOfMainTabs\MemoryMapMenuBegin\Parser</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\GUI\MenuOfMainTabs\PeMenuBegin\Parser\PEReader.hpp">
+      <Filter>Header Files\GUI\MenuOfMainTabs\PeMenuBegin\Parser</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

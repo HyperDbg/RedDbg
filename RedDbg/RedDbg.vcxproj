@@ -128,10 +128,13 @@
     <MASM Include="Source\Debugger\Driver\SVMrun.asm" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Include\AppToDrv\IoCtlCodes.hpp" />
+    <ClInclude Include="Include\AppToDrv\MiddleStructs.hpp" />
     <ClInclude Include="Include\CppSupport\CppSupport.hpp" />
     <ClInclude Include="Include\Debugger\Driver\GuestContext.hpp" />
     <ClInclude Include="Include\Debugger\Driver\Pe\PeInformation.hpp" />
     <ClInclude Include="Include\Debugger\Driver\Pe\PeStruct.hpp" />
+    <ClInclude Include="Include\Debugger\ErrorCodes.hpp" />
     <ClInclude Include="Include\General.hpp" />
     <ClInclude Include="Include\HyperVisor\CommonApi\Callable.hpp" />
     <ClInclude Include="Include\HyperVisor\CommonApi\MemoryUtils.hpp" />
@@ -157,6 +160,7 @@
     <ClInclude Include="Include\Log\Logger.hpp" />
     <ClInclude Include="Include\Log\Trace.hpp" />
     <ClInclude Include="Include\Memory\MemoryMapper.hpp" />
+    <ClInclude Include="Include\ntdll.h" />
     <ClInclude Include="Include\TransparentMode\TransparentMode.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -105,14 +105,15 @@
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)/Include/Deps/tomlplusplus/include;$(SolutionDir)/Include/GUI/UI/ImGui/FileDialog;$(SolutionDir)/Include/Deps;$(SolutionDir)/Include;$(SolutionDir)/Include/GUI/UI/ImGui/Opengl3&amp;WinApi;$(SolutionDir)/Include/GUI/UI/ImGui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/Source/Deps/pe-parse/pe-parser-library/include;$(SolutionDir)/Include/Deps/tomlplusplus/include;$(SolutionDir)/Include/GUI/UI/ImGui/FileDialog;$(SolutionDir)/Include/Deps;$(SolutionDir)/Include;$(SolutionDir)/Include/GUI/UI/ImGui/Opengl3&amp;WinApi;$(SolutionDir)/Include/GUI/UI/ImGui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)/Source/Deps/libs</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)/Source/Deps/pe-parse-compiled</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opengl32.lib;pe-parse.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -124,7 +125,7 @@
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)/Include/Deps/tomlplusplus/include;$(SolutionDir)/Include/GUI/UI/ImGui/FileDialog;$(SolutionDir)/Include/Deps;$(SolutionDir)/Include;$(SolutionDir)/Include/GUI/UI/ImGui/Opengl3&amp;WinApi;$(SolutionDir)/Include/GUI/UI/ImGui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/Source/Deps/pe-parse/pe-parser-library/include;$(SolutionDir)/Include/Deps/tomlplusplus/include;$(SolutionDir)/Include/GUI/UI/ImGui/FileDialog;$(SolutionDir)/Include/Deps;$(SolutionDir)/Include;$(SolutionDir)/Include/GUI/UI/ImGui/Opengl3&amp;WinApi;$(SolutionDir)/Include/GUI/UI/ImGui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
@@ -134,15 +135,18 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)/Source/Deps/libs</AdditionalLibraryDirectories>
       <AdditionalDependencies>opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Source\Debugger\Application\Main.cpp" />
+    <ClCompile Include="Source\Debugger\TomlParser.cpp" />
     <ClCompile Include="Source\GUI\CustomTitleBar.cpp" />
     <ClCompile Include="Source\GUI\General.cpp" />
     <ClCompile Include="Source\GUI\MenuBarDispatcher.cpp" />
     <ClCompile Include="Source\GUI\MenuOfMainTabs\CallStackMenuBegin\CallStackTab.cpp" />
     <ClCompile Include="Source\GUI\MenuOfMainTabs\CPUMenuBegin\CPUTab.cpp" />
+    <ClCompile Include="Source\GUI\MenuOfMainTabs\MemoryMapMenuBegin\Memory.cpp" />
     <ClCompile Include="Source\GUI\MenuOfMainTabs\MemoryMapMenuBegin\MemoryMapTab.cpp" />
     <ClCompile Include="Source\GUI\MenuOfMainTabs\MenuGeneral.cpp" />
     <ClCompile Include="Source\GUI\MenuOfMainTabs\PeMenuBegin\Nodes\COFFFileHeaderNode.cpp" />
@@ -155,7 +159,7 @@
     <ClCompile Include="Source\GUI\MenuOfMainTabs\PeMenuBegin\Nodes\RichHeaderNode.cpp" />
     <ClCompile Include="Source\GUI\MenuOfMainTabs\PeMenuBegin\Nodes\Section\Entropy.cpp" />
     <ClCompile Include="Source\GUI\MenuOfMainTabs\PeMenuBegin\Nodes\Section\SectionHeaderNode.cpp" />
-    <ClCompile Include="Source\GUI\MenuOfMainTabs\PeMenuBegin\Parser\PEReader.cpp" />
+    <ClCompile Include="Source\GUI\MenuOfMainTabs\PeMenuBegin\Parser\PEReader_.cpp" />
     <ClCompile Include="Source\GUI\MenuOfMainTabs\PeMenuBegin\PeTab.cpp" />
     <ClCompile Include="Source\GUI\MenuOfMainTabs\SEHMenuBegin\SehTab.cpp" />
     <ClCompile Include="Source\GUI\MenuOfMainTabs\StackMapMenuBegin\StackMapTab.cpp" />
@@ -172,8 +176,7 @@
     <ClCompile Include="Source\GUI\WindowGeneralSizes.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Include\Debugger\Application\Pe\PEInformation.hpp" />
-    <ClInclude Include="Include\Debugger\Application\Pe\PEReader.hpp" />
+    <ClInclude Include="Include\Debugger\TomlParser.hpp" />
     <ClInclude Include="Include\GUI\ClickedCodesOfTreeNodes.hpp" />
     <ClInclude Include="Include\GUI\CustomTitleBar.hpp" />
     <ClInclude Include="Include\GUI\DimensionsesOfWindowses.hpp" />
@@ -182,13 +185,16 @@
     <ClInclude Include="Include\GUI\MenuBarDispatcher.hpp" />
     <ClInclude Include="Include\GUI\MenuOfMainTabs\CallStackMenuBegin\CallStackTab.hpp" />
     <ClInclude Include="Include\GUI\MenuOfMainTabs\CPUMenuBegin\CPUTab.hpp" />
+    <ClInclude Include="Include\GUI\MenuOfMainTabs\MemoryMapMenuBegin\Memory.hpp" />
     <ClInclude Include="Include\GUI\MenuOfMainTabs\MemoryMapMenuBegin\MemoryMapTab.hpp" />
     <ClInclude Include="Include\GUI\MenuOfMainTabs\MenuGeneral.hpp" />
+    <ClInclude Include="Include\GUI\MenuOfMainTabs\PeMenuBegin\Parser\PEReader.hpp" />
     <ClInclude Include="Include\GUI\MenuOfMainTabs\PeMenuBegin\PeTab.hpp" />
     <ClInclude Include="Include\GUI\MenuOfMainTabs\SEHMenuBegin\SehTab.hpp" />
     <ClInclude Include="Include\GUI\MenuOfMainTabs\StackMapMenuBegin\StackMapTab.hpp" />
     <ClInclude Include="Include\GUI\MenuOfMainTabs\ThreadsMenuBegin\ThreadsTab.hpp" />
     <ClInclude Include="Include\GUI\Names.hpp" />
+    <ClInclude Include="Include\GUI\OptionsEnums.hpp" />
     <ClInclude Include="Include\GUI\UI\ImGui\FileDialog\ImGuiFileDialog.h" />
     <ClInclude Include="Include\GUI\UI\ImGui\FileDialog\ImGuiFileDialogConfig.h" />
     <ClInclude Include="Include\GUI\UI\ImGui\imconfig.h" />

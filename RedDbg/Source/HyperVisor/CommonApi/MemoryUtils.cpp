@@ -1,5 +1,6 @@
 #include <fltKernel.h>
 #include <ntddk.h>
+#include <memory>
 
 #include "HyperVisor/CommonTypes/PTE.hpp"
 #include "HyperVisor/CommonApi/PteUtils.hpp"
@@ -232,6 +233,8 @@ namespace VirtualMemory {
 }
 
 namespace Heap {
+
+
     // Creates a growable heap and returns a HeapHandle:
     _IRQL_requires_max_(APC_LEVEL)
     PVOID CreateHeap() {

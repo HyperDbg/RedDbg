@@ -240,5 +240,17 @@
     <ClInclude Include="Include\Local\winternl.h">
       <Filter>Header Files\Local</Filter>
     </ClInclude>
+    <ClInclude Include="Include\Debugger\ErrorCodes.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\ntdll.h">
+      <Filter>Header Files\Local</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\AppToDrv\MiddleStructs.hpp">
+      <Filter>Header Files\Local</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\AppToDrv\IoCtlCodes.hpp">
+      <Filter>Header Files\Local</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

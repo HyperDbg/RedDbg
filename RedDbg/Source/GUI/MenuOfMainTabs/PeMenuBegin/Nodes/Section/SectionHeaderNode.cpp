@@ -1,13 +1,24 @@
 #include "GUI/MenuOfMainTabs/PeMenuBegin/PeTab.hpp"
 
 namespace GlobalVarsOfPeTab {
-    std::vector<float> Entropy;
+    std::vector<double> Entropy;
 
-    extern PEInformation objPEInformation;
-    extern PeReader objPeReader;
+    extern std::shared_ptr<PeReader> objPEInformation;
+    //extern PeReader objPeReader;
 
     static std::vector<bool> Opened;
 }
+
+typedef struct _Section
+{
+    std::vector<const uint32_t*> SectionDwordPointersSizeVals{};
+    std::vector<const uint32_t*> SectionDwordPointersAddressVals{};
+    std::vector<const uint32_t*> SectionDwordPointersRawOffsetsVals{};
+    std::vector<const uint32_t*> SectionDwordPointersRawSizesVals{};
+    std::vector<const uint32_t*> SectionDwordPointersCharateristicsVals{};
+    std::vector<uint32_t> SectionDwordSizeVals{};
+
+} Section, *PSection;
 
 void PETab_::PeSectionHeaderTableRender()
 {
@@ -16,30 +27,46 @@ void PETab_::PeSectionHeaderTableRender()
 
     static bool Init = false;
 
-    std::vector<DWORD> SectionDwordSizeVals{};
-    for (int Section = 0; Section < GlobalVarsOfPeTab::objPEInformation.ImageFileHeader.NumberOfSections - 1; ++Section)
-    {
-        DWORD Size =
-            (GlobalVarsOfPeTab::objPEInformation.pImageSectionHeader[Section].Misc.VirtualSize +4095) & ~4095;
-        SectionDwordSizeVals.push_back(Size);
-    }
+    Section SectionPointers;
+    auto L_inspectSection = [](void* N,
+        const peparse::VA& secBase,
+        const std::string& secName,
+        const peparse::image_section_header& SectionHeader,
+        const peparse::bounded_buffer* data) -> int {
+            static_cast<void>(secBase);
+            static_cast<void>(secName);
+            static_cast<void>(data);
 
-    static std::vector<DWORD*> SectionDwordPointersSizeVals{};
-    static std::vector<DWORD*> SectionDwordPointersAddressVals{};
-    static std::vector<DWORD*> SectionDwordPointersRawOffsetsVals{};
-    static std::vector<DWORD*> SectionDwordPointersRawSizesVals{};
-    static std::vector<DWORD*> SectionDwordPointersCharateristicsVals{};
-    if (!SectionDwordPointersAddressVals.size())
-    {
-        for (int Section = 0; Section < GlobalVarsOfPeTab::objPEInformation.ImageFileHeader.NumberOfSections - 1; ++Section)
-        {
-            SectionDwordPointersSizeVals.push_back(&GlobalVarsOfPeTab::objPEInformation.pImageSectionHeader[Section].Misc.VirtualSize);
-            SectionDwordPointersAddressVals.push_back(&GlobalVarsOfPeTab::objPEInformation.pImageSectionHeader[Section].VirtualAddress);
-            SectionDwordPointersRawOffsetsVals.push_back(&GlobalVarsOfPeTab::objPEInformation.pImageSectionHeader[Section].PointerToRawData);
-            SectionDwordPointersRawSizesVals.push_back(&GlobalVarsOfPeTab::objPEInformation.pImageSectionHeader[Section].SizeOfRawData);
-            SectionDwordPointersCharateristicsVals.push_back(&GlobalVarsOfPeTab::objPEInformation.pImageSectionHeader[Section].Characteristics);
-        }
-    }
+            auto SectionPointers = static_cast<PSection>(N);
+            DWORD Size = (SectionHeader.Misc.VirtualSize + 4095) & ~4095;
+            SectionPointers->SectionDwordSizeVals.push_back(Size);
+
+
+            SectionPointers->SectionDwordPointersSizeVals.push_back(&SectionHeader.Misc.VirtualSize);
+            SectionPointers->SectionDwordPointersAddressVals.push_back(&SectionHeader.VirtualAddress);
+            SectionPointers->SectionDwordPointersRawOffsetsVals.push_back(&SectionHeader.PointerToRawData);
+            SectionPointers->SectionDwordPointersRawSizesVals.push_back(&SectionHeader.SizeOfRawData);
+            SectionPointers->SectionDwordPointersCharateristicsVals.push_back(&SectionHeader.Characteristics);
+            return 0;
+        };
+    peparse::IterSec(GlobalVarsOfPeTab::objPEInformation->Pe, L_inspectSection, &SectionPointers);
+
+    //static std::vector<DWORD*> SectionDwordPointersSizeVals{};
+    //static std::vector<DWORD*> SectionDwordPointersAddressVals{};
+    //static std::vector<DWORD*> SectionDwordPointersRawOffsetsVals{};
+    //static std::vector<DWORD*> SectionDwordPointersRawSizesVals{};
+    //static std::vector<DWORD*> SectionDwordPointersCharateristicsVals{};
+    //if (!SectionDwordPointersAddressVals.size())
+    //{
+    //    for (int Section = 0; Section < GlobalVarsOfPeTab::objPEInformation->ImageFileHeader.NumberOfSections - 1; ++Section)
+    //    {
+    //        SectionDwordPointersSizeVals.push_back(&GlobalVarsOfPeTab::objPEInformation->pImageSectionHeader[Section].Misc.VirtualSize);
+    //        SectionDwordPointersAddressVals.push_back(&GlobalVarsOfPeTab::objPEInformation->pImageSectionHeader[Section].VirtualAddress);
+    //        SectionDwordPointersRawOffsetsVals.push_back(&GlobalVarsOfPeTab::objPEInformation->pImageSectionHeader[Section].PointerToRawData);
+    //        SectionDwordPointersRawSizesVals.push_back(&GlobalVarsOfPeTab::objPEInformation->pImageSectionHeader[Section].SizeOfRawData);
+    //        SectionDwordPointersCharateristicsVals.push_back(&GlobalVarsOfPeTab::objPEInformation->pImageSectionHeader[Section].Characteristics);
+    //    }
+    //}
 
     static std::vector<std::string> InputSizeStrings;
     static std::vector<std::string> InputAddressStrings;
@@ -49,14 +76,17 @@ void PETab_::PeSectionHeaderTableRender()
     static std::vector<std::string> InputCharateristicsStrings;
     if (!Init)
     {
-        InputSizeStrings.resize(GlobalVarsOfPeTab::objPEInformation.ImageFileHeader.NumberOfSections);
-        InputAddressStrings.resize(GlobalVarsOfPeTab::objPEInformation.ImageFileHeader.NumberOfSections);
-        InputAddress64Strings.resize(GlobalVarsOfPeTab::objPEInformation.ImageFileHeader.NumberOfSections);
-        InputRawOffsetsStrings.resize(GlobalVarsOfPeTab::objPEInformation.ImageFileHeader.NumberOfSections);
-        InputRawSizesStrings.resize(GlobalVarsOfPeTab::objPEInformation.ImageFileHeader.NumberOfSections);
-        InputCharateristicsStrings.resize(GlobalVarsOfPeTab::objPEInformation.ImageFileHeader.NumberOfSections);
+        InputSizeStrings.resize(GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.nt.FileHeader.NumberOfSections);
+        InputAddressStrings.resize(GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.nt.FileHeader.NumberOfSections);
+        InputAddress64Strings.resize(GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.nt.FileHeader.NumberOfSections);
+        InputRawOffsetsStrings.resize(GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.nt.FileHeader.NumberOfSections);
+        InputRawSizesStrings.resize(GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.nt.FileHeader.NumberOfSections);
+        InputCharateristicsStrings.resize(GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.nt.FileHeader.NumberOfSections);
         Init = true;
     }
+
+    static PIMAGE_NT_HEADERS pImageNTHeader = (PIMAGE_NT_HEADERS)((uint64_t)GlobalVarsOfPeTab::objPEInformation->Pe->fileBuffer->buf + (uint64_t)GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.dos.e_lfanew);
+    static PIMAGE_SECTION_HEADER pImageSectionHeader = (PIMAGE_SECTION_HEADER)((uint64_t)pImageNTHeader + 4 + sizeof(IMAGE_FILE_HEADER) + GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.nt.FileHeader.SizeOfOptionalHeader);
 
     if (ImGui::BeginTable("l", 9, DefaultTableFlags))
     {
@@ -72,7 +102,7 @@ void PETab_::PeSectionHeaderTableRender()
         ImGui::TableSetupColumn("##", ImGuiTableColumnFlags_Disabled);
         ImGui::TableHeadersRow();
 
-        for (int Row = 0; Row < GlobalVarsOfPeTab::objPEInformation.ImageFileHeader.NumberOfSections - 1; ++Row)
+        for (int Row = 0; Row < GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.nt.FileHeader.NumberOfSections - 1; ++Row)
         {
             ImGui::TableNextRow(ImGuiTableRowFlags_None, 17);
             for (int Column = 0; Column < 9; ++Column)
@@ -97,7 +127,7 @@ void PETab_::PeSectionHeaderTableRender()
                 }
                 else if (Column == 1)
                 {
-                    ImGui::Selectable((char*)GlobalVarsOfPeTab::objPEInformation.pImageSectionHeader[Row].Name);
+                    ImGui::Selectable((char*)pImageSectionHeader[Row].Name);
                     if (ImGui::BeginPopupContextItem())
                     {
                         ImGui::PushStyleColor(ImGuiCol_Button, Dimensionses.U32TransparentColor);
@@ -112,12 +142,12 @@ void PETab_::PeSectionHeaderTableRender()
                 }
                 else if (Column == 2)
                 {
-                    int Offset = GlobalVarsOfPeTab::objPEInformation.pImageSectionHeader[Row].PointerToRawData;
-                    int Length = GlobalVarsOfPeTab::objPEInformation.pImageSectionHeader[Row].SizeOfRawData;
+                    int Offset = pImageSectionHeader[Row].PointerToRawData;
+                    int Length = pImageSectionHeader[Row].SizeOfRawData;
 
-                    if (GlobalVarsOfPeTab::Entropy.size() != GlobalVarsOfPeTab::objPEInformation.ImageFileHeader.NumberOfSections)
+                    if (GlobalVarsOfPeTab::Entropy.size() != GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.nt.FileHeader.NumberOfSections)
                     {
-                        GlobalVarsOfPeTab::Entropy.push_back(GlobalVarsOfPeTab::objPeReader.CalcEntropy((char*)GlobalVarsOfPeTab::objPEInformation.pImageDOSHeaderOfPe, Offset, Offset + Length));
+                        GlobalVarsOfPeTab::Entropy.push_back(CalcEntropy(GlobalVarsOfPeTab::objPEInformation->Pe->fileBuffer->buf, Offset, Offset + Length));
                     }
 
                     ImGui::Selectable(std::to_string(GlobalVarsOfPeTab::Entropy[Row]).c_str());
@@ -142,48 +172,72 @@ void PETab_::PeSectionHeaderTableRender()
                 {
                     ImGui::PushStyleColor(ImGuiCol_FrameBg, 0);
 
-                    EditField<DWORD>(
+                    EditField<uint32_t>(
                         "##" + std::to_string(Row),
                         InputSizeStrings[Row],
-                        &SectionDwordSizeVals[Row],
-                        9, 
+                        &SectionPointers.SectionDwordSizeVals[Row],
+                        9,
                         false,
-                        SectionDwordPointersSizeVals[Row]);
+                        (uint32_t*)SectionPointers.SectionDwordPointersSizeVals[Row]);
 
                     ImGui::PopStyleColor();
                 }
                 else if (Column == 4)
                 {
-                    static std::vector<bool> Opened(GlobalVarsOfPeTab::objPEInformation.ImageFileHeader.NumberOfSections - 1);
+                    static std::vector<bool> Opened(GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.nt.FileHeader.NumberOfSections - 1);
                     auto Iterator = std::find(Opened.begin(), Opened.end(), true);
                     if (Iterator != Opened.end() && Opened[Row] == true)
                     {
                         ImGui::PushStyleColor(ImGuiCol_FrameBg, 0);
-                        DWORD64 Ep =
-                            (DWORD64)GlobalVarsOfPeTab::objPEInformation.pImageSectionHeader[Row].VirtualAddress + GlobalVarsOfPeTab::objPEInformation.pImageNTHeaderOfPe->OptionalHeader.ImageBase;
+                        DWORD64 Ep;
+                        if (GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.nt.OptionalMagic == IMAGE_NT_OPTIONAL_HDR64_MAGIC)
+                        {
+                            Ep = (DWORD64)pImageSectionHeader[Row].VirtualAddress + GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.nt.OptionalHeader64.ImageBase;
+                        }
+                        else
+                        {
+                            Ep = (DWORD64)pImageSectionHeader[Row].VirtualAddress + GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.nt.OptionalHeader.ImageBase;
+                        }
+
                         std::stringstream Ss;
                         Ss << std::setfill('0') << std::setw(sizeof(uint64_t) * 2) << std::uppercase << std::hex << Ep << " ";
                         InputAddress64Strings[Row] = Ss.str();
-                        EditField<DWORD>(
-                            "##" + std::to_string((Row + 20) * 1000),
-                            InputAddress64Strings[Row],
-                            SectionDwordPointersAddressVals[Row],
-                            17,
-                            false,
-                            nullptr,
-                            true,
-                            GlobalVarsOfPeTab::objPEInformation.pImageNTHeaderOfPe->OptionalHeader.ImageBase,
-                            true);
+                        if (GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.nt.OptionalMagic == IMAGE_NT_OPTIONAL_HDR64_MAGIC)
+                        {
+                            EditField<uint32_t>(
+                                "##" + std::to_string((Row + 20) * 1000),
+                                InputAddress64Strings[Row],
+                                (uint32_t*)SectionPointers.SectionDwordPointersAddressVals[Row],
+                                17,
+                                false,
+                                nullptr,
+                                true,
+                                GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.nt.OptionalHeader64.ImageBase,
+                                true);
+                        }
+                        else
+                        {
+                            EditField<uint32_t>(
+                                "##" + std::to_string((Row + 20) * 1000),
+                                InputAddress64Strings[Row],
+                                (uint32_t*)SectionPointers.SectionDwordPointersAddressVals[Row],
+                                17,
+                                false,
+                                nullptr,
+                                true,
+                                GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.nt.OptionalHeader.ImageBase,
+                                true);
+                        }
                         ImGui::PopStyleColor();
                     }
                     else
                     {
                         ImGui::PushStyleColor(ImGuiCol_FrameBg, 0);
 
-                        EditField<DWORD>(
+                        EditField<uint32_t>(
                             "##" + std::to_string((Row + 20) * 1000),
                             InputAddressStrings[Row],
-                            SectionDwordPointersAddressVals[Row],
+                            (uint32_t*)SectionPointers.SectionDwordPointersAddressVals[Row],
                             9);
 
                         ImGui::PopStyleColor();
@@ -207,10 +261,10 @@ void PETab_::PeSectionHeaderTableRender()
                 {
                     ImGui::PushStyleColor(ImGuiCol_FrameBg, 0);
 
-                    EditField<DWORD>(
+                    EditField<uint32_t>(
                         "##" + std::to_string((Row + 30) * 2000),
                         InputAddressStrings[Row],
-                        SectionDwordPointersRawOffsetsVals[Row],
+                        (uint32_t*)SectionPointers.SectionDwordPointersRawOffsetsVals[Row],
                         9);
 
                     ImGui::PopStyleColor();
@@ -219,10 +273,10 @@ void PETab_::PeSectionHeaderTableRender()
                 {
                     ImGui::PushStyleColor(ImGuiCol_FrameBg, 0);
 
-                    EditField<DWORD>(
+                    EditField<uint32_t>(
                         "##" + std::to_string((Row + 40) * 3000),
                         InputRawSizesStrings[Row],
-                        SectionDwordPointersRawSizesVals[Row],
+                        (uint32_t*)SectionPointers.SectionDwordPointersRawSizesVals[Row],
                         9);
 
                     ImGui::PopStyleColor();
@@ -232,10 +286,10 @@ void PETab_::PeSectionHeaderTableRender()
                     static std::vector<bool> Opened(Names.Windowses.MainDebuggerInterface.MainTabs.PETab.PENodes.SectionHeader.SectionCharateristics.size());
                     ImGui::PushStyleColor(ImGuiCol_FrameBg, 0);
 
-                    EditField<DWORD>(
+                    EditField<uint32_t>(
                         "##" + std::to_string((Row + 50) * 4000),
                         InputCharateristicsStrings[Row],
-                        SectionDwordPointersCharateristicsVals[Row],
+                        (uint32_t*)SectionPointers.SectionDwordPointersCharateristicsVals[Row],
                         9);
 
                     ImGui::PopStyleColor();
@@ -271,7 +325,7 @@ void PETab_::PeInfoOfSectionInSectionHeaderWindowRender()
 
 void PETab_::PeSectionHeaderInternalWindowRender()
 {
-    GlobalVarsOfPeTab::Opened.resize(GlobalVarsOfPeTab::objPEInformation.ImageFileHeader.NumberOfSections - 1);
+    GlobalVarsOfPeTab::Opened.resize(GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.nt.FileHeader.NumberOfSections - 1);
     auto Iterator = std::find(GlobalVarsOfPeTab::Opened.begin(), GlobalVarsOfPeTab::Opened.end(), true);
     if (Iterator != GlobalVarsOfPeTab::Opened.end())
     {

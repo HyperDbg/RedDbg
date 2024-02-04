@@ -1,8 +1,8 @@
 #include "GUI/MenuOfMainTabs/PeMenuBegin/PeTab.hpp"
 
 namespace GlobalVarsOfPeTab {
-    extern PEInformation objPEInformation;
-    extern PeReader objPeReader;
+    extern std::shared_ptr<PeReader> objPEInformation;
+    //extern PeReader objPeReader;
 }
 
 void PETab_::PeRichHeaderTableRender()

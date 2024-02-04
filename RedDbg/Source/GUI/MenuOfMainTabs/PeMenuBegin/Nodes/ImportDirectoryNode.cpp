@@ -1,8 +1,8 @@
 #include "GUI/MenuOfMainTabs/PeMenuBegin/PeTab.hpp"
 
 namespace GlobalVarsOfPeTab {
-    extern PEInformation objPEInformation;
-    extern PeReader objPeReader;
+    extern std::shared_ptr<PeReader> objPEInformation;
+    //extern PeReader objPeReader;
 
     static std::vector<bool> Opened;
 }
@@ -33,10 +33,10 @@ void PETab_::PeImportDirectoryTableRender()
         ImGui::TableHeadersRow();
 
         //ImGuiListClipper clipper;
-        //clipper.Begin(GlobalVarsOfPeTab::objPEInformation.Apis.Dlls.size(), 17);//TODO: DataTransfer
+        //clipper.Begin(GlobalVarsOfPeTab::objPEInformation->Apis.Dlls.size(), 17);//TODO: DataTransfer
         //while (clipper.Step())
         //{
-            for (uint64_t Row =0; Row < GlobalVarsOfPeTab::objPEInformation.Apis.Dlls.size(); ++Row)
+            for (uint64_t Row =0; Row < GlobalVarsOfPeTab::objPEInformation->Dlls.size(); ++Row)
             {
                 ImGui::TableNextRow(ImGuiTableRowFlags_None, 17);
                 for (int Column = 0; Column < 10; ++Column)
@@ -62,11 +62,11 @@ void PETab_::PeImportDirectoryTableRender()
                     }
                     else if (Column == 1)
                     {
-                        ImGui::Selectable(GlobalVarsOfPeTab::objPEInformation.Apis.Dlls[Row]->Name.c_str());
+                        ImGui::Selectable(GlobalVarsOfPeTab::objPEInformation->Dlls[Row]->Name.c_str());
                     }
                     else if (Column == 2)
                     {
-                        ImGui::Selectable(std::to_string(GlobalVarsOfPeTab::objPEInformation.Apis.Functions[Row]->size()).c_str());
+                        ImGui::Selectable(std::to_string(GlobalVarsOfPeTab::objPEInformation->Functions[Row]->size()).c_str());
                     }
                     else if (Column == 3)
                     {
@@ -102,7 +102,7 @@ void PETab_::PeImportDirectoryTableRender()
 
 void PETab_::PeImportDirectoryInternalWindowRender()
 {
-    GlobalVarsOfPeTab::Opened.resize(GlobalVarsOfPeTab::objPEInformation.Apis.Dlls.size());
+    GlobalVarsOfPeTab::Opened.resize(GlobalVarsOfPeTab::objPEInformation->Dlls.size());
     auto Iterator = std::find(GlobalVarsOfPeTab::Opened.begin(), GlobalVarsOfPeTab::Opened.end(), true);
     if (Iterator != GlobalVarsOfPeTab::Opened.end())
     {
@@ -148,7 +148,7 @@ void PETab_::PeImportDirectoryInternalWindowRender()
             *this,
             true);
     }
-    else 
+    else
     {
         Dimensionses_::WindowGeneralSizes WindowGeneralSizes(
             Dimensionses.TitleBarHeight,

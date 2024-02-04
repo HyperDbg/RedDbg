@@ -1,8 +1,9 @@
 #include "GUI/MenuOfMainTabs/PeMenuBegin/PeTab.hpp"
 
 namespace GlobalVarsOfPeTab {
-    extern PEInformation objPEInformation;
-    extern PeReader objPeReader;
+    extern std::shared_ptr<PeReader> objPEInformation;
+    //extern PEInformation objPEInformation;
+    //extern PeReader objPeReader;
 }
 
 void PETab_::PeNtHeaderTableRender()
@@ -40,7 +41,7 @@ void PETab_::PeNtHeaderTableRender()
                 else if (Column == 1)
                 {
                     std::stringstream Ss;
-                    Ss << std::uppercase << std::hex << GlobalVarsOfPeTab::objPEInformation.pImageDOSHeaderOfPe->e_lfanew;
+                    Ss << std::uppercase << std::hex << GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.dos.e_lfanew;
 
                     ImGui::Selectable(Ss.str().c_str());
                 }
@@ -51,24 +52,24 @@ void PETab_::PeNtHeaderTableRender()
                 else if (Column == 3)
                 {
                     std::stringstream Ss;
-                    if (GlobalVarsOfPeTab::objPEInformation.x64.pImageNTHeader64 != nullptr)
+                    if (GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.nt.OptionalMagic == IMAGE_NT_OPTIONAL_HDR64_MAGIC)
                     {
                         Ss << std::uppercase << std::setfill('0') <<
                             std::setw(sizeof(uint64_t) * 2) << std::hex <<
-                            GlobalVarsOfPeTab::objPEInformation.x64.pImageNTHeader64->OptionalHeader.ImageBase + (uint64_t)GlobalVarsOfPeTab::objPEInformation.pImageDOSHeaderOfPe->e_lfanew;
+                            GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.nt.OptionalHeader64.ImageBase + (uint64_t)GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.dos.e_lfanew;
                     }
                     else
                     {
                         Ss << std::uppercase << std::setfill('0') <<
                             std::setw(sizeof(uint32_t) * 2) << std::hex <<
-                            GlobalVarsOfPeTab::objPEInformation.x32.pImageNTHeader32->OptionalHeader.ImageBase + (uint64_t)GlobalVarsOfPeTab::objPEInformation.pImageDOSHeaderOfPe->e_lfanew;
+                            GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.nt.OptionalHeader.ImageBase + (uint64_t)GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.dos.e_lfanew;
                     }
                     ImGui::Selectable(Ss.str().c_str());
                 }
                 else if (Column == 4)
                 {
                     uint32_t* Nt =
-                        (uint32_t*)((uint64_t)GlobalVarsOfPeTab::objPEInformation.pImageDOSHeaderOfPe + (uint64_t)GlobalVarsOfPeTab::objPEInformation.pImageDOSHeaderOfPe->e_lfanew);
+                        (uint32_t*)((uint64_t)GlobalVarsOfPeTab::objPEInformation->Pe->fileBuffer->buf + (uint64_t)GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.dos.e_lfanew);
 
                     ImGui::PushStyleColor(ImGuiCol_FrameBg, 0);
                     static std::string a;
@@ -81,7 +82,7 @@ void PETab_::PeNtHeaderTableRender()
                 else if (Column == 5)
                 {
                     ImGui::Selectable(
-                        (char*)((uint64_t)GlobalVarsOfPeTab::objPEInformation.pImageDOSHeaderOfPe + (uint64_t)GlobalVarsOfPeTab::objPEInformation.pImageDOSHeaderOfPe->e_lfanew));
+                        (char*)((uint64_t)GlobalVarsOfPeTab::objPEInformation->Pe->fileBuffer->buf + (uint64_t)GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.dos.e_lfanew));
                 }
 
                 ImGui::PopStyleColor(2);

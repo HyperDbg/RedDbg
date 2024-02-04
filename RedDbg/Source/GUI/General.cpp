@@ -13,11 +13,17 @@
 #endif
 
 #include <Windows.h>
+#include <windowsx.h>
 
 // Forward declare message handler from imgui_impl_win32.cpp
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 GeneralGUI_ objGeneralGUI;
+
+namespace GeneralGlobalVars
+{
+    HWND HwndMainWindow = nullptr;
+}
 
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -40,19 +46,58 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     }
     case WM_NCHITTEST:
     {
+        // Handle window resizing and moving
         LRESULT hit = DefWindowProc(hWnd, msg, wParam, lParam);
-        if (hit == HTCLIENT) {
-            POINT pt;
-            GetCursorPos(&pt);
-            ScreenToClient(hWnd, &pt);
-            if (pt.x < 5 && pt.y < 5) { return HTTOPLEFT; }
-            if (pt.x > objGeneralGUI.Width - 5 && pt.y < 5) { return HTTOPRIGHT; }
-            if (pt.x < 5 && pt.y > objGeneralGUI.Height - 5) { return HTBOTTOMLEFT; }
-            if (pt.x > objGeneralGUI.Width - 5 && pt.y > objGeneralGUI.Height - 5) { return HTBOTTOMRIGHT; }
-            if (pt.x < 5) { return HTLEFT; }
-            if (pt.x > objGeneralGUI.Width - 5) { return HTRIGHT; }
-            if (pt.y < 5) { return HTTOP; }
-            if (pt.y > objGeneralGUI.Height - 5) { return HTBOTTOM; }
+        POINT cursor = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+
+        const POINT border{
+            static_cast<LONG>((::GetSystemMetrics(SM_CXFRAME) + ::GetSystemMetrics(SM_CXPADDEDBORDER)) * 1.0),
+            static_cast<LONG>((::GetSystemMetrics(SM_CYFRAME) + ::GetSystemMetrics(SM_CXPADDEDBORDER)) * 1.0)
+        };
+
+        RECT window;
+        if (!::GetWindowRect(hWnd, &window)) {
+            return HTNOWHERE;
+        }
+
+        constexpr static auto RegionClient = 0b0000;
+        constexpr static auto RegionLeft = 0b0001;
+        constexpr static auto RegionRight = 0b0010;
+        constexpr static auto RegionTop = 0b0100;
+        constexpr static auto RegionBottom = 0b1000;
+
+        const auto result =
+            RegionLeft * (cursor.x < (window.left + border.x)) |
+            RegionRight * (cursor.x >= (window.right - border.x)) |
+            RegionTop * (cursor.y < (window.top + border.y)) |
+            RegionBottom * (cursor.y >= (window.bottom - border.y));
+
+        if (result != 0 && (ImGui::IsAnyItemHovered() || ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopupId))) {
+            break;
+        }
+
+        std::string_view hoveredWindowName = GImGui->HoveredWindow == nullptr ? "" : GImGui->HoveredWindow->Name;
+
+        switch (result) {
+        case RegionLeft: return HTLEFT;
+        case RegionRight: return HTRIGHT;
+        case RegionTop: return HTTOP;
+        case RegionBottom: return HTBOTTOM;
+        case RegionTop | RegionLeft: return HTTOPLEFT;
+        case RegionTop | RegionRight: return HTTOPRIGHT;
+        case RegionBottom | RegionLeft: return HTBOTTOMLEFT;
+        case RegionBottom | RegionRight: return HTBOTTOMRIGHT;
+        case RegionClient:
+        default:
+            if (cursor.y < (window.top + 25 * 2)) {
+                if (hoveredWindowName == "##TitleBar/##MenuBarOfTitleBar" || hoveredWindowName == "##TitleBar") {
+                    if (!ImGui::IsAnyItemHovered()) {
+                        return HTCAPTION;
+                    }
+                }
+            }
+
+            break;
         }
         return hit;
     }
@@ -76,7 +121,6 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
         return 0;
     }
     }
-
     return ::DefWindowProcW(hWnd, msg, wParam, lParam);
 }
 
@@ -112,9 +156,9 @@ void GeneralGUI_::OpenGl3DeInit()
     ImGui_ImplWin32_Shutdown();
     ImGui::DestroyContext();
 
-    CleanupDeviceWGL(GlobalClassVars.HwndMainWindow, &GlobalClassVars.MainWindow);
+    CleanupDeviceWGL(GeneralGlobalVars::HwndMainWindow, &GlobalClassVars.MainWindow);
     wglDeleteContext(GlobalClassVars.hRC);
-    ::DestroyWindow(GlobalClassVars.HwndMainWindow);
+    ::DestroyWindow(GeneralGlobalVars::HwndMainWindow);
     ::UnregisterClassW(GlobalClassVars.MainWndClassExW.lpszClassName, GlobalClassVars.MainWndClassExW.hInstance);
 }
 
@@ -123,21 +167,21 @@ bool GeneralGUI_::OpenGl3Init()
     GlobalClassVars.MainWndClassExW = { sizeof(GlobalClassVars.MainWndClassExW), CS_OWNDC, WndProc, 0L, 0L, GetModuleHandle(NULL), NULL, NULL, NULL, NULL, L"ImGui", NULL };
     ::RegisterClassExW(&GlobalClassVars.MainWndClassExW);
 
-    HWND HwndMainWindow = CreateWindowW(GlobalClassVars.MainWndClassExW.lpszClassName, L"RedDbg", WS_POPUP, 100, 100, 1280, 800, NULL, NULL, GlobalClassVars.MainWndClassExW.hInstance, NULL);
-
+    GeneralGlobalVars::HwndMainWindow = CreateWindowW(GlobalClassVars.MainWndClassExW.lpszClassName, L"RedDbg", WS_POPUP, 100, 100, 1280, 800, NULL, NULL, GlobalClassVars.MainWndClassExW.hInstance, NULL);
+    //GlobalClassVars.HwndMainWindow = HwndMainWindow;
     // Initialize OpenGL
-    if (!CreateDeviceWGL(HwndMainWindow, &GlobalClassVars.MainWindow))
+    if (!CreateDeviceWGL(GeneralGlobalVars::HwndMainWindow, &GlobalClassVars.MainWindow))
     {
-        CleanupDeviceWGL(HwndMainWindow, &GlobalClassVars.MainWindow);
-        ::DestroyWindow(HwndMainWindow);
+        CleanupDeviceWGL(GeneralGlobalVars::HwndMainWindow, &GlobalClassVars.MainWindow);
+        ::DestroyWindow(GeneralGlobalVars::HwndMainWindow);
         ::UnregisterClassW(GlobalClassVars.MainWndClassExW.lpszClassName, GlobalClassVars.MainWndClassExW.hInstance);
         return false;
     }
     wglMakeCurrent(GlobalClassVars.MainWindow.hDC, GlobalClassVars.hRC);
 
     // Show the window
-    ::ShowWindow(HwndMainWindow, SW_SHOWDEFAULT);
-    ::UpdateWindow(HwndMainWindow);
+    ::ShowWindow(GeneralGlobalVars::HwndMainWindow, SW_SHOWDEFAULT);
+    ::UpdateWindow(GeneralGlobalVars::HwndMainWindow);
 
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
@@ -150,7 +194,7 @@ bool GeneralGUI_::OpenGl3Init()
     ImGui::StyleColorsDark();
 
     // Setup Platform/Renderer backends
-    ImGui_ImplWin32_InitForOpenGL(HwndMainWindow);
+    ImGui_ImplWin32_InitForOpenGL(GeneralGlobalVars::HwndMainWindow);
     ImGui_ImplOpenGL3_Init();
     return true;
 }

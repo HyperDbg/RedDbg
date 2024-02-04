@@ -397,6 +397,8 @@ private:
 			const std::string_view MenuTracingName = "Tracing";
 			const std::string_view MenuOptionsName = "Options";
 			const std::string_view MenuHelpName = "Help";
+
+			const std::string_view Device = "\\\\.\\RedDbgHyperVisor";
 		public:
 			MenuFile_ MenuFile;
 			MenuDebug_ MenuDebug;
@@ -1046,35 +1048,6 @@ private:
 								Machine.SH5,
 								Machine.Thumb,
 								Machine.WCEMIPSV2,
-								/*
-								Machine.Intel386,
-								Machine.R3000Mips,
-								Machine.R4000Mips,
-								Machine.R10000Mips,
-								Machine.MipsWceV2,
-								Machine.AlphaAxp,
-								Machine.SH3,
-								Machine.SH3DSP,
-								Machine.SH3E,
-								Machine.SH4,
-								Machine.SH5,
-								Machine.Arm,
-								Machine.ArmThumb,
-								Machine.ArmAm33,
-								Machine.IbmPowerPc,
-								Machine.IbmPowerPcFp,
-								Machine.Intel64,
-								Machine.Mips16,
-								Machine.MipsFpu,
-								Machine.MipsFpu16,
-								Machine.Alpha64,
-								Machine.InfineonTriCore,
-								Machine.InfineonCEF,
-								Machine.EfiByteCode,
-								Machine.Amd64K8,
-								Machine.M32R,
-								Machine.CEE
-								*/
 							};
 
 							const std::vector<std::string_view> MachineToolTips{

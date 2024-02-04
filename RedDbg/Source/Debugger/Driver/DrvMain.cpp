@@ -605,7 +605,7 @@ extern "C" void SvmVmmRun(_In_ void* InitialVmmStackPointer);
 void DrvUnload(_In_ PDRIVER_OBJECT DriverObj)
 {
 	UNREFERENCED_PARAMETER(DriverObj);
-	KdPrint(("Sample driver Unload called\n"));
+	IoDeleteDevice(DriverObj->DeviceObject);
 }
 
 NTSTATUS DrvUnsupported(PDEVICE_OBJECT DeviceObject, PIRP Irp)
@@ -647,6 +647,12 @@ NTSTATUS DrvCreate(PDEVICE_OBJECT DeviceObject, PIRP Irp)
 	return STATUS_SUCCESS;
 }
 
+//#define IOCTL_GET_HEAPS \
+//   CTL_CODE( FILE_DEVICE_UNKNOWN, 0x809, METHOD_BUFFERED, FILE_ANY_ACCESS )
+//
+//#define IOCTL_GET_HEAP \
+//   CTL_CODE( FILE_DEVICE_UNKNOWN, 0x808, METHOD_BUFFERED, FILE_ANY_ACCESS )
+
 NTSTATUS DrvDispatchIoControl(PDEVICE_OBJECT DeviceObject, PIRP Irp)
 {
 	PIO_STACK_LOCATION IrpStack;
@@ -655,26 +661,48 @@ NTSTATUS DrvDispatchIoControl(PDEVICE_OBJECT DeviceObject, PIRP Irp)
 	NTSTATUS Status = STATUS_SUCCESS;
 	UNREFERENCED_PARAMETER(DeviceObject);
 
+	IrpStack = IoGetCurrentIrpStackLocation(Irp);
 	ULONG InBuffLength;
 	ULONG OutBuffLength;
-	PUSERMODE_LOADED_MODULE_DETAILS DebuggerUsermodeModulesRequest;
-
-	IrpStack = IoGetCurrentIrpStackLocation(Irp);
 
 	switch (IrpStack->Parameters.DeviceIoControl.IoControlCode)
 	{
-	case IoCtlCode::ProcessUserLevel::GetMemoryMap:
+	case IoCtlCode::GetMemoryMapProc:
 	{
-		//
-		// First validate the parameters.
-		//
-		if (IrpStack->Parameters.DeviceIoControl.InputBufferLength < sizeof(USERMODE_LOADED_MODULE_DETAILS) || Irp->AssociatedIrp.SystemBuffer == NULL)
+		PUSERMODE_LOADED_MODULE_DETAILS DebuggerUsermodeModulesRequest = nullptr;
 		{
-			Status = STATUS_INVALID_PARAMETER;
-			LogError("Err, invalid parameter to IOCTL dispatcher");
-			break;
+			// First validate the parameters.
+			if (IrpStack->Parameters.DeviceIoControl.InputBufferLength < sizeof(USERMODE_LOADED_MODULE_DETAILS) || Irp->AssociatedIrp.SystemBuffer == NULL)
+			{
+				Status = STATUS_INVALID_PARAMETER;
+				LogError("Err, invalid parameter to IOCTL dispatcher");
+				break;
+			}
+
+			InBuffLength = IrpStack->Parameters.DeviceIoControl.InputBufferLength;
+			OutBuffLength = IrpStack->Parameters.DeviceIoControl.OutputBufferLength;
+
+			if (!InBuffLength || !OutBuffLength)
+			{
+				Status = STATUS_INVALID_PARAMETER;
+				break;
+			}
 		}
 
+		// Both usermode and to send to usermode and the coming buffer are
+		// at the same place
+		DebuggerUsermodeModulesRequest = (PUSERMODE_LOADED_MODULE_DETAILS)Irp->AssociatedIrp.SystemBuffer;
+
+		IoCtlDispatcher.ProcessUserLevel.GetMemoryMap(DebuggerUsermodeModulesRequest, OutBuffLength);
+		
+		Irp->IoStatus.Information = OutBuffLength;
+		Irp->IoStatus.Status = STATUS_SUCCESS;
+		IoCompleteRequest(Irp, IO_NO_INCREMENT);
+		Status = STATUS_SUCCESS;
+		break;
+	}
+	case IoCtlCode::GetMemoryMapSystem:
+	{
 		InBuffLength = IrpStack->Parameters.DeviceIoControl.InputBufferLength;
 		OutBuffLength = IrpStack->Parameters.DeviceIoControl.OutputBufferLength;
 
@@ -684,13 +712,89 @@ NTSTATUS DrvDispatchIoControl(PDEVICE_OBJECT DeviceObject, PIRP Irp)
 			break;
 		}
 
-		//
+		IoCtlDispatcher.SystemKernelLevel.GetMemoryMap();
+
+		Irp->IoStatus.Information = OutBuffLength;
+		Irp->IoStatus.Status = STATUS_SUCCESS;
+		IoCompleteRequest(Irp, IO_NO_INCREMENT);
+		Status = STATUS_SUCCESS;
+		break;
+	}
+	case IoCtlCode::GetProcessHeap: __fallthrough;
+	case IoCtlCode::GetProcessHeaps:
+	{
+		PUSERMODE_HEAP_DETAILS DebuggerUserModeHeapsRequest = nullptr;
+		{
+			// First validate the parameters.
+			if (IrpStack->Parameters.DeviceIoControl.InputBufferLength < sizeof(USERMODE_HEAP_DETAILS) || Irp->AssociatedIrp.SystemBuffer == NULL)
+			{
+				Status = STATUS_INVALID_PARAMETER;
+				DbgPrint("Err, invalid parameter to IOCTL dispatcher: %x && SystemBuffer = %p", IrpStack->Parameters.DeviceIoControl.InputBufferLength < sizeof(USERMODE_HEAP_DETAILS), Irp->AssociatedIrp.SystemBuffer);
+				break;
+			}
+
+			InBuffLength = IrpStack->Parameters.DeviceIoControl.InputBufferLength;
+			OutBuffLength = IrpStack->Parameters.DeviceIoControl.OutputBufferLength;
+
+			if (!InBuffLength || !OutBuffLength)
+			{
+				Status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+		}
+
 		// Both usermode and to send to usermode and the coming buffer are
 		// at the same place
-		//
-		DebuggerUsermodeModulesRequest = (PUSERMODE_LOADED_MODULE_DETAILS)Irp->AssociatedIrp.SystemBuffer;
+		DebuggerUserModeHeapsRequest = (PUSERMODE_HEAP_DETAILS)Irp->AssociatedIrp.SystemBuffer;
 
-		IoCtlDispatcher.ProcessUserLevel.GetMemoryMap(DebuggerUsermodeModulesRequest, OutBuffLength);
+		if (IrpStack->Parameters.DeviceIoControl.IoControlCode == IoCtlCode::GetProcessHeaps)
+		{
+			IoCtlDispatcher.ProcessUserLevel._GetProcessHeaps(DebuggerUserModeHeapsRequest);
+		}
+		else
+		{
+			IoCtlDispatcher.ProcessUserLevel._GetProcessHeap(DebuggerUserModeHeapsRequest);
+		}
+
+		Irp->IoStatus.Information = OutBuffLength;
+		Irp->IoStatus.Status = STATUS_SUCCESS;
+		IoCompleteRequest(Irp, IO_NO_INCREMENT);
+		Status = STATUS_SUCCESS;
+		break;
+	}
+	case IoCtlCode::ReadProcessMemory:
+	{
+		//DbgBreakPoint();
+		PUSERMODE_READ_PROCESS_MEMORY DebuggerUserModeReadMemoryOfProcess = nullptr;
+		KAPC_STATE State;
+		{
+			// First validate the parameters.
+			if (IrpStack->Parameters.DeviceIoControl.InputBufferLength < sizeof(USERMODE_READ_PROCESS_MEMORY) || Irp->AssociatedIrp.SystemBuffer == NULL)
+			{
+				Status = STATUS_INVALID_PARAMETER;
+				DbgPrint("Err, invalid parameter to IOCTL dispatcher: %x && SystemBuffer = %p", IrpStack->Parameters.DeviceIoControl.InputBufferLength < sizeof(USERMODE_READ_PROCESS_MEMORY), Irp->AssociatedIrp.SystemBuffer);
+				break;
+			}
+
+			InBuffLength = IrpStack->Parameters.DeviceIoControl.InputBufferLength;
+			OutBuffLength = IrpStack->Parameters.DeviceIoControl.OutputBufferLength;
+
+			if (!InBuffLength || !OutBuffLength)
+			{
+				Status = STATUS_INVALID_PARAMETER;
+				break;
+			}
+		}
+
+		// Both usermode and to send to usermode and the coming buffer are
+		// at the same place
+		DebuggerUserModeReadMemoryOfProcess = (PUSERMODE_READ_PROCESS_MEMORY)Irp->AssociatedIrp.SystemBuffer;
+
+		auto BitnessOfProcess = IoCtlDispatcher.ProcessUserLevel.GetUserModeProcessBitness(DebuggerUserModeReadMemoryOfProcess->Pid);
+
+		KeStackAttachProcess((PRKPROCESS)BitnessOfProcess->SourceProcess, &State);
+		VirtualMemory::CopyMemory(DebuggerUserModeReadMemoryOfProcess->Dest, DebuggerUserModeReadMemoryOfProcess->Src, DebuggerUserModeReadMemoryOfProcess->Size);
+		KeUnstackDetachProcess(&State);
 	}
 	/*
 	case IOCTL_REGISTER_EVENT:
@@ -802,6 +906,9 @@ NTSTATUS DrvDispatchIoControl(PDEVICE_OBJECT DeviceObject, PIRP Irp)
 NTSTATUS DrvClose(PDEVICE_OBJECT DeviceObject, PIRP Irp)
 {
 	UNREFERENCED_PARAMETER(DeviceObject);
+
+	__crt_deinit();
+
 	Irp->IoStatus.Status = STATUS_SUCCESS;
 	Irp->IoStatus.Information = 0;
 	IoCompleteRequest(Irp, IO_NO_INCREMENT);
@@ -817,17 +924,24 @@ extern "C" NTSTATUS DriverEntry(_In_ PDRIVER_OBJECT DriverObject, PUNICODE_STRIN
 	__crt_init();
 
 	UnexportedFunctions_ UnexportedFunctions;
-	if (!objLog.LogInitialize()) { DbgPrint("[*] Log buffer is not initialized !\n"); DbgBreakPoint(); }
-	if (!objTrace.TraceInitializeMnemonic()) { DbgPrint("[*] Trace buffer is not initialized !\n"); DbgBreakPoint(); }
-	if (!SvmDbg::SvmDebuggerAllocator()) { DbgPrint("[*] SvmExitCodesAllocator buffer is not initialized !\n"); DbgBreakPoint(); }
+	//if (!objLog.LogInitialize()) { DbgPrint("[*] Log buffer is not initialized !\n"); DbgBreakPoint(); }
+	//if (!objTrace.TraceInitializeMnemonic()) { DbgPrint("[*] Trace buffer is not initialized !\n"); DbgBreakPoint(); }
+	//if (!SvmDbg::SvmDebuggerAllocator()) { DbgPrint("[*] SvmExitCodesAllocator buffer is not initialized !\n"); DbgBreakPoint(); }
 	//if (!SvmExitCodesAllocator()) { DbgPrint("[*] SvmExitCodesAllocator buffer is not initialized !\n"); DbgBreakPoint(); }
 
-	RtlInitUnicodeString(&DriverName, L"\\Device\\MyHypervisorDevice");
-	RtlInitUnicodeString(&DosDeviceName, L"\\DosDevices\\MyHypervisorDevice");
+	RtlInitUnicodeString(&DriverName, L"\\Device\\RedDbgHyperVisor");
+	RtlInitUnicodeString(&DosDeviceName, L"\\DosDevices\\RedDbgHyperVisor");
 	
 	Ntstatus = IoCreateDevice(DriverObject, 0, &DriverName, FILE_DEVICE_UNKNOWN, FILE_DEVICE_SECURE_OPEN, FALSE, &DeviceObject);
 	if (Ntstatus == STATUS_SUCCESS)
 	{
+		if (FlagOn(DeviceObject->Flags, DO_BUFFERED_IO)) {
+			SetFlag(DeviceObject->Flags, DO_BUFFERED_IO);
+		}
+		if (FlagOn(DeviceObject->Flags, DO_DIRECT_IO)) {
+			SetFlag(DeviceObject->Flags, DO_DIRECT_IO);
+		}
+
 		for (UINT64 Index = 0; Index < IRP_MJ_MAXIMUM_FUNCTION; Index++) { DriverObject->MajorFunction[Index] = DrvUnsupported; }
 
 		DriverObject->MajorFunction[IRP_MJ_CLOSE] = DrvClose;

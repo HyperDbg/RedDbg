@@ -7,3 +7,6 @@
 [submodule "RedDbg/Include/Deps/tomlplusplus"]
 	path = RedDbg/Include/Deps/tomlplusplus
 	url = https://github.com/marzer/tomlplusplus.git
+[submodule "RedDbg/Source/Deps/pe-parse"]
+	path = RedDbg/Source/Deps/pe-parse
+	url = https://github.com/trailofbits/pe-parse.git

@@ -1,10 +1,65 @@
-#include "GUI/CustomTitleBar.hpp"
+﻿#include "GUI/CustomTitleBar.hpp"
+#include "GUI/OptionsEnums.hpp"
 #include "GUI/UI/ImGui/FileDialog/ImGuiFileDialog.h"
 
+#include "DriverLoader/include/DriverLoader.hpp"
+
+std::string GenerateRandomString(int length)
+{
+    static std::string result;
+    if (result.size() == 0)
+    {
+        std::random_device rd;
+        std::mt19937 eng(rd());
+        std::uniform_int_distribution<> distr('a', 'z');
+
+        for (int n = 0; n < length; n++) {
+            result += distr(eng);
+        }
+    }
+    return result;
+}
+
+static std::wstring StringToWideString(
+    const std::string& str)
+{
+    // Create a std::string_view from the input string
+    std::string_view strView(str);
+
+    // Create a std::wstring from the std::string_view using the data() function
+    std::wstring wideStr(strView.data(), strView.data() + strView.size());
+
+    return wideStr;
+}
+
+namespace MenuBarGlobalVars
+{
+    namespace DriverTabGlobalVars
+    {
+        extern std::vector<bool> DriverTabCheckbox;
+        extern std::string DriverPath;
+    }
+}
+
+namespace GeneralGlobalVars
+{
+    extern HWND HwndMainWindow;
+}
+
 namespace GlobalVarsOfPeTab {
-    extern std::vector<float> Entropy;
-    PEInformation objPEInformation;
-    PeReader objPeReader;
+    extern std::vector<double> Entropy;
+    std::shared_ptr<PeReader> objPEInformation = nullptr;
+    //PEInformation objPEInformation;
+    //PeReader objPeReader;
+
+    bool NotLoaded = true;
+    bool Loaded = false;
+    uint8_t* Buf = nullptr;
+}
+
+namespace CustomTitleBarGlobalVars {
+    HANDLE hDriver = nullptr;
+    DWORD Pid = 0;
 }
 
 void CustomTitleBar_::ContentIsNullModalWindowRender(const std::string_view* Id, const std::string_view* Text, uint64_t* ErrorCode, bool* CheckBoxDontAsk)
@@ -25,24 +80,105 @@ void CustomTitleBar_::ContentIsNullModalWindowRender(const std::string_view* Id,
     }
 }
 
+DWORD CustomTitleBar_::GetProcessIdByName(const std::wstring& ProcessName)
+{
+    DWORD pid = 0;
+    HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+
+    if (snapshot != INVALID_HANDLE_VALUE) {
+        PROCESSENTRY32 pe32;
+        pe32.dwSize = sizeof(PROCESSENTRY32);
+
+        if (Process32First(snapshot, &pe32)) {
+            do {
+                if (wcscmp(ProcessName.c_str(), pe32.szExeFile) == 0) {
+                    pid = pe32.th32ProcessID;
+                    break;
+                }
+            } while (Process32Next(snapshot, &pe32));
+        }
+
+        CloseHandle(snapshot);
+    }
+
+    return pid;
+}
+
 void CustomTitleBar_::CustomWindowInTitleBarRender(MenuBarDispatcher_* Instance)
 {
     if (ImGuiFileDialog::Instance()->Display(Names.Windowses.TitleBarMenu.OpenFile.OpenID.data(), 32, ImVec2{ 1000, 400 }))
     {
         if (ImGuiFileDialog::Instance()->IsOk())
         {       
-            GlobalVarsOfPeTab::objPeReader.PathToCurrentDebugging = ImGuiFileDialog::Instance()->GetFilePathName();
-            GlobalVarsOfPeTab::objPeReader.Start = true;
-            GlobalVarsOfPeTab::objPEInformation = GlobalVarsOfPeTab::objPeReader.Pe(GlobalVarsOfPeTab::objPEInformation);
+            if (GlobalVarsOfPeTab::objPEInformation) { peparse::DestructParsedPE(GlobalVarsOfPeTab::objPEInformation->Pe); }
+
+            PeParser Parser;
+            GlobalVarsOfPeTab::objPEInformation = Parser.Open(ImGuiFileDialog::Instance()->GetFilePathName(), true);
+            //GlobalVarsOfPeTab::objPeReader.PathToCurrentDebugging = ImGuiFileDialog::Instance()->GetFilePathName();
+            //GlobalVarsOfPeTab::objPeReader.Start = true;
+            //GlobalVarsOfPeTab::objPEInformation = GlobalVarsOfPeTab::objPeReader.Pe(GlobalVarsOfPeTab::objPEInformation);
+            //GlobalVarsOfPeTab::Buf = GlobalVarsOfPeTab::objPEInformation->Pe->fileBuffer->buf;
+            //auto L_inspectSection = [](void* N,
+            //    const peparse::VA& secBase,
+            //    const std::string& secName,
+            //    const peparse::image_section_header& SectionHeader,
+            //    const peparse::bounded_buffer* data) -> int {
+            //        static_cast<void>(secBase);
+            //        static_cast<void>(secName);
+            //        static_cast<void>(data);
+            //        //auto Buf = static_cast<uint8_t*>(N);
+            //        std::string sectionName((char*)SectionHeader.Name);
+            //        if (sectionName.size() > 8) { sectionName = sectionName.substr(0, 8); }
+            //        printf("%p\n", GlobalVarsOfPeTab::Buf);
+            //        int Offset = SectionHeader.PointerToRawData;
+            //        int Length = SectionHeader.SizeOfRawData;
+            //        GlobalVarsOfPeTab::Entropy.push_back(CalcEntropy(GlobalVarsOfPeTab::Buf, Offset, Offset + Length, (peparse::bounded_buffer*)data));
+            //        return 0;
+            //    };
+
+            //peparse::IterSec(GlobalVarsOfPeTab::objPEInformation->Pe, L_inspectSection, nullptr);
+
+            static PIMAGE_NT_HEADERS pImageNTHeader = (PIMAGE_NT_HEADERS)((uint64_t)GlobalVarsOfPeTab::objPEInformation->Pe->fileBuffer->buf + (uint64_t)GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.dos.e_lfanew);
+            static PIMAGE_SECTION_HEADER pImageSectionHeader = (PIMAGE_SECTION_HEADER)((uint64_t)pImageNTHeader + 4 + sizeof(IMAGE_FILE_HEADER) + GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.nt.FileHeader.SizeOfOptionalHeader);
 
             GlobalVarsOfPeTab::Entropy.clear();
-            for (int Section = 0; Section < GlobalVarsOfPeTab::objPEInformation.ImageFileHeader.NumberOfSections - 1; ++Section) {
-                int Offset = GlobalVarsOfPeTab::objPEInformation.pImageSectionHeader[Section].PointerToRawData;
-                int Length = GlobalVarsOfPeTab::objPEInformation.pImageSectionHeader[Section].SizeOfRawData;
-                GlobalVarsOfPeTab::Entropy.push_back(GlobalVarsOfPeTab::objPeReader.CalcEntropy((char*)GlobalVarsOfPeTab::objPEInformation.pImageDOSHeaderOfPe, Offset, Offset + Length));
+            for (int Section = 0; Section < GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.nt.FileHeader.NumberOfSections - 1; ++Section) 
+            {
+                int Offset = pImageSectionHeader[Section].PointerToRawData;
+                int Length = pImageSectionHeader[Section].SizeOfRawData;
+                GlobalVarsOfPeTab::Entropy.push_back(CalcEntropy(GlobalVarsOfPeTab::objPEInformation->Pe->fileBuffer->buf, Offset, Offset + Length));
             }
-        }
 
+            if (MenuBarGlobalVars::DriverTabGlobalVars::DriverTabCheckbox[OptionEnums::AutomaticallyLoadAfterOpenPEFile])
+            {
+                static std::unique_ptr<DRIVER> Driver = std::make_unique<DRIVER>(MenuBarGlobalVars::DriverTabGlobalVars::DriverPath.c_str(),
+                    GenerateRandomString(16).c_str(),
+                    GenerateRandomString(16).c_str(), SERVICE_DEMAND_START);
+                if (MenuBarGlobalVars::DriverTabGlobalVars::DriverPath[0] != 0)
+                {
+                    if (!GlobalVarsOfPeTab::Loaded)
+                    {
+                        GlobalVarsOfPeTab::NotLoaded = false;
+                        GlobalVarsOfPeTab::Loaded = true;
+                        Driver->LoadDriver(
+                            MenuBarGlobalVars::DriverTabGlobalVars::DriverPath.c_str(),
+                            GenerateRandomString(16).c_str(),
+                            GenerateRandomString(16).c_str(), SERVICE_DEMAND_START);
+                    }
+
+                    CustomTitleBarGlobalVars::hDriver = CreateFileA(Names.Windowses.TitleBarMenu.Device.data(),
+                        GENERIC_READ | GENERIC_WRITE,
+                        FILE_SHARE_READ |
+                        FILE_SHARE_WRITE,
+                        NULL,
+                        OPEN_EXISTING,
+                        FILE_ATTRIBUTE_NORMAL |
+                        FILE_FLAG_OVERLAPPED,
+                        NULL);
+                }
+            }
+            CustomTitleBarGlobalVars::Pid = GetProcessIdByName(std::filesystem::path(ImGuiFileDialog::Instance()->GetFilePathName()).filename());
+        }
         ImGuiFileDialog::Instance()->Close();
     }
 
@@ -51,46 +187,46 @@ void CustomTitleBar_::CustomWindowInTitleBarRender(MenuBarDispatcher_* Instance)
         Instance->Display(Names.Windowses.TitleBarMenu.MenuOptions.Preferences.WindowId.data());
     }
 
-    static bool dont_ask_me_next_time = false;
-    switch (GlobalVarsOfPeTab::objPeReader.ErrorCode)
-    {
-    case AllOk: return;
-    case hPeFileContainsInvalidHandleValue: return ContentIsNullModalWindowRender(
-        &Names.Windowses.TitleBarMenu.OpenFile.Error.hPeFileContentId,
-        &Names.Windowses.TitleBarMenu.OpenFile.Error.hPeFileContentText,
-        &GlobalVarsOfPeTab::objPeReader.ErrorCode,
-        &dont_ask_me_next_time);
-    case pImageDOSHeaderOfPeContainsNullptr: return ContentIsNullModalWindowRender(
-        &Names.Windowses.TitleBarMenu.OpenFile.Error.pImageDOSHeaderOfPeId,
-        &Names.Windowses.TitleBarMenu.OpenFile.Error.pImageDOSHeaderOfPeText,
-        &GlobalVarsOfPeTab::objPeReader.ErrorCode,
-        &dont_ask_me_next_time);
-    case pImageNTHeaderOfPeContainsNullptr: return ContentIsNullModalWindowRender(
-        &Names.Windowses.TitleBarMenu.OpenFile.Error.pImageNTHeaderOfPeId,
-        &Names.Windowses.TitleBarMenu.OpenFile.Error.pImageNTHeaderOfPeText,
-        &GlobalVarsOfPeTab::objPeReader.ErrorCode,
-        &dont_ask_me_next_time);
-    case pImageNTHeader64ContainsNullptr: return ContentIsNullModalWindowRender(
-        &Names.Windowses.TitleBarMenu.OpenFile.Error.pImageNTHeader64Id,
-        &Names.Windowses.TitleBarMenu.OpenFile.Error.pImageNTHeader64Text,
-        &GlobalVarsOfPeTab::objPeReader.ErrorCode,
-        &dont_ask_me_next_time);
-    case pImageSectionHeaderContainsNullptr: return ContentIsNullModalWindowRender(
-        &Names.Windowses.TitleBarMenu.OpenFile.Error.pImageSectionHeaderId,
-        &Names.Windowses.TitleBarMenu.OpenFile.Error.pImageSectionHeaderText,
-        &GlobalVarsOfPeTab::objPeReader.ErrorCode,
-        &dont_ask_me_next_time);
-    case pImageImportHeaderContainsNullptr: return ContentIsNullModalWindowRender(
-        &Names.Windowses.TitleBarMenu.OpenFile.Error.pImageImportHeaderId,
-        &Names.Windowses.TitleBarMenu.OpenFile.Error.pImageImportHeaderText,
-        &GlobalVarsOfPeTab::objPeReader.ErrorCode,
-        &dont_ask_me_next_time);
-    case pImageImportDescriptorContainsNullptr: return ContentIsNullModalWindowRender(
-        &Names.Windowses.TitleBarMenu.OpenFile.Error.pImageImportDescriptorId,
-        &Names.Windowses.TitleBarMenu.OpenFile.Error.pImageImportDescriptorText,
-        &GlobalVarsOfPeTab::objPeReader.ErrorCode,
-        &dont_ask_me_next_time);
-    }
+    //static bool dont_ask_me_next_time = false;
+    //switch (GlobalVarsOfPeTab::objPeReader.ErrorCode)
+    //{
+    //case AllOk: return;
+    //case hPeFileContainsInvalidHandleValue: return ContentIsNullModalWindowRender(
+    //    &Names.Windowses.TitleBarMenu.OpenFile.Error.hPeFileContentId,
+    //    &Names.Windowses.TitleBarMenu.OpenFile.Error.hPeFileContentText,
+    //    &GlobalVarsOfPeTab::objPeReader.ErrorCode,
+    //    &dont_ask_me_next_time);
+    //case pImageDOSHeaderOfPeContainsNullptr: return ContentIsNullModalWindowRender(
+    //    &Names.Windowses.TitleBarMenu.OpenFile.Error.pImageDOSHeaderOfPeId,
+    //    &Names.Windowses.TitleBarMenu.OpenFile.Error.pImageDOSHeaderOfPeText,
+    //    &GlobalVarsOfPeTab::objPeReader.ErrorCode,
+    //    &dont_ask_me_next_time);
+    //case pImageNTHeaderOfPeContainsNullptr: return ContentIsNullModalWindowRender(
+    //    &Names.Windowses.TitleBarMenu.OpenFile.Error.pImageNTHeaderOfPeId,
+    //    &Names.Windowses.TitleBarMenu.OpenFile.Error.pImageNTHeaderOfPeText,
+    //    &GlobalVarsOfPeTab::objPeReader.ErrorCode,
+    //    &dont_ask_me_next_time);
+    //case pImageNTHeader64ContainsNullptr: return ContentIsNullModalWindowRender(
+    //    &Names.Windowses.TitleBarMenu.OpenFile.Error.pImageNTHeader64Id,
+    //    &Names.Windowses.TitleBarMenu.OpenFile.Error.pImageNTHeader64Text,
+    //    &GlobalVarsOfPeTab::objPeReader.ErrorCode,
+    //    &dont_ask_me_next_time);
+    //case pImageSectionHeaderContainsNullptr: return ContentIsNullModalWindowRender(
+    //    &Names.Windowses.TitleBarMenu.OpenFile.Error.pImageSectionHeaderId,
+    //    &Names.Windowses.TitleBarMenu.OpenFile.Error.pImageSectionHeaderText,
+    //    &GlobalVarsOfPeTab::objPeReader.ErrorCode,
+    //    &dont_ask_me_next_time);
+    //case pImageImportHeaderContainsNullptr: return ContentIsNullModalWindowRender(
+    //    &Names.Windowses.TitleBarMenu.OpenFile.Error.pImageImportHeaderId,
+    //    &Names.Windowses.TitleBarMenu.OpenFile.Error.pImageImportHeaderText,
+    //    &GlobalVarsOfPeTab::objPeReader.ErrorCode,
+    //    &dont_ask_me_next_time);
+    //case pImageImportDescriptorContainsNullptr: return ContentIsNullModalWindowRender(
+    //    &Names.Windowses.TitleBarMenu.OpenFile.Error.pImageImportDescriptorId,
+    //    &Names.Windowses.TitleBarMenu.OpenFile.Error.pImageImportDescriptorText,
+    //    &GlobalVarsOfPeTab::objPeReader.ErrorCode,
+    //    &dont_ask_me_next_time);
+    //}
 }
 
 void CustomTitleBar_::CustomTitleBarMenuRender()
@@ -175,6 +311,44 @@ void CustomTitleBar_::CustomTitleBarMenuRender()
             if (ImGui::MenuItem(Names.Windowses.TitleBarMenu.MenuFile.MenuDetachItemName.data(), Names.Windowses.TitleBarMenu.MenuFile.Shortcut.MenuDetachItemShortcutName.data()))
             {
 
+            }
+
+            ImGui::Separator();
+
+            if (ImGui::MenuItem("Driver load", (const char*)0, false, GlobalVarsOfPeTab::NotLoaded))
+            {
+                if (MenuBarGlobalVars::DriverTabGlobalVars::DriverPath[0] != 0)
+                {
+                    static std::unique_ptr<DRIVER> Driver = std::make_unique<DRIVER>(MenuBarGlobalVars::DriverTabGlobalVars::DriverPath.c_str(),
+                        GenerateRandomString(16).c_str(),
+                        GenerateRandomString(16).c_str(), SERVICE_DEMAND_START);
+
+                    GlobalVarsOfPeTab::NotLoaded = false;
+                    GlobalVarsOfPeTab::Loaded = true;
+                    Driver->LoadDriver(
+                        MenuBarGlobalVars::DriverTabGlobalVars::DriverPath.c_str(),
+                        GenerateRandomString(16).c_str(),
+                        GenerateRandomString(16).c_str(), SERVICE_DEMAND_START);
+                    CustomTitleBarGlobalVars::hDriver = CreateFileA(Names.Windowses.TitleBarMenu.Device.data(),
+                        GENERIC_READ | GENERIC_WRITE,
+                        FILE_SHARE_READ |
+                        FILE_SHARE_WRITE,
+                        NULL,
+                        OPEN_EXISTING,
+                        FILE_ATTRIBUTE_NORMAL |
+                        FILE_FLAG_OVERLAPPED,
+                        NULL);
+                }
+            }
+            if (ImGui::MenuItem("Driver unload", (const char*)0, false, GlobalVarsOfPeTab::Loaded))
+            {
+                GlobalVarsOfPeTab::NotLoaded = true;
+                GlobalVarsOfPeTab::Loaded = false;
+                static std::unique_ptr<DRIVER> Driver = std::make_unique<DRIVER>(MenuBarGlobalVars::DriverTabGlobalVars::DriverPath.c_str(),
+                    GenerateRandomString(16).c_str(),
+                    GenerateRandomString(16).c_str(), SERVICE_DEMAND_START);
+                Driver->UnloadDriver();
+                CustomTitleBarGlobalVars::hDriver = nullptr;
             }
 
             ImGui::EndMenu();
@@ -343,7 +517,7 @@ void CustomTitleBar_::CustomTitleBarMenuRender()
 void CustomTitleBar_::CustomTitleBarRender()
 {
 	WINDOWPLACEMENT wp{};
-	GetWindowPlacement(GlobalClassVars.HwndMainWindow, &wp);
+	GetWindowPlacement(GeneralGlobalVars::HwndMainWindow, &wp);
 
     static const ImGuiWindowFlags TitleBarFlags =
         ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse
@@ -376,23 +550,57 @@ void CustomTitleBar_::CustomTitleBarRender()
     ImGui::TextColored(ImVec4{ 1.0f,1.0f,1.0f,1.0f }, Names.Windowses.RedDebuggerName.data());
     ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 1.0f));
     ImGui::SameLine(ImGui::GetWindowWidth() - 3 * Dimensionses.TitleBarHeight);
+
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, Dimensionses.U32GrayColor);
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, Dimensionses.U32GrayColor);
     if (ImGui::Button("-")) {
-        ShowWindow(GlobalClassVars.HwndMainWindow, SW_MINIMIZE);
+        ShowWindow(GeneralGlobalVars::HwndMainWindow, SW_MINIMIZE);
     }
     ImGui::SameLine();
+
+    static bool Maximized = false;
+    static RECT prevRect;
     if (ImGui::Button("[]")) {
-        if (wp.showCmd == SW_MAXIMIZE) {
-            ShowWindow(GlobalClassVars.HwndMainWindow, SW_RESTORE);
+        HWND hwnd = GeneralGlobalVars::HwndMainWindow;
+        WINDOWPLACEMENT wp;
+        wp.length = sizeof(WINDOWPLACEMENT);
+        GetWindowPlacement(hwnd, &wp);
+
+        if (!Maximized) {
+            CopyRect(&prevRect, &wp.rcNormalPosition);
+        }
+
+        if (!Maximized) {
+            HMONITOR hmon = MonitorFromWindow(GeneralGlobalVars::HwndMainWindow, MONITOR_DEFAULTTONEAREST);
+            MONITORINFO mi;
+            mi.cbSize = sizeof(MONITORINFO);
+            GetMonitorInfo(hmon, &mi);
+            SetWindowPos(GeneralGlobalVars::HwndMainWindow, NULL, mi.rcWork.left, mi.rcWork.top, mi.rcWork.right - mi.rcWork.left, mi.rcWork.bottom - mi.rcWork.top, SWP_NOZORDER | SWP_NOACTIVATE);
+            Maximized = true;
         }
         else {
-            ShowWindow(GlobalClassVars.HwndMainWindow, SW_MAXIMIZE);
+            SetWindowPos(hwnd, NULL, prevRect.left, prevRect.top, prevRect.right - prevRect.left, prevRect.bottom - prevRect.top, SWP_NOZORDER | SWP_NOACTIVATE);
+            Maximized = false;
         }
     }
+    ImGui::PopStyleColor(2);
+
     ImGui::SameLine();
+
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, Dimensionses.U32RedColor);
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, Dimensionses.U32RedColor);
     if (ImGui::Button("X")) {
+        if (GlobalVarsOfPeTab::Loaded)
+        {
+            static std::unique_ptr<DRIVER> Driver = std::make_unique<DRIVER>(MenuBarGlobalVars::DriverTabGlobalVars::DriverPath.c_str(),
+                GenerateRandomString(16).c_str(),
+                GenerateRandomString(16).c_str(), SERVICE_DEMAND_START);
+            Driver->UnloadDriver();
+            CustomTitleBarGlobalVars::hDriver = nullptr;
+        }
         PostQuitMessage(0);
     }
-    ImGui::PopStyleColor();
+    ImGui::PopStyleColor(3);
 
     /*RedDebugger*/
     ImGuiViewport WorkPos{};

@@ -47,6 +47,7 @@ public:
 	const unsigned int U32BlackGrayColor = 0x55555555;
 	const unsigned int U32TransparentColor = 0x00ffffff;
 	const unsigned int U32OrangeColor = 0xff00f6ff;
+	const unsigned int U32RedColor = 0xff0000c8;
 
 	const unsigned char CountOfStackColumns = 4;
 	const unsigned char CountOfDisasmColumns = 6;

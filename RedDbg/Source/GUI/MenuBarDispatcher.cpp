@@ -10,14 +10,6 @@ namespace MenuBarGlobalVars
     std::vector<std::string> Titles;
     namespace DriverTabGlobalVars
     {
-        /*
-        enum Index
-        {
-            ALAOPF,
-            ModulesIsEditable,
-            UseGlobalVar
-
-        };*/
         std::vector<bool> DriverTabCheckbox(2);
         std::string DriverPath;
 
@@ -64,8 +56,8 @@ namespace MenuBarGlobalVars
 
 
         std::vector<bool> EngineTabCheckbox(6);
-        uint64_t TraceCount;// = "50000 ";
-        uint64_t AnimationPerStepInterval;// = "14 ";
+        uint64_t TraceCount;
+        uint64_t AnimationPerStepInterval;
         std::string szTraceCount;
         std::string szAnimationPerStepInterval;
 
@@ -125,8 +117,8 @@ namespace MenuBarGlobalVars
             "ParseWinApiAndShowArgumentsForThem",
             "QueryProcessCookie", 
             "QueryWorkingSetBeforeReadingMemory"};
-        std::string SymbolStore;// = "";
-        std::string SymbolPath;// = "";
+        std::string SymbolStore;
+        std::string SymbolPath;
     }
 }
 

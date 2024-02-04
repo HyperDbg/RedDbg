@@ -1,49 +1,18 @@
 #pragma once
-//#define PHNT_VERSION PHNT_WIN11_23H2
-//#define PHNT_MODE PHNT_MODE_KERNEL
-//#define WINDOWS_IGNORE_PACKING_MISMATCH
-//#include <kph.h>
+#include "AppToDrv/MiddleStructs.hpp"
+#include "AppToDrv/IoCtlCodes.hpp"
 #include <string>
 #include <ntddk.h>
 #include <ntifs.h>
+#include <memory>
 #include "Local/Functions.hpp"
-//#include <ntexapi.h>
-//#include <ntmmapi.h>
-//#include <ntldr.h>
-//#include "Local/winternl.h"
-//#include "ntfill.h"
+#include <minwindef.h>
 
-typedef struct _USERMODE_LOADED_MODULE_DETAILS
+typedef struct _USERMODE_BITNESS_OF_PROCESS
 {
-	UINT32  ProcessId;
-	bool OnlyCountModules;
+	PEPROCESS SourceProcess;
 	bool Is32Bit;
-	UINT32  ModulesCount;
-	UINT32  Result;
-
-	//
-	// Here is a list of USERMODE_LOADED_MODULE_SYMBOLS (appended)
-	//
-
-} USERMODE_LOADED_MODULE_DETAILS, * PUSERMODE_LOADED_MODULE_DETAILS;
-
-namespace IoCtlCode
-{
-	namespace SystemKernelLevel
-	{
-		enum IoCtlCodes
-		{
-			GetMemoryMap,
-		};
-	}
-	namespace ProcessUserLevel
-	{
-		enum IoCtlCodes
-		{
-			GetMemoryMap,
-		};
-	}
-}
+} USERMODE_BITNESS_OF_PROCESS, * PUSERMODE_BITNESS_OF_PROCESS;
 
 class IoCtlDispatcher_
 {
@@ -51,13 +20,38 @@ private:
 	class SystemKernelLevel_
 	{
 	public:
-		NTSTATUS GetMemoryMap();
+		bool GetMemoryMap();
 	};
 
 	class ProcessUserLevel_
 	{
+	private:
+		bool UserAccessPrintLoadedModulesX64(PEPROCESS Proc,
+			bool OnlyCountModules,
+			PUINT32 ModulesCount,
+			PUSERMODE_LOADED_MODULE_SYMBOLS ModulesList,
+			UINT32 SizeOfBufferForModulesList,
+			UCHAR TypeOfLoad);
+
+		bool UserAccessPrintLoadedModulesX86(PEPROCESS Proc,
+			bool OnlyCountModules,
+			PUINT32 ModulesCount,
+			PUSERMODE_LOADED_MODULE_SYMBOLS ModulesList,
+			UINT32 SizeOfBufferForModulesList,
+			UCHAR TypeOfLoad);
+
+		bool UserAccessIsWow64Process(HANDLE ProcessId, bool* Is32Bit);
+		bool UserAccessIsWow64ProcessByEprocess(PEPROCESS SourceProcess, bool* Is32Bit);
+
+		void ProcessHeapGetterX64(PUSERMODE_HEAP_DETAILS ProcessHeapRequest, PUSERMODE_BITNESS_OF_PROCESS BitnessOfProcess);
+		void ProcessHeapGetterX86(PUSERMODE_HEAP_DETAILS ProcessHeapRequest, PUSERMODE_BITNESS_OF_PROCESS BitnessOfProcess);
 	public:
-		NTSTATUS GetMemoryMap(PUSERMODE_LOADED_MODULE_DETAILS ProcessLoadedModuleRequest, UINT32 BufferSize);
+		bool GetMemoryMap(PUSERMODE_LOADED_MODULE_DETAILS ProcessLoadedModuleRequest, UINT32 BufferSize);
+
+		void _GetProcessHeaps(PUSERMODE_HEAP_DETAILS ProcessHeapRequest);
+		void _GetProcessHeap(PUSERMODE_HEAP_DETAILS ProcessHeapRequest);
+
+		const std::shared_ptr<USERMODE_BITNESS_OF_PROCESS> GetUserModeProcessBitness(uint32_t ProcessId);
 	};
 public:
 	SystemKernelLevel_ SystemKernelLevel;

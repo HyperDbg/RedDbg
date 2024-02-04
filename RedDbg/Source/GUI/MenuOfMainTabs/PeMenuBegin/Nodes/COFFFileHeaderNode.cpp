@@ -1,8 +1,8 @@
 #include "GUI/MenuOfMainTabs/PeMenuBegin/PeTab.hpp"
 
 namespace GlobalVarsOfPeTab {
-    extern PEInformation objPEInformation;
-    extern PeReader objPeReader;
+    extern std::shared_ptr<PeReader> objPEInformation;
+    //extern PeReader objPeReader;
 }
 
 void PETab_::PeFileHeaderTableRender()
@@ -12,22 +12,22 @@ void PETab_::PeFileHeaderTableRender()
 
     static bool Init = false;
 
-    static std::vector<WORD*> FileHeaderWordVals{
-        &GlobalVarsOfPeTab::objPEInformation.pImageNTHeaderOfPe->FileHeader.Machine,
-        &GlobalVarsOfPeTab::objPEInformation.pImageNTHeaderOfPe->FileHeader.NumberOfSections,
+    static std::vector<uint16_t*> FileHeaderWordVals{
+        &GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.nt.FileHeader.Machine,
+        &GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.nt.FileHeader.NumberOfSections,
         nullptr,
         nullptr,
         nullptr,
-        &GlobalVarsOfPeTab::objPEInformation.pImageNTHeaderOfPe->FileHeader.SizeOfOptionalHeader,
-        &GlobalVarsOfPeTab::objPEInformation.pImageNTHeaderOfPe->FileHeader.Characteristics
+        &GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.nt.FileHeader.SizeOfOptionalHeader,
+        &GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.nt.FileHeader.Characteristics
     };
 
-    static std::vector<DWORD*> FileHeaderDWordVals{
+    static std::vector<uint32_t*> FileHeaderDWordVals{
         nullptr,
         nullptr,
-        &GlobalVarsOfPeTab::objPEInformation.pImageNTHeaderOfPe->FileHeader.TimeDateStamp,//
-        &GlobalVarsOfPeTab::objPEInformation.pImageNTHeaderOfPe->FileHeader.PointerToSymbolTable,//
-        &GlobalVarsOfPeTab::objPEInformation.pImageNTHeaderOfPe->FileHeader.NumberOfSymbols,//
+        &GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.nt.FileHeader.TimeDateStamp,
+        &GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.nt.FileHeader.PointerToSymbolTable,
+        &GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.nt.FileHeader.NumberOfSymbols,
         nullptr,
         nullptr,
     };
@@ -89,17 +89,17 @@ void PETab_::PeFileHeaderTableRender()
                 else if (Column == 3)
                 {
                     std::stringstream Ss;
-                    if (GlobalVarsOfPeTab::objPEInformation.x64.pImageNTHeader64 != nullptr)
+                    if (GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.nt.OptionalMagic == IMAGE_NT_OPTIONAL_HDR64_MAGIC)
                     {
                         Ss << std::uppercase << std::setfill('0') <<
                             std::setw(sizeof(uint64_t) * 2) << std::hex <<
-                            GlobalVarsOfPeTab::objPEInformation.x64.pImageNTHeader64->OptionalHeader.ImageBase + PeStruct::FileHeader::FileHeaderOffsets[Row];
+                            GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.nt.OptionalHeader64.ImageBase + PeStruct::FileHeader::FileHeaderOffsets[Row];
                     }
                     else
                     {
                         Ss << std::uppercase << std::setfill('0') <<
                             std::setw(sizeof(uint32_t) * 2) << std::hex <<
-                            GlobalVarsOfPeTab::objPEInformation.x32.pImageNTHeader32->OptionalHeader.ImageBase + PeStruct::FileHeader::FileHeaderOffsets[Row];
+                            GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.nt.OptionalHeader.ImageBase + PeStruct::FileHeader::FileHeaderOffsets[Row];
                     }
                     ImGui::Selectable(Ss.str().c_str());
                 }
@@ -151,7 +151,7 @@ void PETab_::PeFileHeaderTableRender()
                     {
                         ImGui::PushStyleColor(ImGuiCol_FrameBg, 0);
 
-                        EditField<DWORD>(
+                        EditField<uint32_t>(
                             "##" + std::to_string(Row),
                             InputStrings[Row],
                             FileHeaderDWordVals[Row], 9);
@@ -160,7 +160,7 @@ void PETab_::PeFileHeaderTableRender()
                     else if (Row == 6)
                     {
                         ImGui::PushStyleColor(ImGuiCol_FrameBg, 0);
-                        EditField<WORD>(
+                        EditField<uint16_t>(
                             "##" + std::to_string(Row),
                             InputStrings[6],
                             FileHeaderWordVals[6], 5);

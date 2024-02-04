@@ -361,6 +361,7 @@ int main()
 static GeneralGUI_ GeneralGUI;
 void GeneralGUI_::UIRender()
 {
+	static TomlParser_ TomlParser;
 	GeneralGUI.CustomTitleBar.CustomTitleBarRender();
 	GeneralGUI.InterfaceGeneral.MainInterfaceRender();
 	//MainInterfaceRender();

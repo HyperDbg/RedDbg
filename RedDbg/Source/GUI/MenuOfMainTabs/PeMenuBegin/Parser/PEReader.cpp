@@ -6,7 +6,7 @@
 #include <vector>
 #include <iostream>
 
-std::wstring StringToWideString(
+static std::wstring StringToWideString(
 	const std::string& str)
 {
 	// Create a std::string_view from the input string
@@ -476,7 +476,7 @@ PEInformation PeReader::ParseImage64(
 		//const std::wstring CommandArgs = 
 		//	L" -AUTH_LOGIN=unused -AUTH_PASSWORD=06d37181dacc44729c6af28845bfd1d6 -AUTH_TYPE=exchangecode -epicapp=Kakopo -epicenv=Prod -epicovt=\"E:/JustCause4/.egstore/e86e262415f44532bc9e365648ce26ff/ba8062bdcc1342c0b78743e3c624257511fa5d6106524a3fa600b111ac243f58.ovt\" -EpicPortal  -epicusername=\"Nitruha-G\" -epicuserid=e86e262415f44532bc9e365648ce26ff -epiclocale=en -epicsandboxid=ba8062bdcc1342c0b78743e3c6242575";
 			CreateProcessW(PathToCurrentDebugging.wstring().c_str(), 
-			NULL, NULL, NULL, FALSE, CREATE_SUSPENDED,
+			NULL, NULL, NULL, FALSE, NULL,//CREATE_SUSPENDED
 			NULL, NULL, &PEInformation.StartupInfo, &PEInformation.ProcessInfo);
 	}
 
