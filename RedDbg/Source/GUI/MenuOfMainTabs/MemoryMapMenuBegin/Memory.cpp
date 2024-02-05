@@ -357,6 +357,12 @@ void MemoryParser::GetMemoryMapOfUserProcess()
                                 Memory.Size = DataFromSections.vVirtualSizes[Index];
                                 Memory.Info = DataFromSections.vNamesOfSections[Index];
 
+                                MEMORY_BASIC_INFORMATION TempMemInfo;
+                                memset(&TempMemInfo, 0, sizeof(MEMORY_BASIC_INFORMATION));
+                                VirtualQueryEx(GlobalVarsOfPeTab::objPEInformation->ProcessInfo.hProcess, reinterpret_cast<LPCVOID>(Memory.BaseAddress), &TempMemInfo, sizeof(TempMemInfo));
+                                Memory.Protect = TempMemInfo.Protect;
+                                Memory.InitialProtect = TempMemInfo.AllocationProtect;
+
                                 auto it = std::find(Contents.first.begin(), Contents.first.end(), DataFromSections.vNamesOfSections[Index]);
                                 if (it != Contents.first.end()) { Memory.Content = Contents.second[it - Contents.first.begin()]; }
 
