@@ -9,6 +9,11 @@
 
 #include <ioapiset.h>
 
+typedef struct _MemoryRefreshThread {
+	MemoryParser_* Parse;
+	std::shared_ptr<std::atomic<bool>> Active;
+} MemoryRefreshThread, * PMemoryRefreshThread;
+
 class MemoryMapTab_
 {
 private:
@@ -16,10 +21,12 @@ private:
 	Names_ Names;
 	GlobalClassVars_ GlobalClassVars;
 	Window_ Window;
-	MemoryParser Parse;
 private:
 	const ImGuiTableFlags DefaultTableFlags = ImGuiTableFlags_HighlightHoveredColumn | ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_ScrollY |
 		ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable;
+
+	void GetMemoryInfoSafe(MemoryParser_& Parse, std::shared_ptr<std::atomic<bool>> Active);
+	//void CallBackUpdateMemoryCache(MemoryRefreshThread& objMemoryRefreshThread);
 public:
 	void ComboBoxOfTypesInFindInMemoryMapWindowRender();
 	void InputFieldInFindInMemoryMapWindowRender();

@@ -405,11 +405,9 @@ void MenuBarDispatcher_::EngineWindowRender(toml::table& Tbl, std::string& Path)
                 }
                 ImGui::EndCombo();
             }
-            //ImGui::PopStyleColor();
 
             ++StringIndex;
 
-            //ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4{ 0,0,0,0 });
             if (ImGui::BeginCombo(Names.Windowses.TitleBarMenu.MenuOptions.Preferences.EngineTab.Names[StringIndex].data(), CT[MenuBarGlobalVars::EngineTabGlobalVars::CalculationType].data(), ImGuiComboFlags_NoArrowButton))
             {
                 for (int n = 0; n < CT.size(); n++)

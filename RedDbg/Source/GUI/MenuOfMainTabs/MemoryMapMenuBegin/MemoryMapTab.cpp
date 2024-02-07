@@ -9,6 +9,10 @@ namespace CustomTitleBarGlobalVars {
     extern DWORD Pid;
 }
 
+namespace GlobalVarsOfPeTab {
+    extern std::shared_ptr<PeReader> objPEInformation;
+}
+
 void MemoryMapTab_::MemoryMapWindowRender()
 {
     static float MemoryMapHorizontalSplitterRelPosY = 0.95f;
@@ -53,16 +57,35 @@ void MemoryMapTab_::MemoryMapWindowRender()
         false);
 }
 
+void CallBackUpdateMemoryCache(std::shared_ptr<MemoryRefreshThread> objMemoryRefreshThread)
+{
+    objMemoryRefreshThread->Parse->UpdateMemoryCache(objMemoryRefreshThread->Active);
+}
+
+void MemoryMapTab_::GetMemoryInfoSafe(MemoryParser_& Parse, std::shared_ptr<std::atomic<bool>> Active) {
+    // Check if the cache is too old
+    MemoryRefreshThread objMemoryRefreshThread;
+    objMemoryRefreshThread.Parse = &Parse;
+    objMemoryRefreshThread.Active = Active;
+    std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
+    if (duration_cast<std::chrono::seconds>(now - Parse.Cache.LastUpdated) > std::chrono::seconds(2))
+    {
+        std::thread updateThread(CallBackUpdateMemoryCache, std::make_shared<MemoryRefreshThread>(objMemoryRefreshThread)); updateThread.detach();
+    }
+    return;
+}
+
 void MemoryMapTab_::MemoryMapTableRender()
 {
-    if (ImGui::BeginTable(Names.Windowses.MainDebuggerInterface.MainTabs.MemoryMapTab.MemoryMapTableName.data(), Dimensionses.CountOfMemoryMapColumns, DefaultTableFlags))
+    if (CustomTitleBarGlobalVars::Pid != 0 &&
+        ImGui::BeginTable(Names.Windowses.MainDebuggerInterface.MainTabs.MemoryMapTab.MemoryMapTableName.data(), Dimensionses.CountOfMemoryMapColumns, DefaultTableFlags))
     {
-        static int i = 0;
-        if (i == 0)
-        {
-            Parse.GetMemoryMapOfUserProcess();
-            ++i;
-        }
+        //static int i = 0;
+        //if (i == 0)
+        //{
+        //    Parse.GetMemoryMapOfUserProcess();
+        //    ++i;
+        //}
         //static int i = 0;
         //if (CustomTitleBarGlobalVars::hDriver != nullptr && i < 1)
         //{
@@ -243,8 +266,14 @@ void MemoryMapTab_::MemoryMapTableRender()
         ImGui::TableSetupColumn(Names.Windowses.MainDebuggerInterface.MainTabs.MemoryMapTab.MemoryMapTableDisabledColumnName.data(), ImGuiTableColumnFlags_Disabled);
         ImGui::TableHeadersRow();
 
+        //static MemoryParser objMemoryParser;
+        static MemoryParser_ Parse;
+        //static bool Active = false;
+        static std::shared_ptr<std::atomic<bool>> Active = std::make_shared<std::atomic<bool>>(true);
+        GetMemoryInfoSafe(Parse, Active);
+        Active = std::make_shared<std::atomic<bool>>(true);
         ImGuiListClipper clipper;
-        clipper.Begin(0, 17);//TODO: Data transfer
+        clipper.Begin(Parse.Cache.vMemoryInfo.size(), 17);//TODO: Data transfer
         while (clipper.Step())
         {
             for (int Row = clipper.DisplayStart; Row < clipper.DisplayEnd; ++Row)
@@ -257,12 +286,66 @@ void MemoryMapTab_::MemoryMapTableRender()
                     ImGui::TableSetColumnIndex(Column);
                     ImGui::PushStyleColor(ImGuiCol_HeaderActive, Dimensionses.U32GrayColor);
                     ImGui::PushStyleColor(ImGuiCol_HeaderHovered, Dimensionses.U32GrayColor);
-                    //ImGui::Selectable("23423423423423423423", false);
+                    
+                    if (Column == 0)
+                    {
+                        std::stringstream Ss;
+                        if (GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.nt.OptionalMagic == IMAGE_NT_OPTIONAL_HDR64_MAGIC)
+                        {
+                            Ss << std::uppercase << std::setfill('0') <<
+                                std::setw(sizeof(uint64_t) * 2) << std::hex <<
+                                Parse.Cache.vMemoryInfo[Row].BaseAddress;
+                        }
+                        else
+                        {
+                            Ss << std::uppercase << std::setfill('0') <<
+                                std::setw(sizeof(uint32_t) * 2) << std::hex <<
+                                Parse.Cache.vMemoryInfo[Row].BaseAddress;
+                        }
+
+                        ImGui::Selectable(Ss.str().c_str());
+                    }
+                    else if (Column == 1)
+                    {
+                        std::stringstream Ss;
+                        if (GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.nt.OptionalMagic == IMAGE_NT_OPTIONAL_HDR64_MAGIC)
+                        {
+                            Ss << std::uppercase << std::setfill('0') <<
+                                std::setw(sizeof(uint64_t) * 2) << std::hex <<
+                                Parse.Cache.vMemoryInfo[Row].Size;
+                        }
+                        else
+                        {
+                            Ss << std::uppercase << std::setfill('0') <<
+                                std::setw(sizeof(uint32_t) * 2) << std::hex <<
+                                Parse.Cache.vMemoryInfo[Row].Size;
+                        }
+
+                        ImGui::Selectable(Ss.str().c_str());
+                    }
+                    else if (Column == 2) { ImGui::Selectable(Parse.Cache.vMemoryInfo[Row].Party == nsMemoryParser::Party::User ? "User" : "System"); }
+                    else if (Column == 3)
+                    {
+                        ImGui::Selectable(Parse.Cache.vMemoryInfo[Row].Info.c_str());
+                        std::size_t found = Parse.Cache.vMemoryInfo[Row].FullExePath.filename().string().find(Parse.Cache.vMemoryInfo[Row].Info.c_str());
+                        //if (found == std::string::npos) { found = Parse.Cache.vMemoryInfo[Row].FullExePath.string().find(".dll"); }
+                        
+                        if(found != std::string::npos && Parse.Cache.vMemoryInfo[Row].FullExePath.string().size() > 0 && ImGui::IsItemHovered() && ImGui::BeginTooltip())
+                        {
+                            ImGui::Text(Parse.Cache.vMemoryInfo[Row].FullExePath.string().data());
+                            ImGui::EndTooltip();
+                        }
+                    }
+                    else if (Column == 4) { ImGui::Selectable(Parse.Cache.vMemoryInfo[Row].Content.c_str()); }
+                    else if (Column == 5) { ImGui::Selectable(Parse.Cache.vMemoryInfo[Row].szType.c_str()); }
+                    else if (Column == 6) { ImGui::Selectable(Parse.Cache.vMemoryInfo[Row].szProtect.c_str()); }
+                    else if (Column == 7) { ImGui::Selectable(Parse.Cache.vMemoryInfo[Row].szInitialProtect.c_str()); }
                     ImGui::PopStyleColor(2);
                 }
             }
         }
         ImGui::EndTable();
+        Active = std::make_shared<std::atomic<bool>>(false);
     }
 }
 

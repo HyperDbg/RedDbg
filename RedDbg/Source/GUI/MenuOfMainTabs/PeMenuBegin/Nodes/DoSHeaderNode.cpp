@@ -4,7 +4,6 @@
 #include <sstream>
 
 namespace GlobalVarsOfPeTab {
-    //extern PEInformation objPEInformation;
     extern std::shared_ptr<PeReader> objPEInformation;
 }
 
@@ -16,36 +15,6 @@ void PETab_::PeDoSHeaderTableRender()
     static bool Init = false;
 
     static std::vector<WORD*> DoSVals{
-        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_magic,
-        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_cblp,
-        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_cp,
-        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_crlc,
-        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_cparhdr,
-        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_minalloc,
-        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_maxalloc,
-        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_ss,
-        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_sp,
-        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_csum,
-        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_ip,
-        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_cs,
-        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_lfarlc,
-        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_ovno,
-        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_res[0],
-        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_res[1],
-        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_res[2],
-        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_res[3],
-        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_oemid,
-        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_oeminfo,
-        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_res2[0],
-        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_res2[1],
-        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_res2[2],
-        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_res2[3],
-        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_res2[4],
-        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_res2[5],
-        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_res2[6],
-        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_res2[7],
-        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_res2[8],
-        //&GlobalVarsOfPeTab::objPEInformation->pImageDOSHeaderOfPe->e_res2[9],
         &GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.dos.e_magic,
         &GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.dos.e_cblp,
         &GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.dos.e_cp,

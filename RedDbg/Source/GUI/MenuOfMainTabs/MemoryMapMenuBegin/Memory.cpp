@@ -9,22 +9,7 @@ namespace CustomTitleBarGlobalVars {
     extern DWORD Pid;
 }
 
-//_Found MemoryParser::IsMatchFound(const MemoryInfo& memoryInfo, const std::vector<MemoryInfo>& stackInfo)
-//{
-//    Found Search;
-//    auto it = std::find_if(stackInfo.begin(), stackInfo.end(),
-//        [&memoryInfo](const MemoryInfo& stackInfoItem)
-//        {
-//            return memoryInfo.BaseAddress == stackInfoItem.BaseAddress;
-//        });
-//
-//    Search.Found = it != stackInfo.end();
-//    Search.it = it;
-//
-//    return Search;
-//}
-
-ParsedPeRefDll MemoryParser::OpenExecutable(std::string path) noexcept {
+ParsedPeRefDll MemoryParser_::OpenExecutable(std::string path) noexcept {
     ParsedPeRefDll obj(peparse::ParsePEFromFile(path.data(), true),
         peparse::DestructParsedPE);
     if (!obj) {
@@ -33,12 +18,12 @@ ParsedPeRefDll MemoryParser::OpenExecutable(std::string path) noexcept {
     return obj;
 }
 
-nsMemoryParser::Error MemoryParser::GetHeap()
+nsMemoryParser::Error MemoryParser_::GetHeap()
 {
     USERMODE_HEAP_DETAILS HeapCountRequest = { 0 };
     DWORD ReturnedLength = 0;
 
-    printf("%x\n", CustomTitleBarGlobalVars::Pid);
+    //printf("%x\n", CustomTitleBarGlobalVars::Pid);
     HeapCountRequest.ProcessId = CustomTitleBarGlobalVars::Pid;
     HeapCountRequest.NumberOfHeapsToReturn = 0;
 
@@ -52,7 +37,7 @@ nsMemoryParser::Error MemoryParser::GetHeap()
         &ReturnedLength,
         NULL);
 
-    printf("HeapCountRequest.TotalHeaps: %x\n", HeapCountRequest.TotalHeaps);
+    //printf("HeapCountRequest.TotalHeaps: %x\n", HeapCountRequest.TotalHeaps);
     if (!Status) { return nsMemoryParser::Error::HeapDoesntExist; }
 
     PHANDLE aHeaps = nullptr; size_t BytesToAllocate;
@@ -76,21 +61,21 @@ nsMemoryParser::Error MemoryParser::GetHeap()
     for (int Index = 0; Index < HeapCountRequest.TotalHeaps; ++Index)
     {
         vHeapAddrs.push_back((uint64_t)HeapCountRequest.ProcessHeap[Index]);
-        printf("Heap at address: %#p.\n", HeapCountRequest.ProcessHeap[Index]);
+        //printf("Heap at address: %#p.\n", HeapCountRequest.ProcessHeap[Index]);
     }
 
     return nsMemoryParser::Error::AllOk;
 }
 
-nsMemoryParser::Error MemoryParser::GetTebAndStackForEachThread()
+nsMemoryParser::Error MemoryParser_::GetTebAndStackForEachThread()
 {
-    HMODULE hNtDll = LoadLibraryA(Ntdll.c_str());
+    static HMODULE hNtDll = LoadLibraryA(Ntdll.c_str());
     if (hNtDll == NULL) { return nsMemoryParser::Error::hNtDllIsNull; }
 
-    NTQUERYINFORMATIONTHREAD NtQueryInformationThread = (NTQUERYINFORMATIONTHREAD)GetProcAddress(hNtDll, "NtQueryInformationThread");
+    static NTQUERYINFORMATIONTHREAD NtQueryInformationThread = (NTQUERYINFORMATIONTHREAD)GetProcAddress(hNtDll, "NtQueryInformationThread");
     if (NtQueryInformationThread == NULL) { FreeLibrary(hNtDll); return nsMemoryParser::Error::NtQueryInformationThreadIsNull; }
 
-    HANDLE hThreadSnap = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
+    HANDLE hThreadSnap = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, CustomTitleBarGlobalVars::Pid);
     if (hThreadSnap == INVALID_HANDLE_VALUE) { return nsMemoryParser::Error::hThreadSnapHasInvalidHandleValue; }
 
     THREADENTRY32 te32; te32.dwSize = sizeof(THREADENTRY32);
@@ -135,7 +120,7 @@ nsMemoryParser::Error MemoryParser::GetTebAndStackForEachThread()
                     StackStruct.Info += ss.str();
                     StackStruct.Party = false;
                     StackStruct.Stack = true;
-                    printf("StackStruct.Address: %#p | ThreadId: %#x | StackLimit: %#p\n", StackStruct.BaseAddress, te32.th32ThreadID, tib.StackLimit);
+                    //printf("StackStruct.Address: %#p | ThreadId: %#x | StackLimit: %#p\n", StackStruct.BaseAddress, te32.th32ThreadID, tib.StackLimit);
 
                     vStackInfo.push_back(StackStruct);
 
@@ -146,7 +131,7 @@ nsMemoryParser::Error MemoryParser::GetTebAndStackForEachThread()
                     TebStruct.Info += ss1.str();
                     TebStruct.Party = false;
                     TebStruct.Teb = true;
-                    printf("TebStruct.Address: %#p | ThreadId: %#x\n", TebStruct.CustomAddress[0], te32.th32ThreadID);
+                    //printf("TebStruct.Address: %#p | ThreadId: %#x\n", TebStruct.CustomAddress[0], te32.th32ThreadID);
 
                     vTebInfo.push_back(TebStruct);
                 }
@@ -170,40 +155,33 @@ bool MemPageRightsToString(DWORD Protect, std::string& Memory)
     switch (Protect & 0xFF)
     {
     case PAGE_NOACCESS:
-        Memory = "----";
-        break;
+        Memory = "----"; break;
     case PAGE_READONLY:
-        Memory = "-R--";
-        break;
+        Memory = "-R--"; break;
     case PAGE_READWRITE:
-        Memory = "-RW-";
-        break;
+        Memory = "-RW-"; break;
     case PAGE_WRITECOPY:
-        Memory = "-RWC";
-        break;
+        Memory = "-RWC"; break;
     case PAGE_EXECUTE:
-        Memory = "E---";
-        break;
+        Memory = "E---"; break;
     case PAGE_EXECUTE_READ:
-        Memory = "ER--";
-        break;
+        Memory = "ER--"; break;
     case PAGE_EXECUTE_READWRITE:
-        Memory = "ERW-";
-        break;
+        Memory = "ERW-"; break;
     case PAGE_EXECUTE_WRITECOPY:
-        Memory = "ERWC";
-        break;
-    default:
-        break;
+        Memory = "ERWC"; break;
     }
 
     ((Protect & PAGE_GUARD) == PAGE_GUARD) ? Memory += "G" : Memory += "-";
+    ((Protect & PAGE_NO_CHANGE) == PAGE_NO_CHANGE) ? Memory += "N" : Memory += "-";
 
     return true;
 }
 
-void MemoryParser::GetMemoryMapOfUserProcess()
+void MemoryParser_::GetMemoryMapOfUserProcess(bool Cache)
 {
+    if (Cache) { vMemoryInfo.clear(); }
+
     SYSTEM_INFO systemInfo; GetSystemInfo(&systemInfo);
 
     std::vector<MEMORY_BASIC_INFORMATION> memoryRegions;
@@ -211,15 +189,15 @@ void MemoryParser::GetMemoryMapOfUserProcess()
     size_t maxAddress = reinterpret_cast<size_t>(systemInfo.lpMaximumApplicationAddress);
 
     GetTebAndStackForEachThread();
-    GetHeap();
-    
+    //GetHeap();
+
     uint64_t CounterOfRegions = 0;
     while (address < maxAddress)
     {
         MEMORY_BASIC_INFORMATION memInfo;
         memset(&memInfo, 0, sizeof(MEMORY_BASIC_INFORMATION));
         SIZE_T bytesReturned = VirtualQueryEx(GlobalVarsOfPeTab::objPEInformation->ProcessInfo.hProcess, reinterpret_cast<LPCVOID>(address), &memInfo, sizeof(memInfo));
-
+        
         if (bytesReturned == sizeof(memInfo))
         {
             MemoryInfo Memory;
@@ -234,13 +212,36 @@ void MemoryParser::GetMemoryMapOfUserProcess()
             }
             Memory.Protect = memInfo.Protect;
             MemPageRightsToString(Memory.Protect, Memory.szProtect);
-            /*switch (memInfo.Protect)
-            {
-                
-            }*/
             Memory.State = memInfo.State;
             Memory.InitialProtect = memInfo.AllocationProtect;
             MemPageRightsToString(Memory.InitialProtect, Memory.szInitialProtect);
+
+            for (int StackIndex = 0; StackIndex < vStackInfo.size(); ++StackIndex)
+            {
+                if (vStackInfo[StackIndex].BaseAddress >= Memory.BaseAddress && vStackInfo[StackIndex].BaseAddress < Memory.BaseAddress + Memory.Size)
+                {
+                    Memory.CustomAddress.push_back(vStackInfo[StackIndex].BaseAddress);
+                    Memory.Info.size() == 0 ? Memory.Info += vStackInfo[StackIndex].Info : Memory.Info += ", " + vStackInfo[StackIndex].Info;
+                }
+            }
+
+            for (int TebIndex = 0; TebIndex < vTebInfo.size(); ++TebIndex)
+            {
+                if (vTebInfo[TebIndex].CustomAddress[0] >= Memory.BaseAddress && vTebInfo[TebIndex].CustomAddress[0] < Memory.BaseAddress + Memory.Size)
+                {
+                    Memory.CustomAddress.push_back(vTebInfo[TebIndex].CustomAddress[0]);
+                    Memory.Info.size() == 0 ? Memory.Info += vTebInfo[TebIndex].Info : Memory.Info += ", " + vTebInfo[TebIndex].Info;
+                }
+            }
+
+            if (memInfo.Type == MEM_MAPPED)
+            {
+                char szName[MAX_PATH];
+                if (K32GetMappedFileNameA(GlobalVarsOfPeTab::objPEInformation->ProcessInfo.hProcess, (PVOID)memInfo.BaseAddress, szName, sizeof(szName)))
+                {
+                    Memory.Info = szName;
+                }
+            }
 
             for (int AddrsHeapIndex = 0; AddrsHeapIndex < vHeapAddrs.size(); ++AddrsHeapIndex)
             {
@@ -344,11 +345,13 @@ void MemoryParser::GetMemoryMapOfUserProcess()
                         }
 
                         static uint64_t lAllocationBase = 0;
-                        if (Memory.FullExePath != "" && lAllocationBase != (uint64_t)memInfo.BaseAddress)
+                        if (Memory.FullExePath != "" && lAllocationBase != (uint64_t)memInfo.AllocationBase)
                         {
-                            lAllocationBase = (uint64_t)memInfo.BaseAddress;
+                            lAllocationBase = (uint64_t)memInfo.AllocationBase;
                             for (int Index = 0; Index < DataFromSections.CountOfSections; ++Index)
                             {
+                                Memory.szInitialProtect.clear();
+                                Memory.szProtect.clear();
                                 for (auto it = vMemoryInfo.rbegin(); it != vMemoryInfo.rend(); ++it)
                                 {
                                     if (it->FullExePath.string().size() > 0) { Memory.Party = it->Party; break; }
@@ -360,11 +363,17 @@ void MemoryParser::GetMemoryMapOfUserProcess()
                                 MEMORY_BASIC_INFORMATION TempMemInfo;
                                 memset(&TempMemInfo, 0, sizeof(MEMORY_BASIC_INFORMATION));
                                 VirtualQueryEx(GlobalVarsOfPeTab::objPEInformation->ProcessInfo.hProcess, reinterpret_cast<LPCVOID>(Memory.BaseAddress), &TempMemInfo, sizeof(TempMemInfo));
+
+                                Memory.Type = TempMemInfo.Type;
                                 Memory.Protect = TempMemInfo.Protect;
+                                MemPageRightsToString(Memory.Protect, Memory.szProtect);
                                 Memory.InitialProtect = TempMemInfo.AllocationProtect;
+                                MemPageRightsToString(Memory.InitialProtect, Memory.szInitialProtect);
+                                Memory.State = TempMemInfo.State;
 
                                 auto it = std::find(Contents.first.begin(), Contents.first.end(), DataFromSections.vNamesOfSections[Index]);
-                                if (it != Contents.first.end()) { Memory.Content = Contents.second[it - Contents.first.begin()]; }
+                                if (it != std::end(Contents.first)) { Memory.Content = Contents.second[it - Contents.first.begin()]; }
+                                else { Memory.Content = ""; }
 
                                 vMemoryInfo.push_back(Memory);
                             }
@@ -373,58 +382,20 @@ void MemoryParser::GetMemoryMapOfUserProcess()
                 }
             }
             else if (memInfo.Type != NULL && memInfo.State != NULL) { vMemoryInfo.push_back(Memory); }
-
             address = reinterpret_cast<size_t>(memInfo.BaseAddress) + memInfo.RegionSize;
             ++CounterOfRegions;
         }
         else { break; }
     }
 
-    for (int MemIndex = 0; MemIndex < vMemoryInfo.size(); ++MemIndex)
-    {
-        for (int StackIndex = 0; StackIndex < vStackInfo.size(); ++StackIndex)
-        {
-            if (vStackInfo[StackIndex].BaseAddress >= vMemoryInfo[MemIndex].BaseAddress && vStackInfo[StackIndex].BaseAddress < vMemoryInfo[MemIndex].BaseAddress + vMemoryInfo[MemIndex].Size)
-            {
-                vMemoryInfo[MemIndex].CustomAddress.push_back(vStackInfo[StackIndex].BaseAddress);
-                if (vMemoryInfo[MemIndex].Info.size() == 0)
-                {
-                    vMemoryInfo[MemIndex].Info += vStackInfo[StackIndex].Info;
-                }
-                else
-                {
-                    vMemoryInfo[MemIndex].Info += ", " + vStackInfo[StackIndex].Info;
-                }
-            }
-        }
-
-        for (int TebIndex = 0; TebIndex < vTebInfo.size(); ++TebIndex)
-        {
-            if (vTebInfo[TebIndex].CustomAddress[0] >= vMemoryInfo[MemIndex].BaseAddress && vTebInfo[TebIndex].CustomAddress[0] < vMemoryInfo[MemIndex].BaseAddress + vMemoryInfo[MemIndex].Size)
-            {
-                vMemoryInfo[MemIndex].CustomAddress.push_back(vTebInfo[TebIndex].CustomAddress[0]);
-                if (vMemoryInfo[MemIndex].Info.size() == 0)
-                {
-                    vMemoryInfo[MemIndex].Info += vTebInfo[TebIndex].Info;
-                }
-                else
-                {
-                    vMemoryInfo[MemIndex].Info += ", " + vTebInfo[TebIndex].Info;
-                }
-            }
-        }
-
-        if (vMemoryInfo[MemIndex].Type == MEM_MAPPED)
-        {
-            char szName[MAX_PATH];
-            if (GetMappedFileNameA(GlobalVarsOfPeTab::objPEInformation->ProcessInfo.hProcess, (PVOID)vMemoryInfo[MemIndex].BaseAddress, szName, sizeof(szName)))
-            {
-                vMemoryInfo[MemIndex].Info = szName;
-            }
-        }
-
-        printf("Party: %#p | Addr: %#p | Size: %#p | Info: %s | Content: %s | Protect: %s | Initial protection: %s\n", vMemoryInfo[MemIndex].Party, vMemoryInfo[MemIndex].BaseAddress, vMemoryInfo[MemIndex].Size, vMemoryInfo[MemIndex].Info.c_str(), vMemoryInfo[MemIndex].Content.c_str(), vMemoryInfo[MemIndex].szProtect.c_str(), vMemoryInfo[MemIndex].szInitialProtect.c_str());
-    }
+    vHeapAddrs.clear();
+    vHeapInfo.clear();
+    vStackInfo.clear();
+    vTebInfo.clear();
+    //for (int MemIndex = 0; MemIndex < vMemoryInfo.size(); ++MemIndex)
+    //{
+    //    printf("Type: %s | Party: %#p | Addr: %#p | Size: %#p | Info: %s | Content: %s | Protect: %s | Initial protection: %s\n", vMemoryInfo[MemIndex].szType.c_str(), vMemoryInfo[MemIndex].Party, vMemoryInfo[MemIndex].BaseAddress, vMemoryInfo[MemIndex].Size, vMemoryInfo[MemIndex].Info.c_str(), vMemoryInfo[MemIndex].Content.c_str(), vMemoryInfo[MemIndex].szProtect.c_str(), vMemoryInfo[MemIndex].szInitialProtect.c_str());
+    //}
 
     return;
 }

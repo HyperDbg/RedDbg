@@ -193,101 +193,6 @@ void PETab_::PeOptionalHeaderTableRender()
         FileHeaderDwordVals.push_back(&GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.nt.OptionalHeader.LoaderFlags);
         FileHeaderDwordVals.push_back(&GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.nt.OptionalHeader.NumberOfRvaAndSizes);
     }
-    //static std::vector<WORD*> OptionalHeaderWordVals{
-    //    &GlobalVarsOfPeTab::objPEInformation->pImageNTHeaderOfPe->OptionalHeader.Magic,
-    //    nullptr,
-    //    nullptr,
-    //    nullptr,
-    //    nullptr,
-    //    nullptr,
-    //    nullptr,
-    //    nullptr,
-    //    nullptr,
-    //    nullptr,
-    //    nullptr,
-    //    &GlobalVarsOfPeTab::objPEInformation->pImageNTHeaderOfPe->OptionalHeader.MajorOperatingSystemVersion,
-    //    &GlobalVarsOfPeTab::objPEInformation->pImageNTHeaderOfPe->OptionalHeader.MinorOperatingSystemVersion,
-    //    &GlobalVarsOfPeTab::objPEInformation->pImageNTHeaderOfPe->OptionalHeader.MajorImageVersion,
-    //    &GlobalVarsOfPeTab::objPEInformation->pImageNTHeaderOfPe->OptionalHeader.MinorImageVersion,
-    //    &GlobalVarsOfPeTab::objPEInformation->pImageNTHeaderOfPe->OptionalHeader.MajorSubsystemVersion,
-    //    &GlobalVarsOfPeTab::objPEInformation->pImageNTHeaderOfPe->OptionalHeader.MinorSubsystemVersion,
-    //    nullptr,
-    //    nullptr,
-    //    nullptr,
-    //    nullptr,
-    //    &GlobalVarsOfPeTab::objPEInformation->pImageNTHeaderOfPe->OptionalHeader.Subsystem,
-    //    &GlobalVarsOfPeTab::objPEInformation->pImageNTHeaderOfPe->OptionalHeader.DllCharacteristics,
-    //    nullptr,
-    //    nullptr,
-    //    nullptr,
-    //    nullptr,
-    //    nullptr,
-    //    nullptr,
-    //};
-
-    /*static std::vector<DWORD*> FileHeaderDwordVals{
-        nullptr,
-        nullptr,
-        nullptr,
-        &GlobalVarsOfPeTab::objPEInformation->pImageNTHeaderOfPe->OptionalHeader.SizeOfCode,
-        &GlobalVarsOfPeTab::objPEInformation->pImageNTHeaderOfPe->OptionalHeader.SizeOfInitializedData,
-        &GlobalVarsOfPeTab::objPEInformation->pImageNTHeaderOfPe->OptionalHeader.SizeOfUninitializedData,
-        &GlobalVarsOfPeTab::objPEInformation->pImageNTHeaderOfPe->OptionalHeader.AddressOfEntryPoint,
-        &GlobalVarsOfPeTab::objPEInformation->pImageNTHeaderOfPe->OptionalHeader.BaseOfCode,
-        nullptr,
-        &GlobalVarsOfPeTab::objPEInformation->pImageNTHeaderOfPe->OptionalHeader.SectionAlignment,
-        &GlobalVarsOfPeTab::objPEInformation->pImageNTHeaderOfPe->OptionalHeader.FileAlignment,
-        nullptr,
-        nullptr,
-        nullptr,
-        nullptr,
-        nullptr,
-        nullptr,
-        &GlobalVarsOfPeTab::objPEInformation->pImageNTHeaderOfPe->OptionalHeader.Win32VersionValue,
-        &GlobalVarsOfPeTab::objPEInformation->pImageNTHeaderOfPe->OptionalHeader.SizeOfImage,
-        &GlobalVarsOfPeTab::objPEInformation->pImageNTHeaderOfPe->OptionalHeader.SizeOfHeaders,
-        &GlobalVarsOfPeTab::objPEInformation->pImageNTHeaderOfPe->OptionalHeader.CheckSum,
-        nullptr,
-        nullptr,
-        nullptr,
-        nullptr,
-        nullptr,
-        nullptr,
-        &GlobalVarsOfPeTab::objPEInformation->pImageNTHeaderOfPe->OptionalHeader.LoaderFlags,
-        &GlobalVarsOfPeTab::objPEInformation->pImageNTHeaderOfPe->OptionalHeader.NumberOfRvaAndSizes,
-    };*/
-
-    /*static std::vector<ULONGLONG*> FileHeaderQwordVals{
-        nullptr,
-        nullptr,
-        nullptr,
-        nullptr,
-        nullptr,
-        nullptr,
-        nullptr,
-        nullptr,
-        &GlobalVarsOfPeTab::objPEInformation->pImageNTHeaderOfPe->OptionalHeader.ImageBase,
-        nullptr,
-        nullptr,
-        nullptr,
-        nullptr,
-        nullptr,
-        nullptr,
-        nullptr,
-        nullptr,
-        nullptr,
-        nullptr,
-        nullptr,
-        nullptr,
-        nullptr,
-        nullptr,
-        &GlobalVarsOfPeTab::objPEInformation->pImageNTHeaderOfPe->OptionalHeader.SizeOfStackReserve,
-        &GlobalVarsOfPeTab::objPEInformation->pImageNTHeaderOfPe->OptionalHeader.SizeOfStackCommit,
-        &GlobalVarsOfPeTab::objPEInformation->pImageNTHeaderOfPe->OptionalHeader.SizeOfHeapReserve,
-        &GlobalVarsOfPeTab::objPEInformation->pImageNTHeaderOfPe->OptionalHeader.SizeOfHeapCommit,
-        nullptr,
-        nullptr,
-    };*/
 
     static std::vector<std::string> InputStrings;
 
@@ -510,15 +415,6 @@ void PETab_::PeOptionalHeaderTableRender()
                         }
                         ImGui::PopStyleColor();
                     }
-                    //static bool VarA, VarB;
-                    //if (GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.nt.OptionalMagic == IMAGE_NT_OPTIONAL_HDR64_MAGIC)
-                    //{
-
-                    //}
-                    //else
-                    //{
-
-                    //}
                     else if (Row >= 3 && Row <= 7 || Row >= 9 && Row <= 10 || Row >= 17 && Row <= 20 || Row >= 27 && Row <= 28)
                     {
                         if (Row == 6)

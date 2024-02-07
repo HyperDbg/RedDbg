@@ -114,29 +114,6 @@ void CustomTitleBar_::CustomWindowInTitleBarRender(MenuBarDispatcher_* Instance)
 
             PeParser Parser;
             GlobalVarsOfPeTab::objPEInformation = Parser.Open(ImGuiFileDialog::Instance()->GetFilePathName(), true);
-            //GlobalVarsOfPeTab::objPeReader.PathToCurrentDebugging = ImGuiFileDialog::Instance()->GetFilePathName();
-            //GlobalVarsOfPeTab::objPeReader.Start = true;
-            //GlobalVarsOfPeTab::objPEInformation = GlobalVarsOfPeTab::objPeReader.Pe(GlobalVarsOfPeTab::objPEInformation);
-            //GlobalVarsOfPeTab::Buf = GlobalVarsOfPeTab::objPEInformation->Pe->fileBuffer->buf;
-            //auto L_inspectSection = [](void* N,
-            //    const peparse::VA& secBase,
-            //    const std::string& secName,
-            //    const peparse::image_section_header& SectionHeader,
-            //    const peparse::bounded_buffer* data) -> int {
-            //        static_cast<void>(secBase);
-            //        static_cast<void>(secName);
-            //        static_cast<void>(data);
-            //        //auto Buf = static_cast<uint8_t*>(N);
-            //        std::string sectionName((char*)SectionHeader.Name);
-            //        if (sectionName.size() > 8) { sectionName = sectionName.substr(0, 8); }
-            //        printf("%p\n", GlobalVarsOfPeTab::Buf);
-            //        int Offset = SectionHeader.PointerToRawData;
-            //        int Length = SectionHeader.SizeOfRawData;
-            //        GlobalVarsOfPeTab::Entropy.push_back(CalcEntropy(GlobalVarsOfPeTab::Buf, Offset, Offset + Length, (peparse::bounded_buffer*)data));
-            //        return 0;
-            //    };
-
-            //peparse::IterSec(GlobalVarsOfPeTab::objPEInformation->Pe, L_inspectSection, nullptr);
 
             static PIMAGE_NT_HEADERS pImageNTHeader = (PIMAGE_NT_HEADERS)((uint64_t)GlobalVarsOfPeTab::objPEInformation->Pe->fileBuffer->buf + (uint64_t)GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.dos.e_lfanew);
             static PIMAGE_SECTION_HEADER pImageSectionHeader = (PIMAGE_SECTION_HEADER)((uint64_t)pImageNTHeader + 4 + sizeof(IMAGE_FILE_HEADER) + GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.nt.FileHeader.SizeOfOptionalHeader);
