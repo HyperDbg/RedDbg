@@ -18,7 +18,8 @@ ParsedPeRefDll MemoryParser_::OpenExecutable(std::string path) noexcept {
     return obj;
 }
 
-nsMemoryParser::Error MemoryParser_::GetHeap()
+nsMemoryParser::Error MemoryParser_::GetHeap(
+    std::vector<uint64_t>& vHeapAddrs)
 {
     USERMODE_HEAP_DETAILS HeapCountRequest = { 0 };
     DWORD ReturnedLength = 0;
@@ -67,82 +68,85 @@ nsMemoryParser::Error MemoryParser_::GetHeap()
     return nsMemoryParser::Error::AllOk;
 }
 
-nsMemoryParser::Error MemoryParser_::GetTebAndStackForEachThread()
+void MemoryParser_::GetTebAndStackForEachThread(
+    std::vector<MemoryInfo>& vTebInfo, 
+    std::vector<MemoryInfo>& vStackInfo)
 {
-    static HMODULE hNtDll = LoadLibraryA(Ntdll.c_str());
-    if (hNtDll == NULL) { return nsMemoryParser::Error::hNtDllIsNull; }
+    NTSTATUS Status; ULONG size;
+    if (NtQuerySystemInformation(SystemProcessInformation, NULL, 0, &size) != STATUS_INFO_LENGTH_MISMATCH) { return; }
 
-    static NTQUERYINFORMATIONTHREAD NtQueryInformationThread = (NTQUERYINFORMATIONTHREAD)GetProcAddress(hNtDll, "NtQueryInformationThread");
-    if (NtQueryInformationThread == NULL) { FreeLibrary(hNtDll); return nsMemoryParser::Error::NtQueryInformationThreadIsNull; }
+    PSYSTEM_PROCESS_INFORMATION spi = PSYSTEM_PROCESS_INFORMATION(VirtualAlloc(NULL, 2*size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
+    if (!NT_SUCCESS(Status = NtQuerySystemInformation(SystemProcessInformation, spi, 2*size, NULL)))
+    {
+        printf("\nError: Unable to query process list (%#x)\n", Status);
+        VirtualFree(spi, 0, MEM_RELEASE);
+        return;
+    }
 
-    HANDLE hThreadSnap = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, CustomTitleBarGlobalVars::Pid);
-    if (hThreadSnap == INVALID_HANDLE_VALUE) { return nsMemoryParser::Error::hThreadSnapHasInvalidHandleValue; }
+    while (true) // Loop over the list until we reach the last entry.
+    {
+        //printf("\nProcess name: %ws | Process ID: %d\n", spi->ImageName.Buffer, spi->UniqueProcessId); // Display process information.
+        if ((DWORD)spi->UniqueProcessId == GlobalVarsOfPeTab::objPEInformation->ProcessInfo.dwProcessId)
+        {
+            for (int ThreadIndex = 0; ThreadIndex < spi->NumberOfThreads; ++ThreadIndex) 
+            {         
+                HANDLE hThread = OpenThread(THREAD_ALL_ACCESS, FALSE, (DWORD)spi->Threads[ThreadIndex].ClientId.UniqueThread);
+                if (hThread != NULL)
+                {
+                    NT_TIB tib = { 0 };
+                    THREAD_BASIC_INFORMATION tbi = { 0 };
 
-    THREADENTRY32 te32; te32.dwSize = sizeof(THREADENTRY32);
-    if (!Thread32First(hThreadSnap, &te32)) { CloseHandle(hThreadSnap); return nsMemoryParser::Error::FailedToGetFirstThread; }
+                    NTSTATUS status = NtQueryInformationThread(hThread, (THREADINFOCLASS)ThreadBasicInformation, &tbi, sizeof(tbi), NULL);
+                    if (status == STATUS_SUCCESS) {
+                        //USERMODE_READ_PROCESS_MEMORY ReadMemory{};
+                        //DWORD ReturnedLength = 0;
+                        //ReadMemory.Pid = CustomTitleBarGlobalVars::Pid;
+                        //ReadMemory.Src = tbi.TebBaseAddress;
+                        //ReadMemory.Dest = &tib;
+                        //ReadMemory.Size = sizeof(tib);
+                        //bool Status = DeviceIoControl(
+                        //    CustomTitleBarGlobalVars::hDriver,
+                        //    IoCtlCode::ReadProcessMemory,
+                        //    &ReadMemory,
+                        //    sizeof(USERMODE_READ_PROCESS_MEMORY),
+                        //    &ReadMemory,
+                        //    sizeof(USERMODE_READ_PROCESS_MEMORY),
+                        //    &ReturnedLength,
+                        //    NULL);
+                        ReadProcessMemory(GlobalVarsOfPeTab::objPEInformation->ProcessInfo.hProcess, tbi.TebBaseAddress, &tib, sizeof(tbi), nullptr);//Replace with CALL TO DRIVER 
 
-    do {
-        if (te32.th32OwnerProcessID == CustomTitleBarGlobalVars::Pid) {
-            HANDLE hThread = OpenThread(THREAD_ALL_ACCESS, FALSE, te32.th32ThreadID);
-            if (hThread != NULL) {
-                CLIENT_ID clientId;
-                clientId.UniqueProcess = 0;
-                clientId.UniqueThread = (HANDLE)te32.th32ThreadID;
+                        MemoryInfo StackStruct{};
+                        StackStruct.BaseAddress = (uint64_t)tib.StackLimit;
+                        std::stringstream ss;
+                        ss << "Stack (" << std::uppercase << std::hex << (uint32_t)spi->Threads[ThreadIndex].ClientId.UniqueThread << ")";
+                        StackStruct.Info += ss.str();
+                        StackStruct.Party = false;
+                        StackStruct.Stack = true;
+                        //printf("StackStruct.Address: %#p\n", spi->Threads[ThreadIndex].StackLimit);
 
-                NT_TIB tib = { 0 };
-                THREAD_BASIC_INFORMATION tbi = { 0 };
+                        vStackInfo.push_back(StackStruct);
 
-                NTSTATUS status = NtQueryInformationThread(hThread, (THREADINFOCLASS)ThreadBasicInformation, &tbi, sizeof(tbi), NULL);
-                if (status == STATUS_SUCCESS) {
-                    USERMODE_READ_PROCESS_MEMORY ReadMemory{};
-                    DWORD ReturnedLength = 0;
+                        MemoryInfo TebStruct;
+                        TebStruct.CustomAddress.push_back((uint64_t)tbi.TebBaseAddress);
+                        std::stringstream ss1;
+                        ss1 << "TEB(" << std::uppercase << std::hex << (uint32_t)spi->Threads[ThreadIndex].ClientId.UniqueThread << ")";
+                        TebStruct.Info += ss1.str();
+                        TebStruct.Party = false;
+                        TebStruct.Teb = true;
+                        //printf("TebStruct.Address: %#p | ThreadId: %#x\n", TebStruct.CustomAddress[0], te32.th32ThreadID);
 
-                    ReadMemory.Pid = CustomTitleBarGlobalVars::Pid;
-                    ReadMemory.Src = tbi.TebBaseAddress;
-                    ReadMemory.Dest = &tib;
-                    ReadMemory.Size = sizeof(tib);
-
-                    /*bool Status = DeviceIoControl(
-                        CustomTitleBarGlobalVars::hDriver,
-                        IoCtlCode::ReadProcessMemory,
-                        &ReadMemory,
-                        sizeof(USERMODE_READ_PROCESS_MEMORY),
-                        &ReadMemory,
-                        sizeof(USERMODE_READ_PROCESS_MEMORY),
-                        &ReturnedLength,
-                        NULL);*/
-                    ReadProcessMemory(GlobalVarsOfPeTab::objPEInformation->ProcessInfo.hProcess, tbi.TebBaseAddress, &tib, sizeof(tbi), nullptr);//Replace with CALL TO DRIVER 
-
-                    MemoryInfo StackStruct{};
-                    StackStruct.BaseAddress = (uint64_t)tib.StackLimit;
-                    std::stringstream ss;
-                    ss << "Stack (" << std::uppercase << std::hex << te32.th32ThreadID << ")";
-                    StackStruct.Info += ss.str();
-                    StackStruct.Party = false;
-                    StackStruct.Stack = true;
-                    //printf("StackStruct.Address: %#p | ThreadId: %#x | StackLimit: %#p\n", StackStruct.BaseAddress, te32.th32ThreadID, tib.StackLimit);
-
-                    vStackInfo.push_back(StackStruct);
-
-                    MemoryInfo TebStruct;
-                    TebStruct.CustomAddress.push_back((uint64_t)tbi.TebBaseAddress);
-                    std::stringstream ss1;
-                    ss1 << "TEB(" << std::uppercase << std::hex << te32.th32ThreadID << ")";
-                    TebStruct.Info += ss1.str();
-                    TebStruct.Party = false;
-                    TebStruct.Teb = true;
-                    //printf("TebStruct.Address: %#p | ThreadId: %#x\n", TebStruct.CustomAddress[0], te32.th32ThreadID);
-
-                    vTebInfo.push_back(TebStruct);
+                        vTebInfo.push_back(TebStruct);
+                    }
                 }
                 CloseHandle(hThread);
             }
         }
-    } while (Thread32Next(hThreadSnap, &te32));
-    CloseHandle(hThreadSnap);
-    FreeLibrary(hNtDll);
+        if (spi->NextEntryOffset == 0) { break; }
+        spi = PSYSTEM_PROCESS_INFORMATION((LPBYTE)spi + spi->NextEntryOffset);
+    }
+    VirtualFree(spi, 0, MEM_RELEASE);
 
-    return nsMemoryParser::Error::AllOk;
+    return;
 }
 
 bool MemPageRightsToString(DWORD Protect, std::string& Memory)
@@ -180,6 +184,11 @@ bool MemPageRightsToString(DWORD Protect, std::string& Memory)
 
 void MemoryParser_::GetMemoryMapOfUserProcess(bool Cache)
 {
+    std::vector<MemoryInfo> vTebInfo;
+    std::vector<MemoryInfo> vStackInfo;
+    std::vector<MemoryInfo> vHeapInfo;
+    std::vector<uint64_t> vHeapAddrs;
+
     if (Cache) { vMemoryInfo.clear(); }
 
     SYSTEM_INFO systemInfo; GetSystemInfo(&systemInfo);
@@ -188,8 +197,8 @@ void MemoryParser_::GetMemoryMapOfUserProcess(bool Cache)
     size_t address = reinterpret_cast<size_t>(systemInfo.lpMinimumApplicationAddress);
     size_t maxAddress = reinterpret_cast<size_t>(systemInfo.lpMaximumApplicationAddress);
 
-    GetTebAndStackForEachThread();
-    //GetHeap();
+    GetTebAndStackForEachThread(vTebInfo, vStackInfo);
+    //GetHeap(vHeapAddrs);
 
     uint64_t CounterOfRegions = 0;
     while (address < maxAddress)

@@ -127,6 +127,12 @@
     <Filter Include="Header Files\GUI\MenuOfMainTabs\PeMenuBegin\Parser">
       <UniqueIdentifier>{0f602902-4748-46ad-b56c-9cbd7c18b80e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\GUI\MenuOfMainTabs\ThreadsMenuBegin\Parser">
+      <UniqueIdentifier>{1dcf0e9c-dcf3-46cd-afcc-9c80b996f548}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GUI\MenuOfMainTabs\ThreadsMenuBegin\Parser">
+      <UniqueIdentifier>{8d1ea8b0-bc0e-45dc-9ed4-717701a4e088}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Debugger\Application\Main.cpp">
@@ -234,6 +240,9 @@
     <ClCompile Include="Source\GUI\MenuOfMainTabs\PeMenuBegin\Parser\PEReader_.cpp">
       <Filter>Source Files\GUI\MenuOfMainTabs\PeMenuBegin\PeParser</Filter>
     </ClCompile>
+    <ClCompile Include="Source\GUI\MenuOfMainTabs\ThreadsMenuBegin\Threads.cpp">
+      <Filter>Source Files\GUI\MenuOfMainTabs\ThreadsMenuBegin\Parser</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\GUI\UI\ImGui\Opengl3&amp;WinApi\imgui_impl_win32.h">
@@ -334,6 +343,9 @@
     </ClInclude>
     <ClInclude Include="Include\GUI\MenuOfMainTabs\PeMenuBegin\Parser\PEReader.hpp">
       <Filter>Header Files\GUI\MenuOfMainTabs\PeMenuBegin\Parser</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\GUI\MenuOfMainTabs\ThreadsMenuBegin\Threads.hpp">
+      <Filter>Header Files\GUI\MenuOfMainTabs\ThreadsMenuBegin\Parser</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

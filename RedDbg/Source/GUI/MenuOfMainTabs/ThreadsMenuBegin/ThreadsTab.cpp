@@ -2,15 +2,45 @@
 
 #include <vector>
 
+namespace CustomTitleBarGlobalVars {
+    extern HANDLE hDriver;
+    extern DWORD Pid;
+}
+
+namespace GlobalVarsOfPeTab {
+    extern std::shared_ptr<PeReader> objPEInformation;
+}
+
+static void CallBackUpdateThreadCache(std::shared_ptr<ThreadRefreshThread> objThreadRefreshThread)
+{
+    objThreadRefreshThread->Parse->UpdateThreadCache(objThreadRefreshThread->Active);
+}
+
+void ThreadsTab_::GetThreadInfoSafe(ThreadParser_& Parse, std::shared_ptr<std::atomic<bool>> Active)
+{
+    ThreadRefreshThread objThreadRefreshThread;
+    objThreadRefreshThread.Parse = &Parse;
+    objThreadRefreshThread.Active = Active;
+    std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
+    if (duration_cast<std::chrono::seconds>(now - Parse.Cache.LastUpdated) > std::chrono::milliseconds(Dimensionses.CacheRefreshRate))
+    {
+        std::thread updateThread(CallBackUpdateThreadCache, std::make_shared<ThreadRefreshThread>(objThreadRefreshThread)); updateThread.detach();
+    }
+    return;
+}
+
 void ThreadsTab_::ThreadsTableRender()
 {
-    if (ImGui::BeginTable(Names.Windowses.MainDebuggerInterface.MainTabs.ThreadsTab.ThreadsTableName.data(), Dimensionses.CountOfThreadsColumns, DefaultTableFlags))
+    if (CustomTitleBarGlobalVars::Pid != 0 && 
+        ImGui::BeginTable(Names.Windowses.MainDebuggerInterface.MainTabs.ThreadsTab.ThreadsTableName.data(), Dimensionses.CountOfThreadsColumns, DefaultTableFlags))
     {
         ImGui::TableSetupScrollFreeze(0, 1);
         ImGui::TableSetupColumn(Names.Windowses.MainDebuggerInterface.MainTabs.ThreadsTab.ThreadsTableNumberColumnName.data(), ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableSetupColumn(Names.Windowses.MainDebuggerInterface.MainTabs.ThreadsTab.ThreadsTableIDColumnName.data(), ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableSetupColumn(Names.Windowses.MainDebuggerInterface.MainTabs.ThreadsTab.ThreadsTableEntryColumnName.data(), ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableSetupColumn(Names.Windowses.MainDebuggerInterface.MainTabs.ThreadsTab.ThreadsTableTEBColumnName.data(), ImGuiTableColumnFlags_WidthFixed);
+        ImGui::TableSetupColumn(Names.Windowses.MainDebuggerInterface.MainTabs.ThreadsTab.ThreadsTableStackBaseColumnName.data(), ImGuiTableColumnFlags_WidthFixed);
+        ImGui::TableSetupColumn(Names.Windowses.MainDebuggerInterface.MainTabs.ThreadsTab.ThreadsTableStackLimitColumnName.data(), ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableSetupColumn(Names.Windowses.MainDebuggerInterface.MainTabs.ThreadsTab.ThreadsTableRIPColumnName.data(), ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableSetupColumn(Names.Windowses.MainDebuggerInterface.MainTabs.ThreadsTab.ThreadsTableSuspendCountColumnName.data(), ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableSetupColumn(Names.Windowses.MainDebuggerInterface.MainTabs.ThreadsTab.ThreadsTablePriorityColumnName.data(), ImGuiTableColumnFlags_WidthFixed);
@@ -20,12 +50,16 @@ void ThreadsTab_::ThreadsTableRender()
         ImGui::TableSetupColumn(Names.Windowses.MainDebuggerInterface.MainTabs.ThreadsTab.ThreadsTableKernelTimeColumnName.data(), ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableSetupColumn(Names.Windowses.MainDebuggerInterface.MainTabs.ThreadsTab.ThreadsTableCreationTimeColumnName.data(), ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableSetupColumn(Names.Windowses.MainDebuggerInterface.MainTabs.ThreadsTab.ThreadsTableCPUCyclesColumnName.data(), ImGuiTableColumnFlags_WidthFixed);
+        ImGui::TableSetupColumn(Names.Windowses.MainDebuggerInterface.MainTabs.ThreadsTab.ThreadsTableContextSwitchColumnName.data(), ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableSetupColumn(Names.Windowses.MainDebuggerInterface.MainTabs.ThreadsTab.ThreadsTableNameColumnName.data(), ImGuiTableColumnFlags_WidthStretch);
         ImGui::TableSetupColumn(Names.Windowses.MainDebuggerInterface.MainTabs.ThreadsTab.ThreadsTableDisabledColumnName.data(), ImGuiTableColumnFlags_Disabled);
         ImGui::TableHeadersRow();
 
+        static ThreadParser_ Parse;
+        static std::shared_ptr<std::atomic<bool>> Active = std::make_shared<std::atomic<bool>>(true);
+        GetThreadInfoSafe(Parse, Active);
         ImGuiListClipper clipper;
-        clipper.Begin(0, 17);//TODO: Data transfer
+        clipper.Begin(Parse.Cache.vThreadInfo.size(), 17);//TODO: Data transfer
         while (clipper.Step())
         {
             for (int Row = clipper.DisplayStart; Row < clipper.DisplayEnd; ++Row)
@@ -38,7 +72,125 @@ void ThreadsTab_::ThreadsTableRender()
                     ImGui::TableSetColumnIndex(Column);
                     ImGui::PushStyleColor(ImGuiCol_HeaderActive, Dimensionses.U32GrayColor);
                     ImGui::PushStyleColor(ImGuiCol_HeaderHovered, Dimensionses.U32GrayColor);
-                    //ImGui::Selectable("23423423423423423423", false);
+                   
+                    switch (Column)
+                    {
+                    case 0:
+                    {
+                        std::stringstream Ss;
+                        Ss << std::uppercase << std::hex << Row;
+                        ImGui::Selectable(Ss.str().c_str());
+                        break;
+                    }
+                    case 1:
+                    {
+                        std::stringstream Ss;
+                        Ss << std::uppercase << std::hex << Parse.Cache.vThreadInfo[Row].Thread.ThreadInfo.ClientId.UniqueThread;
+                        ImGui::Selectable(Ss.str().c_str());
+                        break;
+                    }
+                    case 2: 
+                    {
+                        std::stringstream Ss;
+                        Ss << std::uppercase << std::hex << Parse.Cache.vThreadInfo[Row].Thread.Win32StartAddress;
+                        ImGui::Selectable(Ss.str().c_str());
+                        if(ImGui::IsItemHovered() && ImGui::BeginTooltip())
+                        {
+                            std::stringstream Ss1;
+                            Ss1 << "Created on: " << std::uppercase << std::hex << Parse.Cache.vThreadInfo[Row].Thread.ThreadInfo.StartAddress;
+                            ImGui::Text(Ss1.str().c_str());
+                            ImGui::EndTooltip();
+                        }
+                        break;
+                    }
+                    case 3:
+                    {
+                        std::stringstream Ss;
+                        Ss << std::uppercase << std::hex << Parse.Cache.vThreadInfo[Row].TebBase;
+                        ImGui::Selectable(Ss.str().c_str());
+                        break;
+                    }
+                    case 4:
+                    {
+                        std::stringstream Ss;
+                        Ss << std::uppercase << std::hex << Parse.Cache.vThreadInfo[Row].Thread.StackBase;
+                        ImGui::Selectable(Ss.str().c_str());
+                        break;
+                    }
+                    case 5:
+                    {
+                        std::stringstream Ss;
+                        Ss << std::uppercase << std::hex << Parse.Cache.vThreadInfo[Row].Thread.StackLimit;
+                        ImGui::Selectable(Ss.str().c_str());
+                        break;
+                    }
+                    case 6:
+                    {
+                        //std::stringstream Ss;
+                        //Ss << std::uppercase << std::hex << Parse.Cache.vThreadInfo[Row].Thread.StackLimit;
+                        //ImGui::Selectable(Ss.str().c_str());
+                        break;
+                    }
+                    case 7: 
+                    {
+                        std::stringstream Ss;
+                        Ss << std::uppercase << std::hex << Parse.Cache.vThreadInfo[Row].SuspendCount;
+                        ImGui::Selectable(Ss.str().c_str());
+                        break;
+                    }
+                    case 8:
+                    {
+                        ImGui::Selectable(Parse.Cache.vThreadInfo[Row].szPriority.c_str());
+                        break;
+                    }
+                    case 9:
+                    {
+                        ImGui::Selectable(Parse.Cache.vThreadInfo[Row].szWaitReason.c_str());
+                        break;
+                    }
+                    case 10:
+                    {
+                        std::stringstream Ss;
+                        Ss << std::uppercase << std::hex << Parse.Cache.vThreadInfo[Row].Thread.TebBase->LastErrorValue;
+                        ImGui::Selectable(Ss.str().c_str());
+                        break;
+                    }
+                    case 11:
+                    {
+                        ImGui::Selectable(Parse.Cache.vThreadInfo[Row].szUserTime.c_str());
+                        break;
+                    }
+                    case 12:
+                    {
+                        ImGui::Selectable(Parse.Cache.vThreadInfo[Row].szKernelTime.c_str());
+                        break;
+                    }
+                    case 13:
+                    {
+                        ImGui::Selectable(Parse.Cache.vThreadInfo[Row].szCreationTime.c_str());
+                        break;
+                    }
+                    case 14:
+                    {
+                        std::stringstream Ss;
+                        Ss << std::uppercase << std::hex << Parse.Cache.vThreadInfo[Row].Cycles;
+                        ImGui::Selectable(Ss.str().c_str());
+                        break;
+                    }
+                    case 15:
+                    {
+                        std::stringstream Ss;
+                        Ss << std::uppercase << std::hex << Parse.Cache.vThreadInfo[Row].Thread.ThreadInfo.ContextSwitches;
+                        ImGui::Selectable(Ss.str().c_str());
+                        break;
+                    }
+                    case 16:
+                    {
+                        ImGui::Selectable(Parse.Cache.vThreadInfo[Row].Name.c_str());
+                        break;
+                    }
+                    }
+
                     ImGui::PopStyleColor(2);
                 }
             }

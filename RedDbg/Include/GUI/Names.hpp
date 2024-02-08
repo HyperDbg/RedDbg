@@ -523,6 +523,8 @@ private:
 					const std::string_view ThreadsTableIDColumnName = "ID";
 					const std::string_view ThreadsTableEntryColumnName = "Entry";
 					const std::string_view ThreadsTableTEBColumnName = "TEB";
+					const std::string_view ThreadsTableStackBaseColumnName = "StackBase";
+					const std::string_view ThreadsTableStackLimitColumnName = "StackLimit";
 					const std::string_view ThreadsTableRIPColumnName = "RIP";
 					const std::string_view ThreadsTableSuspendCountColumnName = "Suspend Count";
 					const std::string_view ThreadsTablePriorityColumnName = "Priority";
@@ -532,6 +534,7 @@ private:
 					const std::string_view ThreadsTableKernelTimeColumnName = "Kernel Time";
 					const std::string_view ThreadsTableCreationTimeColumnName = "Creation Time";
 					const std::string_view ThreadsTableCPUCyclesColumnName = "CPU Cycles";
+					const std::string_view ThreadsTableContextSwitchColumnName = "Context switch";
 					const std::string_view ThreadsTableNameColumnName = "Name";
 					const std::string_view ThreadsTableDisabledColumnName = "##";
 

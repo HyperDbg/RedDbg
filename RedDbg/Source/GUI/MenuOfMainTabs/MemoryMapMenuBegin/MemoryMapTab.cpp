@@ -2,7 +2,6 @@
 
 #include <vector>
 #include <Debugger/ErrorCodes.hpp>
-//#include <IOCTL/IOCTL.hpp>
 
 namespace CustomTitleBarGlobalVars {
     extern HANDLE hDriver;
@@ -57,7 +56,7 @@ void MemoryMapTab_::MemoryMapWindowRender()
         false);
 }
 
-void CallBackUpdateMemoryCache(std::shared_ptr<MemoryRefreshThread> objMemoryRefreshThread)
+static void CallBackUpdateMemoryCache(std::shared_ptr<MemoryRefreshThread> objMemoryRefreshThread)
 {
     objMemoryRefreshThread->Parse->UpdateMemoryCache(objMemoryRefreshThread->Active);
 }
@@ -68,7 +67,7 @@ void MemoryMapTab_::GetMemoryInfoSafe(MemoryParser_& Parse, std::shared_ptr<std:
     objMemoryRefreshThread.Parse = &Parse;
     objMemoryRefreshThread.Active = Active;
     std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
-    if (duration_cast<std::chrono::seconds>(now - Parse.Cache.LastUpdated) > std::chrono::seconds(2))
+    if (duration_cast<std::chrono::seconds>(now - Parse.Cache.LastUpdated) > std::chrono::milliseconds(Dimensionses.CacheRefreshRate))
     {
         std::thread updateThread(CallBackUpdateMemoryCache, std::make_shared<MemoryRefreshThread>(objMemoryRefreshThread)); updateThread.detach();
     }
@@ -266,9 +265,7 @@ void MemoryMapTab_::MemoryMapTableRender()
         ImGui::TableSetupColumn(Names.Windowses.MainDebuggerInterface.MainTabs.MemoryMapTab.MemoryMapTableDisabledColumnName.data(), ImGuiTableColumnFlags_Disabled);
         ImGui::TableHeadersRow();
 
-        //static MemoryParser objMemoryParser;
         static MemoryParser_ Parse;
-        //static bool Active = false;
         static std::shared_ptr<std::atomic<bool>> Active = std::make_shared<std::atomic<bool>>(true);
         GetMemoryInfoSafe(Parse, Active);
         Active = std::make_shared<std::atomic<bool>>(true);

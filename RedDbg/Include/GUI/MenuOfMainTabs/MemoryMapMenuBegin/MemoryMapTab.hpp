@@ -26,7 +26,6 @@ private:
 		ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable;
 
 	void GetMemoryInfoSafe(MemoryParser_& Parse, std::shared_ptr<std::atomic<bool>> Active);
-	//void CallBackUpdateMemoryCache(MemoryRefreshThread& objMemoryRefreshThread);
 public:
 	void ComboBoxOfTypesInFindInMemoryMapWindowRender();
 	void InputFieldInFindInMemoryMapWindowRender();

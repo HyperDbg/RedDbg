@@ -112,7 +112,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)/Source/Deps/pe-parse-compiled</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opengl32.lib;pe-parse.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;ntdll.lib;pe-parse.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
     </Link>
   </ItemDefinitionGroup>
@@ -134,7 +134,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)/Source/Deps/libs</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;ntdll.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
     </Link>
   </ItemDefinitionGroup>
@@ -163,6 +163,7 @@
     <ClCompile Include="Source\GUI\MenuOfMainTabs\PeMenuBegin\PeTab.cpp" />
     <ClCompile Include="Source\GUI\MenuOfMainTabs\SEHMenuBegin\SehTab.cpp" />
     <ClCompile Include="Source\GUI\MenuOfMainTabs\StackMapMenuBegin\StackMapTab.cpp" />
+    <ClCompile Include="Source\GUI\MenuOfMainTabs\ThreadsMenuBegin\Threads.cpp" />
     <ClCompile Include="Source\GUI\MenuOfMainTabs\ThreadsMenuBegin\ThreadsTab.cpp" />
     <ClCompile Include="Source\GUI\UI\ImGui\FileDialog\ImGuiFileDialog.cpp" />
     <ClCompile Include="Source\GUI\UI\ImGui\imgui.cpp" />
@@ -192,6 +193,7 @@
     <ClInclude Include="Include\GUI\MenuOfMainTabs\PeMenuBegin\PeTab.hpp" />
     <ClInclude Include="Include\GUI\MenuOfMainTabs\SEHMenuBegin\SehTab.hpp" />
     <ClInclude Include="Include\GUI\MenuOfMainTabs\StackMapMenuBegin\StackMapTab.hpp" />
+    <ClInclude Include="Include\GUI\MenuOfMainTabs\ThreadsMenuBegin\Threads.hpp" />
     <ClInclude Include="Include\GUI\MenuOfMainTabs\ThreadsMenuBegin\ThreadsTab.hpp" />
     <ClInclude Include="Include\GUI\Names.hpp" />
     <ClInclude Include="Include\GUI\OptionsEnums.hpp" />

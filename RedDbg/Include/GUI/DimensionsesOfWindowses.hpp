@@ -51,7 +51,7 @@ public:
 
 	const unsigned char CountOfStackColumns = 4;
 	const unsigned char CountOfDisasmColumns = 6;
-	const unsigned char CountOfThreadsColumns = 15;
+	const unsigned char CountOfThreadsColumns = 18;
 	const unsigned char CountOfStackMapAddrsTableColumns = 2;
 	const unsigned char CountOfStackMapRefsToAddrsTableColumns = 6;
 	const unsigned char CountOfCallStackColumns = 9;
@@ -59,4 +59,6 @@ public:
 	const unsigned char CountOfSEHColumns = 5;
 
 	const unsigned char CountOfAllNodes = 14;
+
+	const unsigned char CacheRefreshRate = 40;
 };

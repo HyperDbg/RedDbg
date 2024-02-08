@@ -6,21 +6,12 @@
 #include <psapi.h>
 #include <filesystem>
 #include <TlHelp32.h>
-#include <omp.h>
 #include <intsafe.h>
 #include "Userntdll.h"
 
 #define ALIGN_TO_4KB(size) (((size) + 4095) / 4096) * 4096
 #define KUSER_SHARED_DATA 0x7FFE0000
 #define PAGE_NO_CHANGE 0x00400000
-
-typedef NTSTATUS(NTAPI* NTQUERYINFORMATIONTHREAD)(
-    HANDLE ThreadHandle,
-    THREADINFOCLASS ThreadInformationClass,
-    PVOID ThreadInformation,
-    ULONG ThreadInformationLength,
-    PULONG ReturnLength OPTIONAL
-    );
 
 using ParsedPeRefDll =
 std::unique_ptr<peparse::parsed_pe, void (*)(peparse::parsed_pe*)>;
@@ -118,20 +109,18 @@ private:
     };
     std::pair<std::vector<std::string>, std::vector<std::string>> Contents = { SectionNames, InformationContent };
 
-    std::string Ntdll = "ntdll.dll";
-
-    std::vector<MemoryInfo> vTebInfo;
-    std::vector<MemoryInfo> vStackInfo;
-    std::vector<MemoryInfo> vHeapInfo;
-    std::vector<uint64_t> vHeapAddrs;
+    //std::string Ntdll = "ntdll.dll";
+    std::vector<MemoryInfo> vMemoryInfo;
 private:
     ParsedPeRefDll OpenExecutable(std::string path) noexcept;
     void GetMemoryMapOfUserProcess(bool Cache);
-    nsMemoryParser::Error GetTebAndStackForEachThread();
-    nsMemoryParser::Error GetHeap();
+    void GetTebAndStackForEachThread(
+        std::vector<MemoryInfo>& vTebInfo,
+        std::vector<MemoryInfo>& vStackInfo);
+    nsMemoryParser::Error GetHeap(
+        std::vector<uint64_t>& vHeapAddrs);
 
 public:
-    std::vector<MemoryInfo> vMemoryInfo;
     MemoryCache Cache;
 
     MemoryParser_() {
@@ -139,18 +128,17 @@ public:
         GetMemoryMapOfUserProcess(false);
         Cache.vMemoryInfo.resize(vMemoryInfo.size());
         std::copy(vMemoryInfo.begin(), vMemoryInfo.end(), Cache.vMemoryInfo.begin());
-        //Cache.vMemoryInfo = vMemoryInfo;
+        return;
     }
 
     void UpdateMemoryCache(std::shared_ptr<std::atomic<bool>> Active) {
         Cache.LastUpdated = std::chrono::steady_clock::now();
         GetMemoryMapOfUserProcess(true);
         while (Active->load()) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Sleep for a short duration to avoid busy waiting
+            std::this_thread::sleep_for(std::chrono::milliseconds(5)); // Sleep for a short duration to avoid busy waiting
         }
         Cache.vMemoryInfo.resize(vMemoryInfo.size());
         std::copy(vMemoryInfo.begin(), vMemoryInfo.end(), Cache.vMemoryInfo.begin());
-        //Cache.vMemoryInfo = vMemoryInfo;
         return;
     }
 };
