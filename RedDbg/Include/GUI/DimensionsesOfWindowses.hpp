@@ -54,7 +54,7 @@ public:
 	const unsigned char CountOfThreadsColumns = 18;
 	const unsigned char CountOfStackMapAddrsTableColumns = 2;
 	const unsigned char CountOfStackMapRefsToAddrsTableColumns = 6;
-	const unsigned char CountOfCallStackColumns = 9;
+	const unsigned char CountOfCallStackColumns = 8;
 	const unsigned char CountOfMemoryMapColumns = 9;
 	const unsigned char CountOfSEHColumns = 5;
 

@@ -560,8 +560,7 @@ private:
 					const std::string_view CallStackWindowName = "CallStackWindow";
 
 					const std::string_view CallStackTableName = "CallStackTable";
-					const std::string_view CallStackTableIDColumnName = "ID";
-					const std::string_view CallStackTableThreadColumnName = "Thread";
+					const std::string_view CallStackTableThreadIDColumnName = "Thread ID";
 					const std::string_view CallStackTableAddressColumnName = "Address";
 					const std::string_view CallStackTableToColumnName = "To";
 					const std::string_view CallStackTableFromColumnName = "From";

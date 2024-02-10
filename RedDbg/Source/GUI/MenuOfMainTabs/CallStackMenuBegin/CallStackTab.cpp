@@ -1,6 +1,14 @@
 #include "GUI/MenuOfMainTabs/CallStackMenuBegin/CallStackTab.hpp"
 
-#include <vector>
+namespace CustomTitleBarGlobalVars {
+    extern HANDLE hDriver;
+    extern DWORD Pid;
+}
+
+namespace GlobalVarsOfPeTab {
+    extern std::shared_ptr<PeReader> objPEInformation;
+}
+
 void CallStackTab_::CallStackWindowRender()
 {
     static float CallStackHorizontalSplitterRelPosY = 0.95f;
@@ -45,13 +53,31 @@ void CallStackTab_::CallStackWindowRender()
         false);
 }
 
+static void CallBackUpdateCallStackCache(std::shared_ptr<CallStackRefreshThread> objCallStackRefreshThread)
+{
+    objCallStackRefreshThread->Parse->UpdateCallStackCache(objCallStackRefreshThread->Active);
+}
+
+void CallStackTab_::GetCallStackInfoSafe(CallStackParser_& Parse, std::shared_ptr<std::atomic<bool>> Active)
+{
+    CallStackRefreshThread objCallStackRefreshThread;
+    objCallStackRefreshThread.Parse = &Parse;
+    objCallStackRefreshThread.Active = Active;
+    std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
+    if (duration_cast<std::chrono::seconds>(now - Parse.Cache.LastUpdated) > std::chrono::milliseconds(Dimensionses.CacheRefreshRate))
+    {
+        std::thread updateThread(CallBackUpdateCallStackCache, std::make_shared<CallStackRefreshThread>(objCallStackRefreshThread)); updateThread.detach();
+    }
+    return;
+}
+
 void CallStackTab_::CallStackTableRender()
 {
-    if (ImGui::BeginTable(Names.Windowses.MainDebuggerInterface.MainTabs.CallStackTab.CallStackTableName.data(), Dimensionses.CountOfCallStackColumns, DefaultTableFlags))
+    if (CustomTitleBarGlobalVars::Pid != 0 && 
+        ImGui::BeginTable(Names.Windowses.MainDebuggerInterface.MainTabs.CallStackTab.CallStackTableName.data(), Dimensionses.CountOfCallStackColumns, DefaultTableFlags))
     {
         ImGui::TableSetupScrollFreeze(0, 1);
-        ImGui::TableSetupColumn(Names.Windowses.MainDebuggerInterface.MainTabs.CallStackTab.CallStackTableIDColumnName.data(), ImGuiTableColumnFlags_WidthFixed);
-        ImGui::TableSetupColumn(Names.Windowses.MainDebuggerInterface.MainTabs.CallStackTab.CallStackTableThreadColumnName.data(), ImGuiTableColumnFlags_WidthFixed);
+        ImGui::TableSetupColumn(Names.Windowses.MainDebuggerInterface.MainTabs.CallStackTab.CallStackTableThreadIDColumnName.data(), ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableSetupColumn(Names.Windowses.MainDebuggerInterface.MainTabs.CallStackTab.CallStackTableAddressColumnName.data(), ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableSetupColumn(Names.Windowses.MainDebuggerInterface.MainTabs.CallStackTab.CallStackTableToColumnName.data(), ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableSetupColumn(Names.Windowses.MainDebuggerInterface.MainTabs.CallStackTab.CallStackTableFromColumnName.data(), ImGuiTableColumnFlags_WidthFixed);
@@ -61,8 +87,11 @@ void CallStackTab_::CallStackTableRender()
         ImGui::TableSetupColumn(Names.Windowses.MainDebuggerInterface.MainTabs.CallStackTab.CallStackTableDisabledColumnName.data(), ImGuiTableColumnFlags_Disabled);
         ImGui::TableHeadersRow();
 
+        static CallStackParser_ Parse;
+        static std::shared_ptr<std::atomic<bool>> Active = std::make_shared<std::atomic<bool>>(true);
+        GetCallStackInfoSafe(Parse, Active);
         ImGuiListClipper clipper;
-        clipper.Begin(0, 17);//TODO: Data transfer
+        clipper.Begin(Parse.Cache.vCallStackInfo.size(), 17);//TODO: Data transfer
         while (clipper.Step())
         {
             for (int Row = clipper.DisplayStart; Row < clipper.DisplayEnd; Row++)
@@ -75,7 +104,108 @@ void CallStackTab_::CallStackTableRender()
                     ImGui::TableSetColumnIndex(Column);
                     ImGui::PushStyleColor(ImGuiCol_HeaderActive, Dimensionses.U32GrayColor);
                     ImGui::PushStyleColor(ImGuiCol_HeaderHovered, Dimensionses.U32GrayColor);
+                    
+                    if (Row > 0)
+                    {
+                        if (Parse.Cache.vCallStackInfo[Row - 1]->stack_frame.KdHelp.Thread != Parse.Cache.vCallStackInfo[Row]->stack_frame.KdHelp.Thread)
+                        {
+                            if (Column > 0) { ImGui::Separator(); }
+                            else
+                            {
+                                std::stringstream Ss;
+                                Ss << std::uppercase << std::hex << (DWORD)Parse.Cache.vCallStackInfo[Row]->stack_frame.KdHelp.Thread;
+                                ImGui::Selectable(Ss.str().c_str());
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (Column > 0) { ImGui::Separator(); }
+                        else
+                        {
+                            std::stringstream Ss;
+                            Ss << std::uppercase << std::hex << (DWORD)Parse.Cache.vCallStackInfo[Row]->stack_frame.KdHelp.Thread;
+                            ImGui::Selectable(Ss.str().c_str());
+                        }
+                    }
+                    
+                    if (Column == 1)
+                    {
+                        std::stringstream Ss;
+                        if (GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.nt.OptionalMagic == IMAGE_NT_OPTIONAL_HDR64_MAGIC)
+                        {
+                            Ss << std::uppercase << std::setfill('0') <<
+                                std::setw(sizeof(uint64_t) * 2) << std::hex << Parse.Cache.vCallStackInfo[Row]->stack_frame.AddrFrame.Offset + sizeof(uint64_t);
+                        }
+                        else
+                        {
+                            Ss << std::uppercase << std::setfill('0') <<
+                                std::setw(sizeof(uint32_t) * 2) << std::hex << Parse.Cache.vCallStackInfo[Row]->stack_frame.AddrFrame.Offset + sizeof(uint32_t);
+                        }
+                        ImGui::Selectable(Ss.str().c_str());
+                    }
+                    else if (Column == 2)
+                    {
+                        std::stringstream Ss;
+                        if (GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.nt.OptionalMagic == IMAGE_NT_OPTIONAL_HDR64_MAGIC)
+                        {
+                            Ss << std::uppercase << std::setfill('0') <<
+                                std::setw(sizeof(uint64_t) * 2) << std::hex << Parse.Cache.vCallStackInfo[Row]->stack_frame.AddrReturn.Offset;
+                        }
+                        else
+                        {
+                            Ss << std::uppercase << std::setfill('0') <<
+                                std::setw(sizeof(uint32_t) * 2) << std::hex << Parse.Cache.vCallStackInfo[Row]->stack_frame.AddrReturn.Offset;
+                        }
+                        ImGui::Selectable(Ss.str().c_str());
+                    }
+                    else if (Column == 3)
+                    {
+                        std::stringstream Ss;
+                        if (GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.nt.OptionalMagic == IMAGE_NT_OPTIONAL_HDR64_MAGIC)
+                        {
+                            Ss << std::uppercase << std::setfill('0') <<
+                                std::setw(sizeof(uint64_t) * 2) << std::hex << Parse.Cache.vCallStackInfo[Row]->stack_frame.AddrPC.Offset;
+                        }
+                        else
+                        {
+                            Ss << std::uppercase << std::setfill('0') <<
+                                std::setw(sizeof(uint32_t) * 2) << std::hex << Parse.Cache.vCallStackInfo[Row]->stack_frame.AddrPC.Offset;
+                        }
+                        ImGui::Selectable(Ss.str().c_str());
+                    }
+                    else if (Column == 4)
+                    {
+                        if (Row > 0 && 
+                            Parse.Cache.vCallStackInfo[Row - 1]->stack_frame.KdHelp.Thread == Parse.Cache.vCallStackInfo[Row]->stack_frame.KdHelp.Thread)
+                        {
+                            std::stringstream Ss;
+                            if (GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.nt.OptionalMagic == IMAGE_NT_OPTIONAL_HDR64_MAGIC)
+                            {
+                                Ss << std::uppercase << std::hex <<
+                                    (Parse.Cache.vCallStackInfo[Row]->stack_frame.AddrFrame.Offset + sizeof(uint64_t)) -
+                                    (Parse.Cache.vCallStackInfo[Row-1]->stack_frame.AddrFrame.Offset + sizeof(uint64_t));
+                            }
+                            else
+                            {
+                                Ss << std::uppercase << std::hex <<
+                                    (Parse.Cache.vCallStackInfo[Row]->stack_frame.AddrFrame.Offset + sizeof(uint32_t)) -
+                                    (Parse.Cache.vCallStackInfo[Row-1]->stack_frame.AddrFrame.Offset + sizeof(uint32_t));
+                            }
+                            ImGui::Selectable(Ss.str().c_str());
+                        }
+                    }
+                    else if (Column == 5)
+                    {
 
+                    }
+                    else if (Column == 6)
+                    {
+                        std::stringstream Ss;
+                        Ss << std::uppercase << std::hex << Parse.Cache.vCallStackInfo[Row]->name;
+                        ImGui::Selectable(Ss.str().c_str());
+                    }
+                    //if (Column > 0) { ImGui::Separator(); }
                     ImGui::PopStyleColor(2);
                 }
             }
@@ -88,8 +218,7 @@ void CallStackTab_::ComboBoxOfTypesInFindInCallStackWindowRender()
 {
     const std::vector<std::string_view> Items
     {
-        Names.Windowses.MainDebuggerInterface.MainTabs.CallStackTab.CallStackTableThreadColumnName,
-        Names.Windowses.MainDebuggerInterface.MainTabs.CallStackTab.CallStackTableAddressColumnName,
+        Names.Windowses.MainDebuggerInterface.MainTabs.CallStackTab.CallStackTableThreadIDColumnName,
         Names.Windowses.MainDebuggerInterface.MainTabs.CallStackTab.CallStackTableToColumnName,
         Names.Windowses.MainDebuggerInterface.MainTabs.CallStackTab.CallStackTableFromColumnName,
         Names.Windowses.MainDebuggerInterface.MainTabs.CallStackTab.CallStackTableSizeColumnName,
@@ -97,7 +226,7 @@ void CallStackTab_::ComboBoxOfTypesInFindInCallStackWindowRender()
         Names.Windowses.MainDebuggerInterface.MainTabs.CallStackTab.CallStackTableLabelColumnName,
     };
 
-    static int CurrentTypeId = 6;
+    static int CurrentTypeId = 0;
 
     ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4{ 0,0,0,0 });
 

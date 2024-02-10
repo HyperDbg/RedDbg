@@ -10,3 +10,6 @@
 [submodule "RedDbg/Source/Deps/pe-parse"]
 	path = RedDbg/Source/Deps/pe-parse
 	url = https://github.com/trailofbits/pe-parse.git
+[submodule "RedDbg/Source/Deps/StackWalker"]
+	path = RedDbg/Source/Deps/StackWalker
+	url = https://github.com/Nitr0-G/StackWalker.git

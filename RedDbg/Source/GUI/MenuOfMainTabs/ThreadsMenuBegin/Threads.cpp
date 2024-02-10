@@ -89,7 +89,7 @@ void ThreadParser_::GetThreadsOfUserProcess(bool Cache)
                             GlobalVarsOfPeTab::objPEInformation->ProcessInfo.hProcess, 
                             tbi.TebBaseAddress,
                             ThreadStruct.Thread.TebBase, 
-                            sizeof(_TEB), nullptr);
+                            sizeof(*ThreadStruct.Thread.TebBase), nullptr);
                         ThreadStruct.Thread.StackBase = tib.StackBase;
                         ThreadStruct.Thread.StackLimit = tib.StackLimit;
 
@@ -98,18 +98,7 @@ void ThreadParser_::GetThreadsOfUserProcess(bool Cache)
                         
                         QueryThreadCycleTime(hThread, &ThreadStruct.Cycles);
                         if (ThreadIndex == 0) { ThreadStruct.Name = "Main Thread"; } else { ThreadStruct.Name = ""; }
-
-                        //switch (ThreadStruct.Thread.ThreadInfo.Priority)
-                        //{
-                        //case _PriorityIdle: ThreadStruct.szPriority = "Idle"; break;
-                        //case _PriorityAboveNormal: ThreadStruct.szPriority = "AboveNormal"; break;
-                        //case _PriorityBelowNormal: ThreadStruct.szPriority = "BelowNormal"; break;
-                        //case _PriorityHighest: ThreadStruct.szPriority = "Highest"; break;
-                        //case _PriorityLowest: ThreadStruct.szPriority = "Lowest"; break;
-                        //case _PriorityNormal: ThreadStruct.szPriority = "Normal"; break;
-                        //case _PriorityTimeCritical: ThreadStruct.szPriority = "TimeCritical"; break;
-                        //default: ThreadStruct.szPriority = "Unknown"; break;
-                        //}
+                      
                         {
                         if (ThreadStruct.Thread.ThreadInfo.Priority >= _PriorityIdle && ThreadStruct.Thread.ThreadInfo.Priority < _PriorityAboveNormal)
                             ThreadStruct.szPriority = "Idle";

@@ -243,6 +243,9 @@
     <ClCompile Include="Source\GUI\MenuOfMainTabs\ThreadsMenuBegin\Threads.cpp">
       <Filter>Source Files\GUI\MenuOfMainTabs\ThreadsMenuBegin\Parser</Filter>
     </ClCompile>
+    <ClCompile Include="Source\GUI\MenuOfMainTabs\CallStackMenuBegin\CallStack.cpp">
+      <Filter>Source Files\GUI\MenuOfMainTabs\CallStackMenuBegin</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\GUI\UI\ImGui\Opengl3&amp;WinApi\imgui_impl_win32.h">
@@ -346,6 +349,9 @@
     </ClInclude>
     <ClInclude Include="Include\GUI\MenuOfMainTabs\ThreadsMenuBegin\Threads.hpp">
       <Filter>Header Files\GUI\MenuOfMainTabs\ThreadsMenuBegin\Parser</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\GUI\MenuOfMainTabs\CallStackMenuBegin\CallStack.hpp">
+      <Filter>Header Files\GUI\MenuOfMainTabs\CallStackMenuBegin</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

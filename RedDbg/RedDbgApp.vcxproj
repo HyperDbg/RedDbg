@@ -105,14 +105,14 @@
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)/Source/Deps/pe-parse/pe-parser-library/include;$(SolutionDir)/Include/Deps/tomlplusplus/include;$(SolutionDir)/Include/GUI/UI/ImGui/FileDialog;$(SolutionDir)/Include/Deps;$(SolutionDir)/Include;$(SolutionDir)/Include/GUI/UI/ImGui/Opengl3&amp;WinApi;$(SolutionDir)/Include/GUI/UI/ImGui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/Source/Deps/StackWalker/Main/StackWalker;$(SolutionDir)/Source/Deps/pe-parse/pe-parser-library/include;$(SolutionDir)/Include/Deps/tomlplusplus/include;$(SolutionDir)/Include/GUI/UI/ImGui/FileDialog;$(SolutionDir)/Include/Deps;$(SolutionDir)/Include;$(SolutionDir)/Include/GUI/UI/ImGui/Opengl3&amp;WinApi;$(SolutionDir)/Include/GUI/UI/ImGui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)/Source/Deps/pe-parse-compiled</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opengl32.lib;ntdll.lib;pe-parse.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\Programs\Soft\Coding\C\VisualStudio\Coders\StackWalker\bld\Debug;$(SolutionDir)/Source/Deps/pe-parse-compiled</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opengl32.lib;ntdll.lib;StackWalker.lib;pe-parse.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
     </Link>
   </ItemDefinitionGroup>
@@ -125,7 +125,7 @@
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)/Source/Deps/pe-parse/pe-parser-library/include;$(SolutionDir)/Include/Deps/tomlplusplus/include;$(SolutionDir)/Include/GUI/UI/ImGui/FileDialog;$(SolutionDir)/Include/Deps;$(SolutionDir)/Include;$(SolutionDir)/Include/GUI/UI/ImGui/Opengl3&amp;WinApi;$(SolutionDir)/Include/GUI/UI/ImGui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/Source/Deps/StackWalker/Main/StackWalker;$(SolutionDir)/Source/Deps/pe-parse/pe-parser-library/include;$(SolutionDir)/Include/Deps/tomlplusplus/include;$(SolutionDir)/Include/GUI/UI/ImGui/FileDialog;$(SolutionDir)/Include/Deps;$(SolutionDir)/Include;$(SolutionDir)/Include/GUI/UI/ImGui/Opengl3&amp;WinApi;$(SolutionDir)/Include/GUI/UI/ImGui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
@@ -133,8 +133,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)/Source/Deps/libs</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opengl32.lib;ntdll.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\Programs\Soft\Coding\C\VisualStudio\Coders\StackWalker\bld\Debug;$(SolutionDir)/Source/Deps/pe-parse-compiled</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opengl32.lib;ntdll.lib;StackWalker.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
     </Link>
   </ItemDefinitionGroup>
@@ -144,6 +144,7 @@
     <ClCompile Include="Source\GUI\CustomTitleBar.cpp" />
     <ClCompile Include="Source\GUI\General.cpp" />
     <ClCompile Include="Source\GUI\MenuBarDispatcher.cpp" />
+    <ClCompile Include="Source\GUI\MenuOfMainTabs\CallStackMenuBegin\CallStack.cpp" />
     <ClCompile Include="Source\GUI\MenuOfMainTabs\CallStackMenuBegin\CallStackTab.cpp" />
     <ClCompile Include="Source\GUI\MenuOfMainTabs\CPUMenuBegin\CPUTab.cpp" />
     <ClCompile Include="Source\GUI\MenuOfMainTabs\MemoryMapMenuBegin\Memory.cpp" />
@@ -184,6 +185,7 @@
     <ClInclude Include="Include\GUI\General.hpp" />
     <ClInclude Include="Include\GUI\GlobalClass.hpp" />
     <ClInclude Include="Include\GUI\MenuBarDispatcher.hpp" />
+    <ClInclude Include="Include\GUI\MenuOfMainTabs\CallStackMenuBegin\CallStack.hpp" />
     <ClInclude Include="Include\GUI\MenuOfMainTabs\CallStackMenuBegin\CallStackTab.hpp" />
     <ClInclude Include="Include\GUI\MenuOfMainTabs\CPUMenuBegin\CPUTab.hpp" />
     <ClInclude Include="Include\GUI\MenuOfMainTabs\MemoryMapMenuBegin\Memory.hpp" />
