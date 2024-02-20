@@ -20,7 +20,7 @@ namespace Pte
     };
 
     _IRQL_requires_max_(APC_LEVEL)
-    BOOLEAN GetPageTables(PVOID Address, OUT PAGE_TABLES_INFO* Info);
+    BOOLEAN GetPageTables(_In_ PVOID Address, _Out_ PAGE_TABLES_INFO* Info, OPTIONAL _In_ BOOLEAN CustomCr3 = FALSE, OPTIONAL _In_ unsigned long long NCr3 = 0);
 
     _IRQL_requires_max_(APC_LEVEL)
     BOOLEAN TriggerCopyOnWrite(OPTIONAL PEPROCESS Process, PVOID Address, OPTIONAL OUT PULONG PageSize = NULL);

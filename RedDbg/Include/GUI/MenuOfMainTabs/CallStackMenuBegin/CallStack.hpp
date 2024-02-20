@@ -53,26 +53,23 @@ class CallStackParser_ : private StackWalker
 private:
     std::vector<CallstackEntry*> vCallStackInfo;
 private:
-    void GetCallStackOfUserProcess(bool Cache);
+    void GetCallStackOfUserProcess();
     void EnsureUniqueOffsets();
 public:
     CallStackCache Cache;
 
     CallStackParser_() {
         Cache.LastUpdated = std::chrono::steady_clock::now();
-        GetCallStackOfUserProcess(false);
-        Cache.vCallStackInfo.resize(vCallStackInfo.size());
-        std::copy(vCallStackInfo.begin(), vCallStackInfo.end(), Cache.vCallStackInfo.begin());
+        GetCallStackOfUserProcess();
+        Cache.vCallStackInfo = vCallStackInfo;
     }
 
     void UpdateCallStackCache(std::shared_ptr<std::atomic<bool>> Active) {
         Cache.LastUpdated = std::chrono::steady_clock::now();
-        GetCallStackOfUserProcess(true);
-        while (Active->load()) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(5)); // Sleep for a short duration to avoid busy waiting
-        }
-        Cache.vCallStackInfo.resize(vCallStackInfo.size());
-        std::copy(vCallStackInfo.begin(), vCallStackInfo.end(), Cache.vCallStackInfo.begin());
+        vCallStackInfo.clear();
+        GetCallStackOfUserProcess();
+        while (Active->load()) { continue; /*std::this_thread::sleep_for(std::chrono::milliseconds(5)); Sleep for a short duration to avoid busy waiting*/ }
+        Cache.vCallStackInfo = vCallStackInfo;
         return;
     }
 };

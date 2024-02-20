@@ -1,6 +1,7 @@
 #pragma once
 #define _PEPARSE_WINDOWS_CONFLICTS 1
 #include "pe-parse/parse.h"
+#include "GUI/MenuDispatcherTabs/GlobalEnums.hpp"
 
 #include <Windows.h>
 #include <filesystem>

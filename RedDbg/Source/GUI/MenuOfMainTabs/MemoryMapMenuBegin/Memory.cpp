@@ -75,17 +75,17 @@ void MemoryParser_::GetTebAndStackForEachThread(
     NTSTATUS Status; ULONG size;
     if (NtQuerySystemInformation(SystemProcessInformation, NULL, 0, &size) != STATUS_INFO_LENGTH_MISMATCH) { return; }
 
-    PSYSTEM_PROCESS_INFORMATION spi = PSYSTEM_PROCESS_INFORMATION(VirtualAlloc(NULL, 2*size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
+    PSYSTEM_PROCESS_INFORMATION spi = new SYSTEM_PROCESS_INFORMATION[2 * size];//PSYSTEM_PROCESS_INFORMATION(VirtualAlloc(NULL, 2 * size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
+    RtlZeroMemory(spi, 2 * size);
+    PSYSTEM_PROCESS_INFORMATION StartSpi = spi;
     if (!NT_SUCCESS(Status = NtQuerySystemInformation(SystemProcessInformation, spi, 2*size, NULL)))
     {
-        printf("\nError: Unable to query process list (%#x)\n", Status);
-        VirtualFree(spi, 0, MEM_RELEASE);
+        delete[] StartSpi;
         return;
     }
 
     while (true) // Loop over the list until we reach the last entry.
     {
-        //printf("\nProcess name: %ws | Process ID: %d\n", spi->ImageName.Buffer, spi->UniqueProcessId); // Display process information.
         if ((DWORD)spi->UniqueProcessId == GlobalVarsOfPeTab::objPEInformation->ProcessInfo.dwProcessId)
         {
             for (int ThreadIndex = 0; ThreadIndex < spi->NumberOfThreads; ++ThreadIndex) 
@@ -122,7 +122,6 @@ void MemoryParser_::GetTebAndStackForEachThread(
                         StackStruct.Info += ss.str();
                         StackStruct.Party = false;
                         StackStruct.Stack = true;
-                        //printf("StackStruct.Address: %#p\n", spi->Threads[ThreadIndex].StackLimit);
 
                         vStackInfo.push_back(StackStruct);
 
@@ -133,18 +132,17 @@ void MemoryParser_::GetTebAndStackForEachThread(
                         TebStruct.Info += ss1.str();
                         TebStruct.Party = false;
                         TebStruct.Teb = true;
-                        //printf("TebStruct.Address: %#p | ThreadId: %#x\n", TebStruct.CustomAddress[0], te32.th32ThreadID);
 
                         vTebInfo.push_back(TebStruct);
                     }
+                    CloseHandle(hThread);
                 }
-                CloseHandle(hThread);
             }
         }
         if (spi->NextEntryOffset == 0) { break; }
         spi = PSYSTEM_PROCESS_INFORMATION((LPBYTE)spi + spi->NextEntryOffset);
     }
-    VirtualFree(spi, 0, MEM_RELEASE);
+    delete[] StartSpi;
 
     return;
 }
@@ -182,14 +180,12 @@ bool MemPageRightsToString(DWORD Protect, std::string& Memory)
     return true;
 }
 
-void MemoryParser_::GetMemoryMapOfUserProcess(bool Cache)
+void MemoryParser_::GetMemoryMapOfUserProcess()
 {
     std::vector<MemoryInfo> vTebInfo;
     std::vector<MemoryInfo> vStackInfo;
     std::vector<MemoryInfo> vHeapInfo;
     std::vector<uint64_t> vHeapAddrs;
-
-    if (Cache) { vMemoryInfo.clear(); }
 
     SYSTEM_INFO systemInfo; GetSystemInfo(&systemInfo);
 
@@ -198,7 +194,7 @@ void MemoryParser_::GetMemoryMapOfUserProcess(bool Cache)
     size_t maxAddress = reinterpret_cast<size_t>(systemInfo.lpMaximumApplicationAddress);
 
     GetTebAndStackForEachThread(vTebInfo, vStackInfo);
-    //GetHeap(vHeapAddrs);
+    GetHeap(vHeapAddrs);
 
     uint64_t CounterOfRegions = 0;
     while (address < maxAddress)
@@ -397,14 +393,10 @@ void MemoryParser_::GetMemoryMapOfUserProcess(bool Cache)
         else { break; }
     }
 
-    vHeapAddrs.clear();
-    vHeapInfo.clear();
-    vStackInfo.clear();
-    vTebInfo.clear();
-    //for (int MemIndex = 0; MemIndex < vMemoryInfo.size(); ++MemIndex)
-    //{
-    //    printf("Type: %s | Party: %#p | Addr: %#p | Size: %#p | Info: %s | Content: %s | Protect: %s | Initial protection: %s\n", vMemoryInfo[MemIndex].szType.c_str(), vMemoryInfo[MemIndex].Party, vMemoryInfo[MemIndex].BaseAddress, vMemoryInfo[MemIndex].Size, vMemoryInfo[MemIndex].Info.c_str(), vMemoryInfo[MemIndex].Content.c_str(), vMemoryInfo[MemIndex].szProtect.c_str(), vMemoryInfo[MemIndex].szInitialProtect.c_str());
-    //}
+    //vHeapAddrs.clear();
+    //vHeapInfo.clear();
+    //vStackInfo.clear();
+    //vTebInfo.clear();
 
     return;
 }

@@ -11,22 +11,23 @@ namespace GlobalVarsOfPeTab {
     extern std::shared_ptr<PeReader> objPEInformation;
 }
 
-static void CallBackUpdateThreadCache(std::shared_ptr<ThreadRefreshThread> objThreadRefreshThread)
-{
-    objThreadRefreshThread->Parse->UpdateThreadCache(objThreadRefreshThread->Active);
-}
-
 void ThreadsTab_::GetThreadInfoSafe(ThreadParser_& Parse, std::shared_ptr<std::atomic<bool>> Active)
 {
-    ThreadRefreshThread objThreadRefreshThread;
-    objThreadRefreshThread.Parse = &Parse;
-    objThreadRefreshThread.Active = Active;
     std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
     if (duration_cast<std::chrono::seconds>(now - Parse.Cache.LastUpdated) > std::chrono::milliseconds(Dimensionses.CacheRefreshRate))
     {
-        std::thread updateThread(CallBackUpdateThreadCache, std::make_shared<ThreadRefreshThread>(objThreadRefreshThread)); updateThread.detach();
+        std::jthread updateThread = std::jthread([&Parse, Active]() {
+            Parse.UpdateThreadCache(Active);
+            });
+
+        updateThread.detach();
     }
     return;
+}
+
+void Callback()
+{
+    ImGui::Text("dasdasdasd");
 }
 
 void ThreadsTab_::ThreadsTableRender()
@@ -56,8 +57,9 @@ void ThreadsTab_::ThreadsTableRender()
         ImGui::TableHeadersRow();
 
         static ThreadParser_ Parse;
-        static std::shared_ptr<std::atomic<bool>> Active = std::make_shared<std::atomic<bool>>(true);
+        static std::shared_ptr<std::atomic<bool>> Active = std::make_shared<std::atomic<bool>>(false);
         GetThreadInfoSafe(Parse, Active);
+        Active->store(true);
         ImGuiListClipper clipper;
         clipper.Begin(Parse.Cache.vThreadInfo.size(), 17);//TODO: Data transfer
         while (clipper.Step())
@@ -67,6 +69,7 @@ void ThreadsTab_::ThreadsTableRender()
                 ImGui::TableNextRow(ImGuiTableRowFlags_None, 17);
                 for (int Column = 0; Column < Dimensionses.CountOfThreadsColumns; ++Column)
                 {
+                    Menu.MenuInit<int>("Test", ImGuiMouseButton_::ImGuiMouseButton_Right, Row, ClickMenuType_::TableMenu);
                     Window.SelectAllAndColored(Dimensionses.CountOfThreadsColumns, Dimensionses.U32GrayColor);
 
                     ImGui::TableSetColumnIndex(Column);
@@ -126,9 +129,18 @@ void ThreadsTab_::ThreadsTableRender()
                     }
                     case 6:
                     {
-                        //std::stringstream Ss;
-                        //Ss << std::uppercase << std::hex << Parse.Cache.vThreadInfo[Row].Thread.StackLimit;
-                        //ImGui::Selectable(Ss.str().c_str());
+                        std::stringstream Ss;
+                        if (GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.nt.OptionalMagic == IMAGE_NT_OPTIONAL_HDR64_MAGIC)
+                        {
+                            Ss << std::uppercase << std::setfill('0') <<
+                                std::setw(sizeof(uint64_t) * 2) << std::hex << Parse.Cache.vThreadInfo[Row].Rip;
+                        }
+                        else
+                        {
+                            Ss << std::uppercase << std::setfill('0') <<
+                                std::setw(sizeof(uint32_t) * 2) << std::hex << Parse.Cache.vThreadInfo[Row].Rip;
+                        }
+                        ImGui::Selectable(Ss.str().c_str());
                         break;
                     }
                     case 7: 
@@ -194,8 +206,10 @@ void ThreadsTab_::ThreadsTableRender()
                     ImGui::PopStyleColor(2);
                 }
             }
+            Menu.MenuCall(Callback);
         }
         ImGui::EndTable();
+        Active->store(false);
     }
 }
 

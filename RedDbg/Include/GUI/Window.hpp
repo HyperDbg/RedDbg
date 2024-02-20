@@ -4,20 +4,52 @@
 
 #include <string_view>
 #include <vector>
+#include <unordered_map>
+#include <string>
 #include <any>
 
 struct Callable {
 	static int CallBackInputWrapper(void* Arg, void* Class);
-	/* {
-		ImGuiInputTextCallbackData* Data = reinterpret_cast<ImGuiInputTextCallbackData*>(Arg);
-		int Status = static_cast<Window_*>(Class)->InputWrapper(Data);
-		return Status;
-	}*/
 };
+
+typedef enum {
+	TableMenu,
+	WindowMenu
+} ClickMenuType_;
 
 class Window_ {
 private:
 	void ChildWindowDispatcher(const WindowCodes Code, const std::any ObjOfClass);
+public:
+	class ClickMenu_
+	{
+	private:
+		uint64_t IdHash;
+	public:
+		template<typename TypeIndex>
+		void MenuInit(std::string_view id, ImGuiMouseButton button, TypeIndex CurrentIndexString, ClickMenuType_ MenuType)
+		{
+			if (ImGui::IsItemHovered())
+			{
+				IdHash = std::hash<std::string_view>{}(id);
+				if (ImGui::IsMouseClicked(button))
+				{
+					ImGui::OpenPopup(std::to_string(IdHash).c_str());
+				}
+			}
+		}
+
+		template<typename Callback>
+			requires std::is_invocable_r_v<void, Callback>
+		void MenuCall(Callback&& callback)
+		{
+			if (ImGui::BeginPopup(std::to_string(IdHash).c_str()))
+			{
+				std::invoke(std::forward<Callback>(callback));
+				ImGui::EndPopup();
+			}
+		}
+	};
 public:
 	void CheckBoxOpened(std::vector<bool>* Openeds, bool Opened, const unsigned char Index);
 
@@ -31,7 +63,6 @@ public:
 
 	int InputWrapper(ImGuiInputTextCallbackData* Data);
 public:
-	//template <typename DispatcherClass>
 	void ChildWindowRender(
 		const std::string_view id, 
 		const ImVec2& pos, 

@@ -161,6 +161,9 @@ void CustomTitleBar_::CustomWindowInTitleBarRender(MenuBarDispatcher_* Instance)
 
     if (Instance != nullptr)
     {
+        Instance->Display(Names.Windowses.TitleBarMenu.MenuTracing.IntoWindowId.data());
+        Instance->Display(Names.Windowses.TitleBarMenu.MenuTracing.OverWindowId.data());
+        Instance->Display(Names.Windowses.TitleBarMenu.MenuTracing.LBRWindowId.data());
         Instance->Display(Names.Windowses.TitleBarMenu.MenuOptions.Preferences.WindowId.data());
     }
 
@@ -434,15 +437,21 @@ void CustomTitleBar_::CustomTitleBarMenuRender()
     {
         if (ImGui::MenuItem(Names.Windowses.TitleBarMenu.MenuTracing.MenuTraceIntoItemName.data(), Names.Windowses.TitleBarMenu.MenuTracing.Shortcut.MenuTraceIntoItemShortcutName.data()))
         {
-
+            Instance = MenuBarDispatcher.OpenInstance(
+                Names.Windowses.TitleBarMenu.MenuTracing.IntoWindowId.data(),
+                Names.Windowses.TitleBarMenu.MenuTracing.IntoHostTitleName.data());
         }
-        if (ImGui::MenuItem(Names.Windowses.TitleBarMenu.MenuTracing.MenuTraceIntoItemName.data(), Names.Windowses.TitleBarMenu.MenuTracing.Shortcut.MenuTraceIntoItemShortcutName.data()))
+        if (ImGui::MenuItem(Names.Windowses.TitleBarMenu.MenuTracing.MenuTraceOverItemName.data(), Names.Windowses.TitleBarMenu.MenuTracing.Shortcut.MenuTraceOverItemShortcutName.data()))
         {
-
+            Instance = MenuBarDispatcher.OpenInstance(
+                Names.Windowses.TitleBarMenu.MenuTracing.OverWindowId.data(),
+                Names.Windowses.TitleBarMenu.MenuTracing.OverHostTitleName.data());
         }
         if (ImGui::MenuItem(Names.Windowses.TitleBarMenu.MenuTracing.MenuTraceLBRItemName.data(), Names.Windowses.TitleBarMenu.MenuTracing.Shortcut.MenuTraceLBRItemShortcutName.data()))
         {
-
+            Instance = MenuBarDispatcher.OpenInstance(
+                Names.Windowses.TitleBarMenu.MenuTracing.LBRWindowId.data(),
+                Names.Windowses.TitleBarMenu.MenuTracing.LBRHostTitleName.data());
         }
         ImGui::EndMenu();
     }

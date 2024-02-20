@@ -1,4 +1,5 @@
 ﻿#include "GUI/General.hpp"
+
 /*
 #include "GUI/General.hpp"
 
@@ -369,9 +370,13 @@ void GeneralGUI_::UIRender()
 
 int main()
 {
+	//_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+	//_CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
+
 	if (!GeneralGUI.OpenGl3Init()) { return FALSE; }
 	GeneralGUI.OpenGlRenderMainLoop();
 	GeneralGUI.OpenGl3DeInit(); 
 
-	return TRUE;
+	//_CrtDumpMemoryLeaks();
+	return 0;
 }

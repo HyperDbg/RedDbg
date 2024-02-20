@@ -18,7 +18,11 @@ namespace Pte {
 #endif
 
     _IRQL_requires_max_(APC_LEVEL)
-    BOOLEAN GetPageTables(PVOID Address, OUT PAGE_TABLES_INFO* Info)
+    BOOLEAN GetPageTables(
+        _In_ PVOID Address,
+        _Out_ PAGE_TABLES_INFO* Info,
+        _In_ BOOLEAN CustomCr3,
+        _In_ unsigned long long NCr3)
     {
         if (!Info) return FALSE;
         *Info = {};
@@ -29,7 +33,7 @@ namespace Pte {
         Va.Value = reinterpret_cast<unsigned long long>(Address);
 
         CR3 Cr3 = {};
-        Cr3.Value = static_cast<unsigned long long>(__readcr3());
+        CustomCr3 ? Cr3.Value = NCr3 : Cr3.Value = static_cast<unsigned long long>(__readcr3());
 
         CR4 Cr4 = {};
         Cr4.Value = static_cast<unsigned long long>(__readcr4());

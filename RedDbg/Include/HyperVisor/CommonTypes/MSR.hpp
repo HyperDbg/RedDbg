@@ -17,15 +17,21 @@ namespace AMD
         struct {
             unsigned long long SystemCallExtensions : 1; // 1 = enable SYSCALL/SYSRET support
             unsigned long long Reserved0 : 7;
-            unsigned long long LongModeEnable : 1;
+            unsigned long long LongModeEnable : 1;//Long Mode Enable
             unsigned long long Reserved1 : 1;
-            unsigned long long LongModeActive : 1;
-            unsigned long long NoExecuteEnable : 1;
-            unsigned long long SecureVirtualMachineEnable : 1;
-            unsigned long long LongModeSegmentLimitEnable : 1;
-            unsigned long long FastFxsaveFxrstor : 1;
-            unsigned long long TranslationCacheExtension : 1;
-            unsigned long long Reserved2 : 48;
+            unsigned long long LongModeActive : 1;//Long Mode Active
+            unsigned long long NoExecuteEnable : 1;//No-Execute Enable
+            unsigned long long SecureVirtualMachineEnable : 1;//Secure Virtual Machine Enable
+            unsigned long long LongModeSegmentLimitEnable : 1;//Long Mode Segment Limit Enable
+            unsigned long long FastFxsaveFxrstor : 1;//Fast FXSAVE/FXRSTOR
+            unsigned long long TranslationCacheExtension : 1;//Translation Cache Extension
+            unsigned long long Reserved2 : 1;
+            unsigned long long MCOMMIT : 1;//Enable MCOMMIT instruction
+            unsigned long long INTWB : 1;//Interruptible WBINVD/WBNOINVD enable
+            unsigned long long Reserved3 : 1;
+            unsigned long long UAIE : 1;//Upper Address Ignore Enable
+            unsigned long long AIBRASE : 1;//Automatic IBRS Enable
+            unsigned long long Reserved4 : 42;
         } Bitmap;
     };
     static_assert(sizeof(EFER) == sizeof(unsigned long long), "Size of EFER != sizeof(unsigned long long)");

@@ -152,7 +152,7 @@ union CR4 {
             unsigned int OSFXSR : 1; // Operating system FXSAVE/FXSTOR support
             unsigned int OSXMMEXCPT : 1; // Operating system unmasked exception support
             unsigned int UMIP : 1; // Usermode instruction prevention
-            unsigned int Reserved0 : 1;
+            unsigned int LA57 : 1;
             unsigned int VMXE : 1; // VMX-enable bit (Intel only)
             unsigned int SMXE : 1; // SMX-enable bit (Safer Mode Extensions, Intel only)
             unsigned int Reserved1 : 1;
@@ -162,7 +162,8 @@ union CR4 {
             unsigned int Reserved2 : 1;
             unsigned int SMEP : 1; // Supervisor mode execution prevention
             unsigned int SMAP : 1; // Supervisor mode access prevention
-            unsigned int PKE : 1; // Protection key enable (Intel only)
+            unsigned int PKE : 1; // Protection key enable
+            unsigned int CET : 1; // Control-flow Enforcement Technology
             unsigned int Reserved3 : 9;
         } Bitmap;
     } x32;
@@ -181,7 +182,7 @@ union CR4 {
             unsigned long long OSFXSR : 1; // Operating system FXSAVE/FXSTOR support
             unsigned long long OSXMMEXCPT : 1; // Operating system unmasked exception support
             unsigned long long UMIP : 1; // Usermode instruction prevention
-            unsigned long long Reserved0 : 1;
+            unsigned long long LA57 : 1; // AMD EPYC 7004 "Genoa"(https://www.phoronix.com/news/AMD-5-Level-Paging-KVM)++
             unsigned long long VMXE : 1; // VMX-enable bit (Intel only)
             unsigned long long SMXE : 1; // SMX-enable bit (Safer Mode Extensions, Intel only)
             unsigned long long Reserved1 : 1;
@@ -191,8 +192,9 @@ union CR4 {
             unsigned long long Reserved2 : 1;
             unsigned long long SMEP : 1; // Supervisor mode execution prevention
             unsigned long long SMAP : 1; // Supervisor mode access prevention
-            unsigned long long PKE : 1; // Protection key enable (Intel only)
-            unsigned long long Reserved3 : 41;
+            unsigned long long PKE : 1; // Protection key enable
+            unsigned long long CET : 1; // Control-flow Enforcement Technology
+            unsigned long long Reserved3 : 40;
         } Bitmap;
     } x64;
 };

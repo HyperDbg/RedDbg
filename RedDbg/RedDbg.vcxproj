@@ -63,7 +63,7 @@
     </DriverSign>
     <ClCompile>
       <AdditionalIncludeDirectories>$(SolutionDir)/Source/Deps/zydis/dependencies/zycore/include;$(SolutionDir)/Source/Deps/zydis/include;$(SolutionDir)/Include/Deps;$(SolutionDir)/Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>ZYAN_NO_LIBC;ZYDIS_NO_LIBC;ZYCORE_STATIC_BUILD;ZYDIS_STATIC_BUILD;POOL_NX_OPTIN=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>ZYAN_NO_LIBC;ZYDIS_NO_LIBC;ZYCORE_STATIC_BUILD;ZYDIS_STATIC_BUILD;POOL_NX_OPTIN=1;REALPC=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <TreatWarningAsError>false</TreatWarningAsError>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
@@ -72,6 +72,7 @@
       <DisableSpecificWarnings>4201;4748;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
       <AdditionalOptions>/Gw /kernel</AdditionalOptions>
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)/Source/Deps/zydis/msvc/bin/$(ConfigurationName);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -108,13 +109,23 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\CppSupport\CppSupport.cpp" />
+    <ClCompile Include="Source\Debugger\Driver\CommonHandlers.cpp" />
     <ClCompile Include="Source\Debugger\Driver\DrvMain.cpp" />
+    <ClCompile Include="Source\Debugger\Driver\SvmVmExitHandler.cpp" />
     <ClCompile Include="Source\HyperVisor\CommonApi\Callable.cpp" />
     <ClCompile Include="Source\HyperVisor\CommonApi\MemoryUtils.cpp" />
     <ClCompile Include="Source\HyperVisor\CommonApi\PteUtils.cpp" />
     <ClCompile Include="Source\HyperVisor\CommonApi\Spinlock.cpp" />
     <ClCompile Include="Source\HyperVisor\CommonApi\SystemMemory.cpp" />
     <ClCompile Include="Source\HyperVisor\HyperVisor.cpp" />
+    <ClCompile Include="Source\HyperVisor\Npt\HookCommon.cpp" />
+    <ClCompile Include="Source\HyperVisor\Npt\HookKernelCommon.cpp" />
+    <ClCompile Include="Source\HyperVisor\Npt\HookKernelHandlers.cpp" />
+    <ClCompile Include="Source\HyperVisor\Npt\HookKernelProcessorData.cpp" />
+    <ClCompile Include="Source\HyperVisor\Npt\HookKernelRegistration.cpp" />
+    <ClCompile Include="Source\HyperVisor\Npt\HookVmmAlwaysOptimized.cpp" />
+    <ClCompile Include="Source\HyperVisor\Npt\HookVmmCommon.cpp" />
+    <ClCompile Include="Source\HyperVisor\Npt\PhysicalMemoryDescriptor.cpp" />
     <ClCompile Include="Source\IOCTL\IOCTL.cpp" />
     <ClCompile Include="Source\Local\Functions.cpp" />
     <ClCompile Include="Source\Log\File.cpp" />
@@ -131,9 +142,13 @@
     <ClInclude Include="Include\AppToDrv\IoCtlCodes.hpp" />
     <ClInclude Include="Include\AppToDrv\MiddleStructs.hpp" />
     <ClInclude Include="Include\CppSupport\CppSupport.hpp" />
+    <ClInclude Include="Include\Debugger\Driver\CommonHandlers.hpp" />
     <ClInclude Include="Include\Debugger\Driver\GuestContext.hpp" />
     <ClInclude Include="Include\Debugger\Driver\Pe\PeInformation.hpp" />
     <ClInclude Include="Include\Debugger\Driver\Pe\PeStruct.hpp" />
+    <ClInclude Include="Include\Debugger\Driver\SvmVmExitHandler.hpp" />
+    <ClInclude Include="Include\Debugger\Driver\Common.hpp" />
+    <ClInclude Include="Include\Debugger\Driver\SvmVMMCall.hpp" />
     <ClInclude Include="Include\Debugger\ErrorCodes.hpp" />
     <ClInclude Include="Include\General.hpp" />
     <ClInclude Include="Include\HyperVisor\CommonApi\Callable.hpp" />
@@ -150,6 +165,15 @@
     <ClInclude Include="Include\HyperVisor\CommonTypes\Segmentation.hpp" />
     <ClInclude Include="Include\HyperVisor\CommonTypes\SVM.hpp" />
     <ClInclude Include="Include\HyperVisor\HyperVisor.hpp" />
+    <ClInclude Include="Include\HyperVisor\Npt\Common.hpp" />
+    <ClInclude Include="Include\HyperVisor\Npt\HookCommon.hpp" />
+    <ClInclude Include="Include\HyperVisor\Npt\HookKernelCommon.hpp" />
+    <ClInclude Include="Include\HyperVisor\Npt\HookKernelHandlers.hpp" />
+    <ClInclude Include="Include\HyperVisor\Npt\HookKernelProcessorData.hpp" />
+    <ClInclude Include="Include\HyperVisor\Npt\HookKernelRegistration.hpp" />
+    <ClInclude Include="Include\HyperVisor\Npt\HookVmmAlwaysOptimized.hpp" />
+    <ClInclude Include="Include\HyperVisor\Npt\HookVmmCommon.hpp" />
+    <ClInclude Include="Include\HyperVisor\Npt\PhysicalMemoryDescriptor.hpp" />
     <ClInclude Include="Include\ia32.h" />
     <ClInclude Include="Include\IOCTL\IOCTL.hpp" />
     <ClInclude Include="Include\Local\Functions.hpp" />

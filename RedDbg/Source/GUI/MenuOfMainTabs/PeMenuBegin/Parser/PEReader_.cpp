@@ -1,5 +1,13 @@
 #include "GUI/MenuOfMainTabs/PeMenuBegin/Parser/PEReader.hpp"
 
+namespace MenuBarGlobalVars
+{
+    namespace EventTabGlobalVars
+    {
+        extern std::vector<bool> EventTabCheckbox;
+    }
+}
+
 HANDLE PeParser::LoadDll(const std::string& DllName, const std::filesystem::path& PathToTarget)
 {
     HMODULE hFile = LoadLibraryA(DllName.c_str());
@@ -213,9 +221,20 @@ const std::shared_ptr<PeReader> PeParser::Open(const std::filesystem::path& Path
 
     Reader->Pe = Pe;
 
-    CreateProcessW(PathToTarget.wstring().c_str(),
-        NULL, NULL, NULL, FALSE, NULL,//CREATE_SUSPENDED,
-        NULL, NULL, &Reader->StartupInfo, &Reader->ProcessInfo);
+    if (MenuBarGlobalVars::EventTabGlobalVars::EventTabCheckbox[MenuBarGlobalVars::EventTabGlobalVars::EventTabCheckbox_::SystemBreakpoint])
+    {
+        CreateProcessW(PathToTarget.wstring().c_str(),
+            NULL, NULL, NULL, FALSE, CREATE_SUSPENDED,
+            NULL, NULL, &Reader->StartupInfo, &Reader->ProcessInfo);
+    }
+    else
+    {
+        CreateProcessW(PathToTarget.wstring().c_str(),
+            NULL, NULL, NULL, FALSE, NULL,
+            NULL, NULL, &Reader->StartupInfo, &Reader->ProcessInfo);
+    }
+
+
 
     return Reader;
 }

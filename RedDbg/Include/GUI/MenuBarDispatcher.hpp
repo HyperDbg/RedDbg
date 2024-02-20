@@ -1,4 +1,5 @@
 #pragma once
+#include "AppToDrv/MiddleStructs.hpp"
 #include "toml++/toml.hpp"
 
 #include "GUI/GlobalClass.hpp"
@@ -10,6 +11,8 @@
 
 #include <map>
 #include <filesystem>
+
+extern "C" int __stdcall svm_vmmcall(VMMCALL_ID vmmcall_id, ...);
 
 class MenuBarDispatcher_
 {

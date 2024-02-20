@@ -7,6 +7,7 @@
 #include "GUI/Names.hpp"
 #include "GUI/DimensionsesOfWindowses.hpp"
 #include "GUI/Window.hpp"
+#include <optional>
 
 typedef struct _ThreadRefreshThread {
 	ThreadParser_* Parse;
@@ -16,11 +17,10 @@ typedef struct _ThreadRefreshThread {
 class ThreadsTab_
 {
 private:
-	Dimensionses_ Dimensionses;
-	Names_ Names;
-	GlobalClassVars_ GlobalClassVars;
-	Window_ Window;
-
+	inline const static Dimensionses_ Dimensionses{};
+	inline const static Names_ Names{};
+	inline static Window_ Window{};
+	inline static Window_::ClickMenu_ Menu{};
 private:
 	const ImGuiTableFlags DefaultTableFlags = ImGuiTableFlags_HighlightHoveredColumn | ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_ScrollY |
 		ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable;

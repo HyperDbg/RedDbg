@@ -1,8 +1,32 @@
 #include "GUI/MenuOfMainTabs/CPUMenuBegin/CPUTab.hpp"
 
+namespace GlobalVarsOfPeTab {
+    extern std::shared_ptr<PeReader> objPEInformation;
+}
+
+namespace CustomTitleBarGlobalVars {
+    extern HANDLE hDriver;
+    extern DWORD Pid;
+}
+
+void CPUTab_::GetCPUInfoSafe(CPUParser_& Parse, std::shared_ptr<std::atomic<bool>> Active)
+{
+    std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
+    if (duration_cast<std::chrono::seconds>(now - Parse.Cache.LastUpdated) > std::chrono::milliseconds(Dimensionses.CacheRefreshRate))
+    {
+        std::jthread updateThread = std::jthread([&Parse, Active]() {
+            Parse.UpdateCPUCache(Active);
+            });
+
+        updateThread.detach();
+    }
+    return;
+}
+
 void CPUTab_::DisassemblyTableRender()
 {
-    if (ImGui::BeginTable(Names.Windowses.MainDebuggerInterface.MainTabs.CPUTab.DisassemblyAndInfo.DisassemblyTableName.data(), Dimensionses.CountOfDisasmColumns, DefaultTableFlags))
+    if (CustomTitleBarGlobalVars::Pid != 0 &&
+        ImGui::BeginTable(Names.Windowses.MainDebuggerInterface.MainTabs.CPUTab.DisassemblyAndInfo.DisassemblyTableName.data(), Dimensionses.CountOfDisasmColumns, DefaultTableFlags))
     {
         ImGui::TableSetupScrollFreeze(0, 1);
         ImGui::TableSetupColumn(Names.Windowses.MainDebuggerInterface.MainTabs.CPUTab.DisassemblyAndInfo.DisassemblyTableJmpsMapColumnName.data(), DisassemblyColumnFlags);
@@ -13,8 +37,12 @@ void CPUTab_::DisassemblyTableRender()
         ImGui::TableSetupColumn(Names.Windowses.MainDebuggerInterface.MainTabs.CPUTab.DisassemblyAndInfo.DisassemblyTableDisabledColumnName.data(), ImGuiTableColumnFlags_Disabled);
         ImGui::TableHeadersRow();
 
+        static CPUParser_ Parse;
+        static std::shared_ptr<std::atomic<bool>> Active = std::make_shared<std::atomic<bool>>(false);
+        //GetCPUInfoSafe(Parse, Active);
+        Active->store(true);
         ImGuiListClipper clipper;
-        clipper.Begin(0, 17);//TODO: DataTransfer
+        clipper.Begin(Parse.Cache.vCpuInfo.Address.size(), 17);//TODO: DataTransfer
         while (clipper.Step())
         {
             for (uint64_t Row = clipper.DisplayStart; Row < clipper.DisplayEnd; ++Row)
@@ -27,12 +55,50 @@ void CPUTab_::DisassemblyTableRender()
                     ImGui::TableSetColumnIndex(Column);
                     ImGui::PushStyleColor(ImGuiCol_HeaderActive, Dimensionses.U32GrayColor);
                     ImGui::PushStyleColor(ImGuiCol_HeaderHovered, Dimensionses.U32GrayColor);
+                    switch (Column)
+                    {
+                    case 0:
+                    {
+                        break;
+                    }
+                    case 1:
+                    {
+                        std::stringstream Ss;
+                        if (GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.nt.OptionalMagic == IMAGE_NT_OPTIONAL_HDR64_MAGIC)
+                        {
+                            Ss << std::uppercase << std::setfill('0') <<
+                                std::setw(sizeof(uint64_t) * 2) << std::hex << Parse.Cache.vCpuInfo.Address[Row];
+                        }
+                        else
+                        {
+                            Ss << std::uppercase << std::setfill('0') <<
+                                std::setw(sizeof(uint32_t) * 2) << std::hex << Parse.Cache.vCpuInfo.Address[Row];
+                        }
+                        ImGui::Selectable(Ss.str().c_str(), false);
+                        break;
+                    }
+                    case 2:
+                    {
+                        ImGui::Selectable(Parse.Cache.vCpuInfo.Opcodes[Row].data(), false);
+                        break;
+                    }
+                    case 3:
+                    {
+                        ImGui::Selectable(Parse.Cache.vCpuInfo.Mnemonics[Row].data(), false);
+                        break;
+                    }
+                    case 4:
+                    {
+                        break;
+                    }
+                    }
                     //ImGui::Selectable("yuiyuiyuiyuiyuiyuiyu", false);// TODO: DataTransfer
                     ImGui::PopStyleColor(2);
                 }
             }
         }
         ImGui::EndTable();
+        Active->store(false);
     }
 }
 

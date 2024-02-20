@@ -53,20 +53,25 @@ void CallStackTab_::CallStackWindowRender()
         false);
 }
 
-static void CallBackUpdateCallStackCache(std::shared_ptr<CallStackRefreshThread> objCallStackRefreshThread)
-{
-    objCallStackRefreshThread->Parse->UpdateCallStackCache(objCallStackRefreshThread->Active);
-}
+//static void CallBackUpdateCallStackCache(std::shared_ptr<CallStackRefreshThread> objCallStackRefreshThread)
+//{
+//    objCallStackRefreshThread->Parse->UpdateCallStackCache(objCallStackRefreshThread->Active);
+//}
 
 void CallStackTab_::GetCallStackInfoSafe(CallStackParser_& Parse, std::shared_ptr<std::atomic<bool>> Active)
 {
-    CallStackRefreshThread objCallStackRefreshThread;
-    objCallStackRefreshThread.Parse = &Parse;
-    objCallStackRefreshThread.Active = Active;
+    //CallStackRefreshThread objCallStackRefreshThread;
+    //objCallStackRefreshThread.Parse = &Parse;
+    //objCallStackRefreshThread.Active = Active;
     std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
     if (duration_cast<std::chrono::seconds>(now - Parse.Cache.LastUpdated) > std::chrono::milliseconds(Dimensionses.CacheRefreshRate))
     {
-        std::thread updateThread(CallBackUpdateCallStackCache, std::make_shared<CallStackRefreshThread>(objCallStackRefreshThread)); updateThread.detach();
+        std::jthread updateThread = std::jthread([&Parse, Active]() {
+            Parse.UpdateCallStackCache(Active);
+            });
+
+        updateThread.detach();
+        //std::thread updateThread(CallBackUpdateCallStackCache, std::make_shared<CallStackRefreshThread>(objCallStackRefreshThread)); updateThread.detach();
     }
     return;
 }
@@ -90,6 +95,7 @@ void CallStackTab_::CallStackTableRender()
         static CallStackParser_ Parse;
         static std::shared_ptr<std::atomic<bool>> Active = std::make_shared<std::atomic<bool>>(true);
         GetCallStackInfoSafe(Parse, Active);
+        Active->store(true);
         ImGuiListClipper clipper;
         clipper.Begin(Parse.Cache.vCallStackInfo.size(), 17);//TODO: Data transfer
         while (clipper.Step())
@@ -211,6 +217,7 @@ void CallStackTab_::CallStackTableRender()
             }
         }
         ImGui::EndTable();
+        Active->store(false);
     }
 }
 

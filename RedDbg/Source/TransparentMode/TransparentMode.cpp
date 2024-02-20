@@ -1,6 +1,6 @@
 #include "TransparentMode/TransparentMode.hpp"
 
-GuestContext* Transparent::InvisibleCpuid(_In_ CPUID::FEATURE_INFORMATION Regs, _Inout_ GuestContext* Context)
+GuestContext* Transparent_::InvisibleCpuid(_In_ CPUID::FEATURE_INFORMATION Regs, _Inout_ GuestContext* Context)
 {
 	Regs.AMD.ReservedForHvGuestStatus = 0;
 	Context->Rax = Regs.Regs.Regs.Eax;

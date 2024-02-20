@@ -8,6 +8,7 @@ http://www.0x04.net/doc/amd/33047.pdf
 #pragma once
 #include "PTE.hpp"
 #include "Registers.hpp"
+#include "HyperVisor/Npt/HookCommon.hpp"
 //#include "ia32.h"
 #include <ntddk.h>
 
@@ -439,6 +440,28 @@ namespace SVM
     };
     static_assert(sizeof(EVENTINJ) == sizeof(unsigned long long), "Size of EVEINTINJ != sizeof(unsigned long long)");
 
+    // See "Nested versus Guest Page Faults, Fault Ordering"
+    typedef struct _NPF_EXITINFO1
+    {
+        union
+        {
+            UINT64 AsUInt64;
+            struct
+            {
+                UINT64 Valid : 1;                   // [0]
+                UINT64 Write : 1;                   // [1]
+                UINT64 User : 1;                    // [2]
+                UINT64 Reserved : 1;                // [3]
+                UINT64 Execute : 1;                 // [4]
+                UINT64 Reserved2 : 27;              // [5:31]
+                UINT64 GuestPhysicalAddress : 1;    // [32]
+                UINT64 GuestPageTables : 1;         // [33]
+            } Fields;
+        };
+    } NPF_EXITINFO1, * PNPF_EXITINFO1;
+    static_assert(sizeof(NPF_EXITINFO1) == 8,
+        "NPF_EXITINFO1 size mismatch");
+
     // 2 bits per MSR:
     union MSRPM {
         unsigned char Msrpm[2048 * 4];
@@ -621,6 +644,7 @@ namespace SVM
 
     struct NESTED_PAGING_TABLES
     {
+        //DECLSPEC_ALIGN(PAGE_SIZE) PML5E Pml5e;
         DECLSPEC_ALIGN(PAGE_SIZE) PML4E Pml4e;
         DECLSPEC_ALIGN(PAGE_SIZE) PDPE Pdpe[512];
         DECLSPEC_ALIGN(PAGE_SIZE) PDE Pde[512][512];
@@ -655,5 +679,6 @@ namespace SVM
         DECLSPEC_ALIGN(PAGE_SIZE) unsigned char HostStateArea[PAGE_SIZE];
         DECLSPEC_ALIGN(PAGE_SIZE) SVM::MSRPM Msrpm;
         DECLSPEC_ALIGN(PAGE_SIZE) SVM::NESTED_PAGING_TABLES Npt;
+        PHOOK_DATA HookData;
     };
 }

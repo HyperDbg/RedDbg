@@ -1,5 +1,7 @@
 #pragma once
+#include <functional>
 #include "GUI/MenuOfMainTabs/PeMenuBegin/Parser/PEReader.hpp"
+#include "GUI/MenuOfMainTabs/ThreadsMenuBegin/SystemThread.hpp"
 #include <windows.h>
 #include <psapi.h>
 #include <filesystem>
@@ -12,6 +14,7 @@ typedef struct _ThreadInfo {
 	uint64_t Cycles = 0;
 	uint64_t SuspendCount = 0;
 	uint64_t TebBase = 0;
+    uint64_t Rip = 0;
 	std::string szPriority;
 	std::string szWaitReason;
 	std::string Name;
@@ -22,6 +25,7 @@ typedef struct _ThreadInfo {
 
 typedef struct _ThreadCache {
 	std::chrono::steady_clock::time_point LastUpdated;
+    std::vector<PTEB> PTebs;
 	std::vector<ThreadInfo> vThreadInfo;
 } ThreadCache, * PThreadCache;
 
@@ -83,27 +87,30 @@ class ThreadParser_
 private:
 	std::vector<ThreadInfo> vThreadInfo;
 private:
-	void GetThreadsOfUserProcess(bool Cache);
-    std::string FormatTime(const FILETIME& time);
-    void LargeIntegerToFileTime(const LARGE_INTEGER& li, FILETIME& ft);
+    void GetThreadsOfUserProcessCallBack(PSYSTEM_PROCESS_INFORMATION spi);
+    //std::string FormatTime(const FILETIME& time);
+    //void LargeIntegerToFileTime(const LARGE_INTEGER& li, FILETIME& ft);
 public:
-	ThreadCache Cache;
+    ThreadCache Cache;
 
 	ThreadParser_() {
 		Cache.LastUpdated = std::chrono::steady_clock::now();
-		GetThreadsOfUserProcess(false);
-		Cache.vThreadInfo.resize(vThreadInfo.size());
-		std::copy(vThreadInfo.begin(), vThreadInfo.end(), Cache.vThreadInfo.begin());
+        Thread::GetThreadsOfUserProcess(std::bind(&ThreadParser_::GetThreadsOfUserProcessCallBack, this, std::placeholders::_1));
+        Cache.vThreadInfo = vThreadInfo;
 	}
 
-	void UpdateThreadCache(std::shared_ptr<std::atomic<bool>> Active) {
-		Cache.LastUpdated = std::chrono::steady_clock::now();
-		GetThreadsOfUserProcess(true);
-		while (Active->load()) {
-			std::this_thread::sleep_for(std::chrono::milliseconds(5)); // Sleep for a short duration to avoid busy waiting
-		}
-		Cache.vThreadInfo.resize(vThreadInfo.size());
-		std::copy(vThreadInfo.begin(), vThreadInfo.end(), Cache.vThreadInfo.begin());
+    void UpdateThreadCache(std::shared_ptr<std::atomic<bool>> Active) {
+        std::vector<PTEB> PTebs;
+        Cache.LastUpdated = std::chrono::steady_clock::now();
+        for (auto& Thread : vThreadInfo) { PTebs.push_back(Thread.Thread.TebBase); }
+        vThreadInfo.clear();
+        Thread::GetThreadsOfUserProcess(std::bind(&ThreadParser_::GetThreadsOfUserProcessCallBack, this, std::placeholders::_1));
+        while (Active->load()) { continue;/*std::this_thread::sleep_for(std::chrono::milliseconds(5)); Sleep for a short duration to avoid busy waiting*/ }
+        Cache.vThreadInfo = vThreadInfo;
+        for (auto& PTeb : PTebs)
+        {
+            VirtualFree(PTeb, 0, MEM_RELEASE);
+        }
 		return;
 	}
 };

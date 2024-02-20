@@ -88,6 +88,12 @@
     <Filter Include="Source Files\Local">
       <UniqueIdentifier>{30482355-4c25-4f12-ac36-c547ceb506f3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\HyperVisor\Npt">
+      <UniqueIdentifier>{7f5e1a4b-8ce5-4202-9078-3537f9844fa5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\HyperVisor\Npt">
+      <UniqueIdentifier>{df0dec49-1c86-4349-ae47-c9867ca6975d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Inf Include="RedDbg.inf">
@@ -139,6 +145,36 @@
     </ClCompile>
     <ClCompile Include="Source\Local\Functions.cpp">
       <Filter>Source Files\Local</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Debugger\Driver\SvmVmExitHandler.cpp">
+      <Filter>Source Files\Debugger</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Debugger\Driver\CommonHandlers.cpp">
+      <Filter>Source Files\Debugger</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\HyperVisor\Npt\HookCommon.cpp">
+      <Filter>Source Files\HyperVisor\Npt</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\HyperVisor\Npt\HookKernelCommon.cpp">
+      <Filter>Source Files\HyperVisor\Npt</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\HyperVisor\Npt\HookKernelHandlers.cpp">
+      <Filter>Source Files\HyperVisor\Npt</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\HyperVisor\Npt\HookKernelProcessorData.cpp">
+      <Filter>Source Files\HyperVisor\Npt</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\HyperVisor\Npt\HookKernelRegistration.cpp">
+      <Filter>Source Files\HyperVisor\Npt</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\HyperVisor\Npt\HookVmmAlwaysOptimized.cpp">
+      <Filter>Source Files\HyperVisor\Npt</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\HyperVisor\Npt\HookVmmCommon.cpp">
+      <Filter>Source Files\HyperVisor\Npt</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\HyperVisor\Npt\PhysicalMemoryDescriptor.cpp">
+      <Filter>Source Files\HyperVisor\Npt</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -251,6 +287,45 @@
     </ClInclude>
     <ClInclude Include="Include\AppToDrv\IoCtlCodes.hpp">
       <Filter>Header Files\Local</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Debugger\Driver\SvmVmExitHandler.hpp">
+      <Filter>Header Files\Debugger</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Debugger\Driver\CommonHandlers.hpp">
+      <Filter>Header Files\Debugger</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Debugger\Driver\Common.hpp">
+      <Filter>Header Files\Debugger</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Debugger\Driver\SvmVMMCall.hpp">
+      <Filter>Header Files\Debugger</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\HyperVisor\Npt\Common.hpp">
+      <Filter>Header Files\HyperVisor\Npt</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\HyperVisor\Npt\HookCommon.hpp">
+      <Filter>Header Files\HyperVisor\Npt</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\HyperVisor\Npt\HookKernelCommon.hpp">
+      <Filter>Header Files\HyperVisor\Npt</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\HyperVisor\Npt\HookKernelHandlers.hpp">
+      <Filter>Header Files\HyperVisor\Npt</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\HyperVisor\Npt\HookKernelProcessorData.hpp">
+      <Filter>Header Files\HyperVisor\Npt</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\HyperVisor\Npt\HookKernelRegistration.hpp">
+      <Filter>Header Files\HyperVisor\Npt</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\HyperVisor\Npt\HookVmmAlwaysOptimized.hpp">
+      <Filter>Header Files\HyperVisor\Npt</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\HyperVisor\Npt\HookVmmCommon.hpp">
+      <Filter>Header Files\HyperVisor\Npt</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\HyperVisor\Npt\PhysicalMemoryDescriptor.hpp">
+      <Filter>Header Files\HyperVisor\Npt</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

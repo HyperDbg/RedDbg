@@ -2,7 +2,6 @@
 
 namespace GlobalVarsOfPeTab {
     extern std::shared_ptr<PeReader> objPEInformation;
-    //extern PeReader objPeReader;
 }
 
 bool PETab_::OptionalBitnessRowModeChooserA(int Row)

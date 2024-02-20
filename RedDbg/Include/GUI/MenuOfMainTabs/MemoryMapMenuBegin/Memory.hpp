@@ -74,7 +74,6 @@ struct _DataFromSections final {
     uint64_t CountOfSections = 0;
     std::vector<size_t> vVirtualSizes;
     std::vector<std::string> vNamesOfSections;
-    //std::vector<uint32_t> SectionCharacteristics;
 };
 
 class MemoryParser_
@@ -109,11 +108,10 @@ private:
     };
     std::pair<std::vector<std::string>, std::vector<std::string>> Contents = { SectionNames, InformationContent };
 
-    //std::string Ntdll = "ntdll.dll";
     std::vector<MemoryInfo> vMemoryInfo;
 private:
     ParsedPeRefDll OpenExecutable(std::string path) noexcept;
-    void GetMemoryMapOfUserProcess(bool Cache);
+    void GetMemoryMapOfUserProcess();
     void GetTebAndStackForEachThread(
         std::vector<MemoryInfo>& vTebInfo,
         std::vector<MemoryInfo>& vStackInfo);
@@ -125,20 +123,17 @@ public:
 
     MemoryParser_() {
         Cache.LastUpdated = std::chrono::steady_clock::now();
-        GetMemoryMapOfUserProcess(false);
-        Cache.vMemoryInfo.resize(vMemoryInfo.size());
-        std::copy(vMemoryInfo.begin(), vMemoryInfo.end(), Cache.vMemoryInfo.begin());
+        GetMemoryMapOfUserProcess();
+        Cache.vMemoryInfo = vMemoryInfo;
         return;
     }
 
     void UpdateMemoryCache(std::shared_ptr<std::atomic<bool>> Active) {
         Cache.LastUpdated = std::chrono::steady_clock::now();
-        GetMemoryMapOfUserProcess(true);
-        while (Active->load()) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(5)); // Sleep for a short duration to avoid busy waiting
-        }
-        Cache.vMemoryInfo.resize(vMemoryInfo.size());
-        std::copy(vMemoryInfo.begin(), vMemoryInfo.end(), Cache.vMemoryInfo.begin());
+        vMemoryInfo.clear();
+        GetMemoryMapOfUserProcess();
+        while (Active->load()) { continue;/*std::this_thread::sleep_for(std::chrono::milliseconds(5));  Sleep for a short duration to avoid busy waiting*/ }
+        Cache.vMemoryInfo = vMemoryInfo;
         return;
     }
 };

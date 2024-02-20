@@ -4,7 +4,7 @@
 
 #include <ntddk.h>
 
-class Transparent {
+class Transparent_ {
 public:
 	GuestContext* InvisibleCpuid(_In_ CPUID::FEATURE_INFORMATION Regs, _Inout_ GuestContext* Context);
 	void InvisibleRdtsc();

@@ -88,9 +88,37 @@ private:
 					const std::string_view MenuTraceOverItemShortcutName = "Ctrl+Space";
 					const std::string_view MenuTraceLBRItemShortcutName = "Ctrl+J";
 				};
+
+				class Tracing_ {
+				public:
+					const std::string_view BreakCondition = "Break Condition";
+					const std::string_view LogText = "Log Text";
+					const std::string_view LogCondition = "Log Condition";
+					const std::string_view CommandText = "Command Text";
+					const std::string_view CommandCondition = "Command Condition";
+					const std::string_view ToFunction = "Trace to function";
+					const std::string_view ToFunctionCheckBox = "TTF";
+					const std::string_view MaximumTraceCount = "Maximum trace count";
+
+					const std::string_view HintConditions = "RBX == B && RAX == A";
+					const std::string_view HintLogText = "0x{p:cip} {i:cip}";
+					const std::string_view HintCommandText = "RAX == A;StepOut";
+					const std::string_view HintTraceCount = "100F";
+					const std::string_view HintToFunction = "00007FFC84BC4505";
+				};
 			public:
+				Tracing_ TracingText;
+
+				const std::string_view IntoWindowId = "IntoTraceID";
+				const std::string_view IntoHostTitleName = "Trace into";
 				const std::string_view MenuTraceIntoItemName = "Trace into";
+
+				const std::string_view OverWindowId = "OverTraceID";
+				const std::string_view OverHostTitleName = "Trace over";
 				const std::string_view MenuTraceOverItemName = "Trace over";
+
+				const std::string_view LBRWindowId = "LBRTraceID";
+				const std::string_view LBRHostTitleName = "Trace LBR";
 				const std::string_view MenuTraceLBRItemName = "Trace LBR";
 			public:
 				Shortcut_ Shortcut;

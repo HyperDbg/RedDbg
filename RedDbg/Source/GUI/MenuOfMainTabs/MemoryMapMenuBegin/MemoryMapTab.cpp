@@ -56,20 +56,20 @@ void MemoryMapTab_::MemoryMapWindowRender()
         false);
 }
 
-static void CallBackUpdateMemoryCache(std::shared_ptr<MemoryRefreshThread> objMemoryRefreshThread)
-{
-    objMemoryRefreshThread->Parse->UpdateMemoryCache(objMemoryRefreshThread->Active);
-}
+//static void CallBackUpdateMemoryCache(std::shared_ptr<MemoryRefreshThread> objMemoryRefreshThread)
+//{
+//    objMemoryRefreshThread->Parse->UpdateMemoryCache(objMemoryRefreshThread->Active);
+//}
 
 void MemoryMapTab_::GetMemoryInfoSafe(MemoryParser_& Parse, std::shared_ptr<std::atomic<bool>> Active) {
-    // Check if the cache is too old
-    MemoryRefreshThread objMemoryRefreshThread;
-    objMemoryRefreshThread.Parse = &Parse;
-    objMemoryRefreshThread.Active = Active;
     std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
     if (duration_cast<std::chrono::seconds>(now - Parse.Cache.LastUpdated) > std::chrono::milliseconds(Dimensionses.CacheRefreshRate))
     {
-        std::thread updateThread(CallBackUpdateMemoryCache, std::make_shared<MemoryRefreshThread>(objMemoryRefreshThread)); updateThread.detach();
+        std::jthread updateThread = std::jthread([&Parse, Active]() {
+            Parse.UpdateMemoryCache(Active);
+            });
+
+        updateThread.detach();
     }
     return;
 }
@@ -268,7 +268,7 @@ void MemoryMapTab_::MemoryMapTableRender()
         static MemoryParser_ Parse;
         static std::shared_ptr<std::atomic<bool>> Active = std::make_shared<std::atomic<bool>>(true);
         GetMemoryInfoSafe(Parse, Active);
-        Active = std::make_shared<std::atomic<bool>>(true);
+        Active->store(true);
         ImGuiListClipper clipper;
         clipper.Begin(Parse.Cache.vMemoryInfo.size(), 17);//TODO: Data transfer
         while (clipper.Step())
@@ -342,7 +342,7 @@ void MemoryMapTab_::MemoryMapTableRender()
             }
         }
         ImGui::EndTable();
-        Active = std::make_shared<std::atomic<bool>>(false);
+        Active->store(false);
     }
 }
 

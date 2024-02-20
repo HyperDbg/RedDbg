@@ -25,20 +25,20 @@ void CallStackParser_::EnsureUniqueOffsets()
     vCallStackInfo.erase(last, vCallStackInfo.end());
 }
 
-void CallStackParser_::GetCallStackOfUserProcess(bool Cache)
+void CallStackParser_::GetCallStackOfUserProcess()
 {
     static size_t Index = 0;
-    if (Cache) { vCallStackInfo.clear(); }
     ExternalStackWalker walker;
 
     NTSTATUS Status; ULONG size;
     if (NtQuerySystemInformation(SystemProcessInformation, NULL, 0, &size) != STATUS_INFO_LENGTH_MISMATCH) { return; }
 
-    PSYSTEM_PROCESS_INFORMATION spi = PSYSTEM_PROCESS_INFORMATION(VirtualAlloc(NULL, 2 * size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
+    PSYSTEM_PROCESS_INFORMATION spi = new SYSTEM_PROCESS_INFORMATION[2 * size];//PSYSTEM_PROCESS_INFORMATION(VirtualAlloc(NULL, 2 * size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
+    RtlZeroMemory(spi, 2 * size);
+    PSYSTEM_PROCESS_INFORMATION StartSpi = spi;
     if (!NT_SUCCESS(Status = NtQuerySystemInformation(SystemProcessInformation, spi, 2 * size, NULL)))
     {
-        printf("\nError: Unable to query process list (%#x)\n", Status);
-        VirtualFree(spi, 0, MEM_RELEASE);
+        delete[] StartSpi;
         return;
     }
 
@@ -55,28 +55,17 @@ void CallStackParser_::GetCallStackOfUserProcess(bool Cache)
                     walker.ShowCallstack(hThread);
                     
                     for (; Index < walker.vCallStackInfo.size(); ++Index) { walker.vCallStackInfo[Index]->stack_frame.KdHelp.Thread = (DWORD64)spi->Threads[ThreadIndex].ClientId.UniqueThread; }
+                    CloseHandle(hThread);
                 }
-                CloseHandle(hThread);
             }
         }
         if (spi->NextEntryOffset == 0) { break; }
         spi = PSYSTEM_PROCESS_INFORMATION((LPBYTE)spi + spi->NextEntryOffset);
     }
-    VirtualFree(spi, 0, MEM_RELEASE);
+    delete[] StartSpi;
 
     vCallStackInfo = walker.vCallStackInfo;
     EnsureUniqueOffsets();
-
-    //for (auto& entry : vCallStackInfo)
-    //{
-    //    printf("Thread: %X | Addr: %p | To: %p | From: %p | AddrStack: %p | Module Full path: %s\n",
-    //        (DWORD)entry->stack_frame.KdHelp.Thread,
-    //        entry->stack_frame.AddrFrame.Offset + sizeof(uint64_t),
-    //        entry->stack_frame.AddrReturn.Offset,
-    //        entry->stack_frame.AddrPC.Offset,
-    //        entry->stack_frame.AddrStack.Offset,
-    //        entry->loadedImageName);
-    //}
 
     Index = 0;
 

@@ -54,6 +54,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.props" />
   </ImportGroup>
   <ImportGroup Label="Shared">
   </ImportGroup>
@@ -70,6 +71,9 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -105,14 +109,14 @@
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)/Source/Deps/StackWalker/Main/StackWalker;$(SolutionDir)/Source/Deps/pe-parse/pe-parser-library/include;$(SolutionDir)/Include/Deps/tomlplusplus/include;$(SolutionDir)/Include/GUI/UI/ImGui/FileDialog;$(SolutionDir)/Include/Deps;$(SolutionDir)/Include;$(SolutionDir)/Include/GUI/UI/ImGui/Opengl3&amp;WinApi;$(SolutionDir)/Include/GUI/UI/ImGui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/Source/Deps/zydis/include;$(SolutionDir)/Source/Deps/zydis/dependencies/zycore/include;$(SolutionDir)/Source/Deps/StackWalker/Main/StackWalker;$(SolutionDir)/Source/Deps/pe-parse/pe-parser-library/include;$(SolutionDir)/Include/Deps/tomlplusplus/include;$(SolutionDir)/Include/GUI/UI/ImGui/FileDialog;$(SolutionDir)/Include/Deps;$(SolutionDir)/Include;$(SolutionDir)/Include/GUI/UI/ImGui/Opengl3&amp;WinApi;$(SolutionDir)/Include/GUI/UI/ImGui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OpenMPSupport>true</OpenMPSupport>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>D:\Programs\Soft\Coding\C\VisualStudio\Coders\StackWalker\bld\Debug;$(SolutionDir)/Source/Deps/pe-parse-compiled</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opengl32.lib;ntdll.lib;StackWalker.lib;pe-parse.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Source\Deps\zydis\msvc\bin\$(ConfigurationName)X64;D:\Programs\Soft\Coding\C\VisualStudio\Coders\StackWalker\bld\Debug;$(SolutionDir)/Source/Deps/pe-parse-compiled</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Zydis.lib;Zycore.lib;opengl32.lib;ntdll.lib;StackWalker.lib;pe-parse.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
     </Link>
   </ItemDefinitionGroup>
@@ -146,9 +150,11 @@
     <ClCompile Include="Source\GUI\MenuBarDispatcher.cpp" />
     <ClCompile Include="Source\GUI\MenuOfMainTabs\CallStackMenuBegin\CallStack.cpp" />
     <ClCompile Include="Source\GUI\MenuOfMainTabs\CallStackMenuBegin\CallStackTab.cpp" />
+    <ClCompile Include="Source\GUI\MenuOfMainTabs\CPUMenuBegin\CPU.cpp" />
     <ClCompile Include="Source\GUI\MenuOfMainTabs\CPUMenuBegin\CPUTab.cpp" />
     <ClCompile Include="Source\GUI\MenuOfMainTabs\MemoryMapMenuBegin\Memory.cpp" />
     <ClCompile Include="Source\GUI\MenuOfMainTabs\MemoryMapMenuBegin\MemoryMapTab.cpp" />
+    <ClCompile Include="Source\GUI\MenuOfMainTabs\MemoryMapMenuBegin\SystemMemory.cpp" />
     <ClCompile Include="Source\GUI\MenuOfMainTabs\MenuGeneral.cpp" />
     <ClCompile Include="Source\GUI\MenuOfMainTabs\PeMenuBegin\Nodes\COFFFileHeaderNode.cpp" />
     <ClCompile Include="Source\GUI\MenuOfMainTabs\PeMenuBegin\Nodes\DataDirectoriesNode.cpp" />
@@ -164,6 +170,7 @@
     <ClCompile Include="Source\GUI\MenuOfMainTabs\PeMenuBegin\PeTab.cpp" />
     <ClCompile Include="Source\GUI\MenuOfMainTabs\SEHMenuBegin\SehTab.cpp" />
     <ClCompile Include="Source\GUI\MenuOfMainTabs\StackMapMenuBegin\StackMapTab.cpp" />
+    <ClCompile Include="Source\GUI\MenuOfMainTabs\ThreadsMenuBegin\SystemThread.cpp" />
     <ClCompile Include="Source\GUI\MenuOfMainTabs\ThreadsMenuBegin\Threads.cpp" />
     <ClCompile Include="Source\GUI\MenuOfMainTabs\ThreadsMenuBegin\ThreadsTab.cpp" />
     <ClCompile Include="Source\GUI\UI\ImGui\FileDialog\ImGuiFileDialog.cpp" />
@@ -185,16 +192,20 @@
     <ClInclude Include="Include\GUI\General.hpp" />
     <ClInclude Include="Include\GUI\GlobalClass.hpp" />
     <ClInclude Include="Include\GUI\MenuBarDispatcher.hpp" />
+    <ClInclude Include="Include\GUI\MenuDispatcherTabs\GlobalEnums.hpp" />
     <ClInclude Include="Include\GUI\MenuOfMainTabs\CallStackMenuBegin\CallStack.hpp" />
     <ClInclude Include="Include\GUI\MenuOfMainTabs\CallStackMenuBegin\CallStackTab.hpp" />
+    <ClInclude Include="Include\GUI\MenuOfMainTabs\CPUMenuBegin\CPU.hpp" />
     <ClInclude Include="Include\GUI\MenuOfMainTabs\CPUMenuBegin\CPUTab.hpp" />
     <ClInclude Include="Include\GUI\MenuOfMainTabs\MemoryMapMenuBegin\Memory.hpp" />
     <ClInclude Include="Include\GUI\MenuOfMainTabs\MemoryMapMenuBegin\MemoryMapTab.hpp" />
+    <ClInclude Include="Include\GUI\MenuOfMainTabs\MemoryMapMenuBegin\SystemMemory.hpp" />
     <ClInclude Include="Include\GUI\MenuOfMainTabs\MenuGeneral.hpp" />
     <ClInclude Include="Include\GUI\MenuOfMainTabs\PeMenuBegin\Parser\PEReader.hpp" />
     <ClInclude Include="Include\GUI\MenuOfMainTabs\PeMenuBegin\PeTab.hpp" />
     <ClInclude Include="Include\GUI\MenuOfMainTabs\SEHMenuBegin\SehTab.hpp" />
     <ClInclude Include="Include\GUI\MenuOfMainTabs\StackMapMenuBegin\StackMapTab.hpp" />
+    <ClInclude Include="Include\GUI\MenuOfMainTabs\ThreadsMenuBegin\SystemThread.hpp" />
     <ClInclude Include="Include\GUI\MenuOfMainTabs\ThreadsMenuBegin\Threads.hpp" />
     <ClInclude Include="Include\GUI\MenuOfMainTabs\ThreadsMenuBegin\ThreadsTab.hpp" />
     <ClInclude Include="Include\GUI\Names.hpp" />
@@ -214,7 +225,11 @@
     <ClInclude Include="Include\GUI\WindowCodes.hpp" />
     <ClInclude Include="Include\IOCTL\IOCTL.hpp" />
   </ItemGroup>
+  <ItemGroup>
+    <MASM Include="Source\Debugger\Driver\SvmVMMCall.asm" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />
   </ImportGroup>
 </Project>

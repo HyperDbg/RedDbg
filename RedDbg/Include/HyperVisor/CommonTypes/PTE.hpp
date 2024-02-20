@@ -151,7 +151,29 @@ union VIRTUAL_ADDRESS {
     } x64;
 };
 
-union PML4E {
+union PML5E // EFER.LMA == 1, CR4.PAE is always 1, CR4.PSE is ignored, CR4.LA57 == 1
+{
+    union {
+        unsigned long long Value;
+        struct {
+            unsigned long long P : 1; // Present
+            unsigned long long RW : 1; // Read/Write
+            unsigned long long US : 1; // User/Supervisor
+            unsigned long long PWT : 1; // Page-Level Writethrough
+            unsigned long long PCD : 1; // Page-Level Cache Disable
+            unsigned long long A : 1; // Accessed
+            unsigned long long Ignored0 : 1;
+            unsigned long long Reserved1 : 2;
+            unsigned long long AVL : 3; // Available to software
+            unsigned long long PML4 : 40; // Page frame number of Page-Map 4-Level table
+            unsigned long long Available : 11;
+            unsigned long long NX : 1; // No Execute
+        } Page4Kb, Page2Mb, Page1Gb, Generic; // Same for the 4Kb, 2Mb and 1Gb page size
+    } x64;
+};
+
+union PML4E // EFER.LMA == 1, CR4.PAE is always 1, CR4.PSE is ignored, CR4.LA57 == 0
+{
     union {
         unsigned long long Value;
         struct {
@@ -171,7 +193,8 @@ union PML4E {
     } x64;
 };
 
-union PDPE {
+union PDPE // EFER.LMA == 0, CR4.PAE == 1, CR4.PSE is ignored
+{
     union {
         union {
             unsigned long long Value;
@@ -242,7 +265,8 @@ union PDPE {
     } x64;
 };
 
-union PDE {
+union PDE // EFER.LMA == 0, CR4.PAE == 1, CR4.PSE is ignored
+{
     union {
         union {
             unsigned int Value;
@@ -390,7 +414,8 @@ union PDE {
     } x64;
 };
 
-union PTE {
+union PTE // EFER.LMA == 0, CR4.PAE == 1, CR4.PSE is ignored
+{
     union {
         union {
             unsigned int Value;

@@ -120,6 +120,19 @@ namespace MenuBarGlobalVars
         std::string SymbolStore;
         std::string SymbolPath;
     }
+
+    namespace TraceInto
+    {
+        bool TraceToFunction = false;
+
+        std::string BreakCondition;
+        std::string LogText;
+        std::string LogCondition;
+        std::string CommandText;
+        std::string CommandCondition;
+        std::string ToFunction;
+        std::string MaximumTraceCount;
+    }
 }
 
 MenuBarDispatcher_* MenuBarDispatcher_::OpenInstance(std::string Id, std::string Title)
@@ -645,6 +658,7 @@ void MenuBarDispatcher_::MiscWindowRender(toml::table& Tbl, std::string& Path)
     //"Query process cookie"
     //"Query working set before reading memory"
 }
+
 bool was = false;
 void MenuBarDispatcher_::Display(std::string Id)
 {
@@ -653,10 +667,11 @@ void MenuBarDispatcher_::Display(std::string Id)
     if (!opened)
     {
         MenuBarGlobalVars::MapOfDialogs.clear();
+        MenuBarGlobalVars::Titles.clear();
     }
 
     auto Iter = MenuBarGlobalVars::MapOfDialogs.find(str_hash);
-    if (Iter != MenuBarGlobalVars::MapOfDialogs.end() && Iter->first == 0x2274AD5D845C5920)//"OptionsId"
+    if (/*"OptionsId"*/ Iter != MenuBarGlobalVars::MapOfDialogs.end() && Iter->first == 0x2274AD5D845C5920)
     {
         ptrdiff_t Index = std::distance(MenuBarGlobalVars::MapOfDialogs.begin(), Iter);
         ImGui::OpenPopup(MenuBarGlobalVars::Titles[Index].c_str());
@@ -721,6 +736,129 @@ void MenuBarDispatcher_::Display(std::string Id)
             ImGui::EndPopup();
         }
     }
+    else if (/*"IntoTraceID"*/ Iter != MenuBarGlobalVars::MapOfDialogs.end() && Iter->first == 0x300137B0711CC9f5 ||
+        /*"OverTraceID"*/ Iter != MenuBarGlobalVars::MapOfDialogs.end() && Iter->first == 0x76A5F809B5D5C441 ||
+        /*"LBRTraceID"*/ Iter != MenuBarGlobalVars::MapOfDialogs.end() && Iter->first == 0xFBE56B3ADB0F3AED)
+    {
+        ptrdiff_t Index = std::distance(MenuBarGlobalVars::MapOfDialogs.begin(), Iter);
+        ImGui::OpenPopup(MenuBarGlobalVars::Titles[Index].c_str());
+        if (ImGui::BeginPopupModal(MenuBarGlobalVars::Titles[Index].c_str(), &opened, ImGuiWindowFlags_NoCollapse))
+        {
+            ImGui::InputTextWithHint(
+                Names.Windowses.TitleBarMenu.MenuTracing.TracingText.BreakCondition.data(),
+                Names.Windowses.TitleBarMenu.MenuTracing.TracingText.HintConditions.data(),
+                MenuBarGlobalVars::TraceInto::BreakCondition.data(),
+                MenuBarGlobalVars::TraceInto::BreakCondition.size(),
+                ImGuiInputTextFlags_CallbackResize,
+                reinterpret_cast<ImGuiInputTextCallback>(Callable::CallBackInputWrapper),
+                &MenuBarGlobalVars::TraceInto::BreakCondition);
+
+            ImGui::InputTextWithHint(
+                Names.Windowses.TitleBarMenu.MenuTracing.TracingText.LogText.data(),
+                Names.Windowses.TitleBarMenu.MenuTracing.TracingText.HintLogText.data(),
+                MenuBarGlobalVars::TraceInto::LogText.data(),
+                MenuBarGlobalVars::TraceInto::LogText.size(),
+                ImGuiInputTextFlags_CallbackResize,
+                reinterpret_cast<ImGuiInputTextCallback>(Callable::CallBackInputWrapper),
+                &MenuBarGlobalVars::TraceInto::LogText);
+
+            ImGui::InputTextWithHint(
+                Names.Windowses.TitleBarMenu.MenuTracing.TracingText.LogCondition.data(),
+                Names.Windowses.TitleBarMenu.MenuTracing.TracingText.HintConditions.data(),
+                MenuBarGlobalVars::TraceInto::LogCondition.data(),
+                MenuBarGlobalVars::TraceInto::LogCondition.size(),
+                ImGuiInputTextFlags_CallbackResize,
+                reinterpret_cast<ImGuiInputTextCallback>(Callable::CallBackInputWrapper),
+                &MenuBarGlobalVars::TraceInto::LogCondition);
+
+            ImGui::InputTextWithHint(
+                Names.Windowses.TitleBarMenu.MenuTracing.TracingText.CommandText.data(),
+                Names.Windowses.TitleBarMenu.MenuTracing.TracingText.HintCommandText.data(),
+                MenuBarGlobalVars::TraceInto::CommandText.data(),
+                MenuBarGlobalVars::TraceInto::CommandText.size(),
+                ImGuiInputTextFlags_CallbackResize,
+                reinterpret_cast<ImGuiInputTextCallback>(Callable::CallBackInputWrapper),
+                &MenuBarGlobalVars::TraceInto::CommandText);
+
+            ImGui::InputTextWithHint(
+                Names.Windowses.TitleBarMenu.MenuTracing.TracingText.CommandCondition.data(),
+                Names.Windowses.TitleBarMenu.MenuTracing.TracingText.HintConditions.data(),
+                MenuBarGlobalVars::TraceInto::CommandCondition.data(),
+                MenuBarGlobalVars::TraceInto::CommandCondition.size(),
+                ImGuiInputTextFlags_CallbackResize,
+                reinterpret_cast<ImGuiInputTextCallback>(Callable::CallBackInputWrapper),
+                &MenuBarGlobalVars::TraceInto::CommandCondition);
+
+            if (MenuBarGlobalVars::TraceInto::TraceToFunction)
+            {
+                ImGui::InputTextWithHint(
+                    Names.Windowses.TitleBarMenu.MenuTracing.TracingText.ToFunction.data(),
+                    Names.Windowses.TitleBarMenu.MenuTracing.TracingText.HintToFunction.data(),
+                    MenuBarGlobalVars::TraceInto::ToFunction.data(),
+                    MenuBarGlobalVars::TraceInto::ToFunction.size(),
+                    ImGuiInputTextFlags_CallbackResize | ImGuiInputTextFlags_CharsHexadecimal,
+                    reinterpret_cast<ImGuiInputTextCallback>(Callable::CallBackInputWrapper),
+                    &MenuBarGlobalVars::TraceInto::ToFunction);
+            }
+            else
+            {
+                ImGui::InputTextWithHint(
+                    Names.Windowses.TitleBarMenu.MenuTracing.TracingText.MaximumTraceCount.data(),
+                    Names.Windowses.TitleBarMenu.MenuTracing.TracingText.HintTraceCount.data(),
+                    MenuBarGlobalVars::TraceInto::MaximumTraceCount.data(),
+                    MenuBarGlobalVars::TraceInto::MaximumTraceCount.size(),
+                    ImGuiInputTextFlags_CallbackResize | ImGuiInputTextFlags_CharsHexadecimal,
+                    reinterpret_cast<ImGuiInputTextCallback>(Callable::CallBackInputWrapper),
+                    &MenuBarGlobalVars::TraceInto::MaximumTraceCount);
+            }
+            const bool& Opened_ = MenuBarGlobalVars::TraceInto::TraceToFunction;
+            ImGui::Checkbox(Names.Windowses.TitleBarMenu.MenuTracing.TracingText.ToFunctionCheckBox.data(), (bool*)&Opened_);
+            MenuBarGlobalVars::TraceInto::TraceToFunction = Opened_;
+
+            ImGui::SameLine(ImGui::GetWindowWidth() - 30);
+
+            if (ImGui::Button("OK"))
+            {
+                switch (Iter->first)
+                {
+                case 0x300137B0711CC9f5:
+                case 0x76A5F809B5D5C441:
+                {
+                    break;
+                }
+                case 0xFBE56B3ADB0F3AED:
+                {
+                    Tracer BranchTracer;
+                    //BranchTracer.StartAddr
+                    //svm_vmmcall(VMMCALL_ID::StartBranchTrace, )
+                    break;
+                }
+                }
+            }
+
+            ImGui::EndPopup();
+        }
+    }
+    //else if (Iter != MenuBarGlobalVars::MapOfDialogs.end() && Iter->first == 0x76A5F809B5D5C441)//"OverTraceID"
+    //{
+    //    ptrdiff_t Index = std::distance(MenuBarGlobalVars::MapOfDialogs.begin(), Iter);
+    //    ImGui::OpenPopup(MenuBarGlobalVars::Titles[Index].c_str());
+    //    if (ImGui::BeginPopupModal(MenuBarGlobalVars::Titles[Index].c_str(), &opened, ImGuiWindowFlags_NoCollapse))
+    //    {
+    //
+    //        ImGui::EndPopup();
+    //    }
+    //}
+    //else if (Iter != MenuBarGlobalVars::MapOfDialogs.end() && Iter->first == 0xFBE56B3ADB0F3AED)//"LBRTraceID"
+    //{
+    //    ptrdiff_t Index = std::distance(MenuBarGlobalVars::MapOfDialogs.begin(), Iter);
+    //    ImGui::OpenPopup(MenuBarGlobalVars::Titles[Index].c_str());
+    //    if (ImGui::BeginPopupModal(MenuBarGlobalVars::Titles[Index].c_str(), &opened, ImGuiWindowFlags_NoCollapse))
+    //    {
+    //
+    //        ImGui::EndPopup();
+    //    }
+    //}
     else
     {
         opened = true;

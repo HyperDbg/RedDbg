@@ -133,6 +133,15 @@
     <Filter Include="Source Files\GUI\MenuOfMainTabs\ThreadsMenuBegin\Parser">
       <UniqueIdentifier>{8d1ea8b0-bc0e-45dc-9ed4-717701a4e088}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\GUI\General\MenuDispatcherTabs">
+      <UniqueIdentifier>{605198bb-3f1b-4efc-a354-b81632b5967f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\GUI\MenuOfMainTabs\CPUMenuBegin\Parser">
+      <UniqueIdentifier>{49bae556-bb63-44a4-b9da-0f7af4d0511c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GUI\MenuOfMainTabs\CPUMenuBegin\Parser">
+      <UniqueIdentifier>{4023062c-ea89-4418-bd00-17d8b7307974}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Debugger\Application\Main.cpp">
@@ -237,14 +246,23 @@
     <ClCompile Include="Source\GUI\MenuOfMainTabs\MemoryMapMenuBegin\Memory.cpp">
       <Filter>Source Files\GUI\MenuOfMainTabs\MemoryMapMenuBegin\Parser</Filter>
     </ClCompile>
-    <ClCompile Include="Source\GUI\MenuOfMainTabs\PeMenuBegin\Parser\PEReader_.cpp">
-      <Filter>Source Files\GUI\MenuOfMainTabs\PeMenuBegin\PeParser</Filter>
-    </ClCompile>
     <ClCompile Include="Source\GUI\MenuOfMainTabs\ThreadsMenuBegin\Threads.cpp">
       <Filter>Source Files\GUI\MenuOfMainTabs\ThreadsMenuBegin\Parser</Filter>
     </ClCompile>
     <ClCompile Include="Source\GUI\MenuOfMainTabs\CallStackMenuBegin\CallStack.cpp">
       <Filter>Source Files\GUI\MenuOfMainTabs\CallStackMenuBegin</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GUI\MenuOfMainTabs\CPUMenuBegin\CPU.cpp">
+      <Filter>Source Files\GUI\MenuOfMainTabs\CPUMenuBegin\Parser</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GUI\MenuOfMainTabs\ThreadsMenuBegin\SystemThread.cpp">
+      <Filter>Source Files\GUI\MenuOfMainTabs\ThreadsMenuBegin\Parser</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GUI\MenuOfMainTabs\MemoryMapMenuBegin\SystemMemory.cpp">
+      <Filter>Source Files\GUI\MenuOfMainTabs\MemoryMapMenuBegin\Parser</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GUI\MenuOfMainTabs\PeMenuBegin\Parser\PEReader_.cpp">
+      <Filter>Source Files\GUI\MenuOfMainTabs\PeMenuBegin</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -353,5 +371,22 @@
     <ClInclude Include="Include\GUI\MenuOfMainTabs\CallStackMenuBegin\CallStack.hpp">
       <Filter>Header Files\GUI\MenuOfMainTabs\CallStackMenuBegin</Filter>
     </ClInclude>
+    <ClInclude Include="Include\GUI\MenuDispatcherTabs\GlobalEnums.hpp">
+      <Filter>Header Files\GUI\General\MenuDispatcherTabs</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\GUI\MenuOfMainTabs\CPUMenuBegin\CPU.hpp">
+      <Filter>Header Files\GUI\MenuOfMainTabs\CPUMenuBegin\Parser</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\GUI\MenuOfMainTabs\ThreadsMenuBegin\SystemThread.hpp">
+      <Filter>Header Files\GUI\MenuOfMainTabs\ThreadsMenuBegin\Parser</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\GUI\MenuOfMainTabs\MemoryMapMenuBegin\SystemMemory.hpp">
+      <Filter>Header Files\GUI\MenuOfMainTabs\MemoryMapMenuBegin\Parser</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="Source\Debugger\Driver\SvmVMMCall.asm">
+      <Filter>Source Files\GUI\MenuOfMainTabs</Filter>
+    </MASM>
   </ItemGroup>
 </Project>
