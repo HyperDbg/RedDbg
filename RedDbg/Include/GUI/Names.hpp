@@ -446,6 +446,19 @@ private:
 				private:
 					class StackAndDump_
 					{
+					private:
+						class Dump_
+						{
+						public:
+							const std::string_view Dump1 = "Dump 1";
+							const std::string_view Dump2 = "Dump 2";
+							const std::string_view Dump3 = "Dump 3";
+							const std::string_view Dump4 = "Dump 4";
+							const std::string_view Dump5 = "Dump 5";
+							const std::string_view Watch1 = "Watch 1";
+							const std::string_view Locals = "Locals";
+							const std::string_view Struct = "Struct";
+						};
 					public:
 						const std::string_view StackWindowName = "CPUStackWindow";
 						const std::string_view StackWindowTableName = "StackTable";
@@ -455,6 +468,7 @@ private:
 						const std::string_view StackTableDataColumnName = "Data";
 						const std::string_view StackTableDisabledColumnName = "##";
 
+						Dump_ Dump;
 						const std::string_view DumpWindowName = "CPUDumpWindow";
 
 						const std::string_view StackAndDumpVerticalSplitterName = "StackAndDumpVerticalSplitter";
@@ -462,7 +476,439 @@ private:
 
 					class RegisterAndCallConvention_
 					{
+					private:
+						class RegistersForWindow_
+						{
+						private:
+							class x64_
+							{
+							public:
+								const std::string_view RIP = "RIP";
+								const std::string_view RAX = "RAX";
+								const std::string_view RBX = "RBX";
+								const std::string_view RCX = "RCX";
+								const std::string_view RDX = "RDX";
+								const std::string_view RBP = "RBP";
+								const std::string_view RSP = "RSP";
+								const std::string_view RSI = "RSI";
+								const std::string_view RDI = "RDI";
+								const std::string_view R8 = "R8";
+								const std::string_view R9 = "R9";
+								const std::string_view R10 = "R10";
+								const std::string_view R11 = "R11";
+								const std::string_view R12 = "R12";
+								const std::string_view R13 = "R13";
+								const std::string_view R14 = "R14";
+								const std::string_view R15 = "R15";
+
+								const std::string_view RFLAGS = "RFLAGS";
+
+								const std::vector<std::string_view> x64Regs{
+									RIP,
+									RAX,
+									RBX,
+									RCX,
+									RDX,
+									RBP,
+									RSP,
+									RSI,
+									RDI,
+									R8,
+									R9,
+									R10,
+									R11,
+									R12,
+									R13,
+									R14,
+									R15,
+									RFLAGS
+								};
+							};
+							class x32_
+							{
+							public:
+								const std::string_view EIP = "EIP";
+								const std::string_view EAX = "EAX";
+								const std::string_view EBX = "EBX";
+								const std::string_view ECX = "ECX";
+								const std::string_view EDX = "EDX";
+								const std::string_view EBP = "EBP";
+								const std::string_view ESP = "ESP";
+								const std::string_view ESI = "ESI";
+								const std::string_view EDI = "EDI";
+
+								const std::string_view EFLAGS = "EFLAGS";
+
+								const std::vector<std::string_view> x32Regs {
+									EIP,
+									EAX,
+									EBX,
+									ECX,
+									EDX,
+									EBP,
+									ESP,
+									ESI,
+									EDI,
+									EFLAGS
+								};
+							};
+
+							class Debug_
+							{
+							public:
+								const std::string_view Dr0 = "DR0";
+								const std::string_view Dr1 = "DR1";
+								const std::string_view Dr2 = "DR2";
+								const std::string_view Dr3 = "DR3";
+								//https://en.wikipedia.org/wiki/X86_debug_register#DR4_and_DR5
+								const std::string_view Dr4 = "DR4";
+								const std::string_view Dr5 = "DR5";
+								//https://en.wikipedia.org/wiki/X86_debug_register#DR4_and_DR5
+								const std::string_view Dr6 = "DR6";
+								const std::string_view Dr7 = "DR7";
+
+								const std::vector<std::string_view> vDr
+								{
+									Dr0,
+									Dr1,
+									Dr2,
+									Dr3,
+									Dr6,
+									Dr7
+								};
+							};
+
+							class BitFlags_
+							{
+							public:
+								const std::string_view ZF = "ZF";
+								const std::string_view OF = "OF";
+								const std::string_view CF = "CF";
+								const std::string_view PF = "PF";
+								const std::string_view SF = "SF";
+								const std::string_view TF = "TF";
+								const std::string_view AF = "AF";
+								const std::string_view DF = "DF";
+								const std::string_view IF = "IF";
+
+								const std::vector<std::string_view> vBitFlags{
+									ZF,
+									PF,
+									AF,
+									OF,
+									SF,
+									DF,
+									CF,
+									TF,
+									IF
+								};
+							};
+							class Segments_ 
+							{
+							public:
+								const std::string_view GsSegment = "GS";
+								const std::string_view EsSegment = "ES";
+								const std::string_view CsSegment = "CS";
+								const std::string_view FsSegment = "FS";
+								const std::string_view DsSegment = "DS";
+								const std::string_view SsSegment = "SS";
+
+								const std::vector<std::string_view> vSegments{
+									GsSegment,
+									FsSegment,
+									EsSegment,
+									DsSegment,
+									CsSegment,
+									SsSegment
+								};
+							};
+
+							class x87_
+							{
+							public:
+								const std::string_view ST0 = "ST(0)";
+								const std::string_view ST1 = "ST(1)";
+								const std::string_view ST2 = "ST(2)";
+								const std::string_view ST3 = "ST(3)";
+								const std::string_view ST4 = "ST(4)";
+								const std::string_view ST5 = "ST(5)";
+								const std::string_view ST6 = "ST(6)";
+								const std::string_view ST7 = "ST(7)";
+
+								const std::string_view x87r0 = "x87r0";
+								const std::string_view x87r1 = "x87r1";
+								const std::string_view x87r2 = "x87r2";
+								const std::string_view x87r3 = "x87r3";
+								const std::string_view x87r4 = "x87r4";
+								const std::string_view x87r5 = "x87r5";
+								const std::string_view x87r6 = "x87r6";
+								const std::string_view x87r7 = "x87r7";
+
+								const std::vector<std::pair<std::string_view, std::string_view>> vST_X87
+								{
+									{ST0, x87r0},
+									{ST1, x87r1},
+									{ST2, x87r2},
+									{ST3, x87r3},
+									{ST4, x87r4},
+									{ST5, x87r5},
+									{ST6, x87r6},
+									{ST7, x87r7},
+								};
+
+								const std::string_view x87TagWord = "x87TagWord";
+								const std::string_view x87TW_0 = "x87TW_0";
+								const std::string_view x87TW_1 = "x87TW_1";
+								const std::string_view x87TW_2 = "x87TW_2";
+								const std::string_view x87TW_3 = "x87TW_3";
+								const std::string_view x87TW_4 = "x87TW_4";
+								const std::string_view x87TW_5 = "x87TW_5";
+								const std::string_view x87TW_6 = "x87TW_6";
+								const std::string_view x87TW_7 = "x87TW_7";
+
+								const std::vector<std::string_view> vX87TW
+								{
+									x87TW_0,
+									x87TW_1,
+									x87TW_2,
+									x87TW_3,
+									x87TW_4,
+									x87TW_5,
+									x87TW_6,
+									x87TW_7
+								};
+
+								const std::string_view x87StatusWord = "x87StatusWord";
+								const std::string_view x87SW_B = "x87SW_B";
+								const std::string_view x87SW_C1 = "x87SW_C1";
+								const std::string_view x87SW_SF = "x87SW_SF";
+								const std::string_view x87SW_O = "x87SW_O";
+								const std::string_view x87SW_I = "x87SW_I";
+								const std::string_view x87SW_C3 = "x87SW_C3";
+								const std::string_view x87SW_C0 = "x87SW_C0";
+								const std::string_view x87SW_P = "x87SW_P";
+								const std::string_view x87SW_Z = "x87SW_Z";
+								const std::string_view x87SW_TOP = "x87SW_TOP";
+								const std::string_view x87SW_C2 = "x87SW_C2";
+								const std::string_view x87SW_ES = "x87SW_ES";
+								const std::string_view x87SW_U = "x87SW_U";
+								const std::string_view x87SW_D = "x87SW_D";
+
+								const std::vector<std::string_view> vX87SW
+								{
+									x87SW_B,
+									x87SW_C3,
+									x87SW_C2,
+									x87SW_C1,
+									x87SW_C0,
+									x87SW_ES,
+									x87SW_SF,
+									x87SW_P,
+									x87SW_U,
+									x87SW_O,
+									x87SW_Z,
+									x87SW_D,
+									x87SW_I,
+									x87SW_TOP
+								};
+
+								const std::string_view x87ControlWord = "x87ControlWord";
+								const std::string_view x87CW_IC = "x87CW_IC";
+								const std::string_view x87CW_UM = "x87CW_UM";
+								const std::string_view x87CW_DM = "x87CW_DM";
+								const std::string_view x87CW_ZM = "x87CW_ZM";
+								const std::string_view x87CW_OM = "x87CW_OM";
+								const std::string_view x87CW_IM = "x87CW_IM";
+								const std::string_view x87CW_PM = "x87CW_PM";
+								const std::string_view x87CW_PC = "x87CW_PC";
+								const std::string_view x87CW_RC = "x87CW_RC";
+
+								const std::vector<std::string_view> vX87CW
+								{
+									x87CW_IC,
+									x87CW_ZM,
+									x87CW_PM,
+									x87CW_UM,
+									x87CW_OM,
+									x87CW_PC,
+									x87CW_DM,
+									x87CW_IM,
+									x87CW_RC
+								};
+							};
+
+							class AVX_SSE_
+							{
+							public:
+								const std::string_view MxCsr = "MxCsr";
+								const std::string_view MxCsr_FZ = "MxCsr_FZ";
+								const std::string_view MxCsr_OM = "MxCsr_OM";
+								const std::string_view MxCsr_UE = "MxCsr_UE";
+								const std::string_view MxCsr_OE = "MxCsr_OE";
+								const std::string_view MxCsr_IE = "MxCsr_IE";
+								const std::string_view MxCsr_PM = "MxCsr_PM";
+								const std::string_view MxCsr_ZM = "MxCsr_ZM";
+								const std::string_view MxCsr_PE = "MxCsr_PE";
+								const std::string_view MxCsr_ZE = "MxCsr_ZE";
+								const std::string_view MxCsr_DM = "MxCsr_DM";
+								const std::string_view MxCsr_UM = "MxCsr_UM";
+								const std::string_view MxCsr_IM = "MxCsr_IM";
+								const std::string_view MxCsr_DAZ = "MxCsr_DAZ";
+								const std::string_view MxCsr_DE = "MxCsr_DE";
+								const std::string_view MxCsr_RC = "MxCsr_RC";
+
+								const std::vector<std::string_view> vMxCsr{
+									MxCsr_FZ,
+									MxCsr_PM,
+									MxCsr_UM,
+									MxCsr_OM,
+									MxCsr_ZM,
+									MxCsr_IM,
+									MxCsr_UE,
+									MxCsr_PE,
+									MxCsr_DAZ,
+									MxCsr_OE,
+									MxCsr_ZE,
+									MxCsr_DE,
+									MxCsr_IE,
+									MxCsr_DM,
+									MxCsr_RC
+								};
+
+								const std::string_view Xmm0 = "XMM0";
+								const std::string_view Xmm1 = "XMM1";
+								const std::string_view Xmm2 = "XMM2";
+								const std::string_view Xmm3 = "XMM3";
+								const std::string_view Xmm4 = "XMM4";
+								const std::string_view Xmm5 = "XMM5";
+								const std::string_view Xmm6 = "XMM6";
+								const std::string_view Xmm7 = "XMM7";
+								const std::string_view Xmm8 = "XMM8";
+								const std::string_view Xmm9 = "XMM9";
+								const std::string_view Xmm10 = "XMM10";
+								const std::string_view Xmm11 = "XMM11";
+								const std::string_view Xmm12 = "XMM12";
+								const std::string_view Xmm13 = "XMM13";
+								const std::string_view Xmm14 = "XMM14";
+								const std::string_view Xmm15 = "XMM15";
+
+								const std::string_view Ymm0 = "YMM0";
+								const std::string_view Ymm1 = "YMM1";
+								const std::string_view Ymm2 = "YMM2";
+								const std::string_view Ymm3 = "YMM3";
+								const std::string_view Ymm4 = "YMM4";
+								const std::string_view Ymm5 = "YMM5";
+								const std::string_view Ymm6 = "YMM6";
+								const std::string_view Ymm7 = "YMM7";
+								const std::string_view Ymm8 = "YMM8";
+								const std::string_view Ymm9 = "YMM9";
+								const std::string_view Ymm10 = "YMM10";
+								const std::string_view Ymm11 = "YMM11";
+								const std::string_view Ymm12 = "YMM12";
+								const std::string_view Ymm13 = "YMM13";
+								const std::string_view Ymm14 = "YMM14";
+								const std::string_view Ymm15 = "YMM15";
+
+								const std::vector<std::string_view> x32XmmRegs{
+									Xmm0,
+									Xmm1,
+									Xmm2,
+									Xmm3,
+									Xmm4,
+									Xmm5,
+									Xmm6,
+									Xmm7
+								};
+
+								const std::vector<std::string_view> x64XmmRegs{
+									Xmm0,
+									Xmm1,
+									Xmm2,
+									Xmm3,
+									Xmm4,
+									Xmm5,
+									Xmm6,
+									Xmm7,
+									Xmm8,
+									Xmm9,
+									Xmm10,
+									Xmm11,
+									Xmm12,
+									Xmm13,
+									Xmm14,
+									Xmm15
+								};
+								
+								const std::vector<std::string_view> x32YmmRegs {
+									Ymm0,
+									Ymm1,
+									Ymm2,
+									Ymm3,
+									Ymm4,
+									Ymm5,
+									Ymm6,
+									Ymm7,
+								};
+
+								const std::vector<std::string_view> x64YmmRegs{
+									Ymm0,
+									Ymm1,
+									Ymm2,
+									Ymm3,
+									Ymm4,
+									Ymm5,
+									Ymm6,
+									Ymm7,
+									Ymm8,
+									Ymm9,
+									Ymm10,
+									Ymm11,
+									Ymm12,
+									Ymm13,
+									Ymm14,
+									Ymm15,
+								};
+							};
+							class Mmx_
+							{
+							public:
+								const std::string_view Mm0 = "MM0";
+								const std::string_view Mm1 = "MM1";
+								const std::string_view Mm2 = "MM2";
+								const std::string_view Mm3 = "MM3";
+								const std::string_view Mm4 = "MM4";
+								const std::string_view Mm5 = "MM5";
+								const std::string_view Mm6 = "MM6";
+								const std::string_view Mm7 = "MM7";
+
+								const std::vector<std::string_view> vMmx
+								{
+									Mm0,
+									Mm1,
+									Mm2,
+									Mm3,
+									Mm4,
+									Mm5,
+									Mm6,
+									Mm7
+								};
+							};
+						public:
+
+							const std::string_view LastError = "LastError";
+							const std::string_view LastStatus = "LastStatus";
+
+							Segments_ Segments;
+							AVX_SSE_ AvxSse;
+							Mmx_ Mmx;
+							Debug_ Debug;
+							BitFlags_ BitFlags;
+							x87_ x87;
+							x64_ x64;
+							x32_ x32;
+						};
 					public:
+						RegistersForWindow_ RegistersForWindow;
 						const std::string_view RegisterWindowName = "CPURegisterWindow";
 						const std::string_view CallConventionWindowName = "CPUCallConventionWindow";
 

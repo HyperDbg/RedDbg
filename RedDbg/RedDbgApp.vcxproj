@@ -152,6 +152,8 @@
     <ClCompile Include="Source\GUI\MenuOfMainTabs\CallStackMenuBegin\CallStackTab.cpp" />
     <ClCompile Include="Source\GUI\MenuOfMainTabs\CPUMenuBegin\CPU.cpp" />
     <ClCompile Include="Source\GUI\MenuOfMainTabs\CPUMenuBegin\CPUTab.cpp" />
+    <ClCompile Include="Source\GUI\MenuOfMainTabs\CPUMenuBegin\Hex.cpp" />
+    <ClCompile Include="Source\GUI\MenuOfMainTabs\CPUMenuBegin\HexTab.cpp" />
     <ClCompile Include="Source\GUI\MenuOfMainTabs\MemoryMapMenuBegin\Memory.cpp" />
     <ClCompile Include="Source\GUI\MenuOfMainTabs\MemoryMapMenuBegin\MemoryMapTab.cpp" />
     <ClCompile Include="Source\GUI\MenuOfMainTabs\MemoryMapMenuBegin\SystemMemory.cpp" />
@@ -197,6 +199,8 @@
     <ClInclude Include="Include\GUI\MenuOfMainTabs\CallStackMenuBegin\CallStackTab.hpp" />
     <ClInclude Include="Include\GUI\MenuOfMainTabs\CPUMenuBegin\CPU.hpp" />
     <ClInclude Include="Include\GUI\MenuOfMainTabs\CPUMenuBegin\CPUTab.hpp" />
+    <ClInclude Include="Include\GUI\MenuOfMainTabs\CPUMenuBegin\Hex.hpp" />
+    <ClInclude Include="Include\GUI\MenuOfMainTabs\CPUMenuBegin\HexTab.hpp" />
     <ClInclude Include="Include\GUI\MenuOfMainTabs\MemoryMapMenuBegin\Memory.hpp" />
     <ClInclude Include="Include\GUI\MenuOfMainTabs\MemoryMapMenuBegin\MemoryMapTab.hpp" />
     <ClInclude Include="Include\GUI\MenuOfMainTabs\MemoryMapMenuBegin\SystemMemory.hpp" />

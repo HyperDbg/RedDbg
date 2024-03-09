@@ -659,6 +659,14 @@ void MenuBarDispatcher_::MiscWindowRender(toml::table& Tbl, std::string& Path)
     //"Query working set before reading memory"
 }
 
+enum Ids
+{
+    OptionsId = 0x2274AD5D845C5920,
+    IntoTraceID = 0x300137B0711CC9f5,
+    OverTraceID = 0x76A5F809B5D5C441,
+    LBRTraceID = 0xFBE56B3ADB0F3AED,
+};
+
 bool was = false;
 void MenuBarDispatcher_::Display(std::string Id)
 {
@@ -671,7 +679,7 @@ void MenuBarDispatcher_::Display(std::string Id)
     }
 
     auto Iter = MenuBarGlobalVars::MapOfDialogs.find(str_hash);
-    if (/*"OptionsId"*/ Iter != MenuBarGlobalVars::MapOfDialogs.end() && Iter->first == 0x2274AD5D845C5920)
+    if (Iter != MenuBarGlobalVars::MapOfDialogs.end() && Iter->first == Ids::OptionsId)
     {
         ptrdiff_t Index = std::distance(MenuBarGlobalVars::MapOfDialogs.begin(), Iter);
         ImGui::OpenPopup(MenuBarGlobalVars::Titles[Index].c_str());
@@ -736,9 +744,9 @@ void MenuBarDispatcher_::Display(std::string Id)
             ImGui::EndPopup();
         }
     }
-    else if (/*"IntoTraceID"*/ Iter != MenuBarGlobalVars::MapOfDialogs.end() && Iter->first == 0x300137B0711CC9f5 ||
-        /*"OverTraceID"*/ Iter != MenuBarGlobalVars::MapOfDialogs.end() && Iter->first == 0x76A5F809B5D5C441 ||
-        /*"LBRTraceID"*/ Iter != MenuBarGlobalVars::MapOfDialogs.end() && Iter->first == 0xFBE56B3ADB0F3AED)
+    else if (Iter != MenuBarGlobalVars::MapOfDialogs.end() && Iter->first == Ids::IntoTraceID ||
+        Iter != MenuBarGlobalVars::MapOfDialogs.end() && Iter->first == Ids::OverTraceID ||
+        Iter != MenuBarGlobalVars::MapOfDialogs.end() && Iter->first == Ids::LBRTraceID)
     {
         ptrdiff_t Index = std::distance(MenuBarGlobalVars::MapOfDialogs.begin(), Iter);
         ImGui::OpenPopup(MenuBarGlobalVars::Titles[Index].c_str());
@@ -821,14 +829,14 @@ void MenuBarDispatcher_::Display(std::string Id)
             {
                 switch (Iter->first)
                 {
-                case 0x300137B0711CC9f5:
-                case 0x76A5F809B5D5C441:
+                case Ids::IntoTraceID:
+                case Ids::OverTraceID:
                 {
                     break;
                 }
-                case 0xFBE56B3ADB0F3AED:
+                case Ids::LBRTraceID:
                 {
-                    Tracer BranchTracer;
+                    //Tracer BranchTracer;
                     //BranchTracer.StartAddr
                     //svm_vmmcall(VMMCALL_ID::StartBranchTrace, )
                     break;
@@ -839,26 +847,6 @@ void MenuBarDispatcher_::Display(std::string Id)
             ImGui::EndPopup();
         }
     }
-    //else if (Iter != MenuBarGlobalVars::MapOfDialogs.end() && Iter->first == 0x76A5F809B5D5C441)//"OverTraceID"
-    //{
-    //    ptrdiff_t Index = std::distance(MenuBarGlobalVars::MapOfDialogs.begin(), Iter);
-    //    ImGui::OpenPopup(MenuBarGlobalVars::Titles[Index].c_str());
-    //    if (ImGui::BeginPopupModal(MenuBarGlobalVars::Titles[Index].c_str(), &opened, ImGuiWindowFlags_NoCollapse))
-    //    {
-    //
-    //        ImGui::EndPopup();
-    //    }
-    //}
-    //else if (Iter != MenuBarGlobalVars::MapOfDialogs.end() && Iter->first == 0xFBE56B3ADB0F3AED)//"LBRTraceID"
-    //{
-    //    ptrdiff_t Index = std::distance(MenuBarGlobalVars::MapOfDialogs.begin(), Iter);
-    //    ImGui::OpenPopup(MenuBarGlobalVars::Titles[Index].c_str());
-    //    if (ImGui::BeginPopupModal(MenuBarGlobalVars::Titles[Index].c_str(), &opened, ImGuiWindowFlags_NoCollapse))
-    //    {
-    //
-    //        ImGui::EndPopup();
-    //    }
-    //}
     else
     {
         opened = true;

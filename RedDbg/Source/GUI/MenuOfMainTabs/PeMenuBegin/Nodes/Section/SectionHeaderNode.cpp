@@ -51,23 +51,6 @@ void PETab_::PeSectionHeaderTableRender()
         };
     peparse::IterSec(GlobalVarsOfPeTab::objPEInformation->Pe, L_inspectSection, &SectionPointers);
 
-    //static std::vector<DWORD*> SectionDwordPointersSizeVals{};
-    //static std::vector<DWORD*> SectionDwordPointersAddressVals{};
-    //static std::vector<DWORD*> SectionDwordPointersRawOffsetsVals{};
-    //static std::vector<DWORD*> SectionDwordPointersRawSizesVals{};
-    //static std::vector<DWORD*> SectionDwordPointersCharateristicsVals{};
-    //if (!SectionDwordPointersAddressVals.size())
-    //{
-    //    for (int Section = 0; Section < GlobalVarsOfPeTab::objPEInformation->ImageFileHeader.NumberOfSections - 1; ++Section)
-    //    {
-    //        SectionDwordPointersSizeVals.push_back(&GlobalVarsOfPeTab::objPEInformation->pImageSectionHeader[Section].Misc.VirtualSize);
-    //        SectionDwordPointersAddressVals.push_back(&GlobalVarsOfPeTab::objPEInformation->pImageSectionHeader[Section].VirtualAddress);
-    //        SectionDwordPointersRawOffsetsVals.push_back(&GlobalVarsOfPeTab::objPEInformation->pImageSectionHeader[Section].PointerToRawData);
-    //        SectionDwordPointersRawSizesVals.push_back(&GlobalVarsOfPeTab::objPEInformation->pImageSectionHeader[Section].SizeOfRawData);
-    //        SectionDwordPointersCharateristicsVals.push_back(&GlobalVarsOfPeTab::objPEInformation->pImageSectionHeader[Section].Characteristics);
-    //    }
-    //}
-
     static std::vector<std::string> InputSizeStrings;
     static std::vector<std::string> InputAddressStrings;
     static std::vector<std::string> InputAddress64Strings;

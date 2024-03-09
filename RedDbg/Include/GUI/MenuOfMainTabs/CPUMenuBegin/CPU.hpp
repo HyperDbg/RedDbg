@@ -57,22 +57,25 @@ struct RipRange final {
 class CPUParser_
 {
 private:
-	CONTEXT context;
-
 	CpuInfo vCpuInfo;
 private:
 	void GetThreadData(PSYSTEM_PROCESS_INFORMATION spi);
-	void AddressesGetter();
-	void OpcodesGetter();
+	void CountInstructions(std::pair<peparse::VA, peparse::VA> RipSectionRange);
 	void DisassemblyGetter(std::pair<peparse::VA, peparse::VA> RipSectionRange);
-	void GetCpuData();
+	//void GetCpuData();
 
 	//ZyanStatus ZydisFormatterPrintAddressAbsolute(const ZydisFormatter* formatter,
 	//	ZydisFormatterBuffer* buffer, ZydisFormatterContext* context);
 
 	ParsedPeRefDll OpenExecutable(std::string path) noexcept;
 public:
+	CONTEXT context;
+
 	CpuCache Cache;
+public:
+	void GetCpuData();
+	uint64_t FindAddrByRip();
+	void ToDisassemble(uint64_t CountOfInstrsToDisasm, uint64_t RelativeRip);
 
 	CPUParser_() {
 		Cache.LastUpdated = std::chrono::steady_clock::now();

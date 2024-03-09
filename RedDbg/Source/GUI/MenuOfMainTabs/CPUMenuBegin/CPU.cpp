@@ -18,24 +18,6 @@ namespace CPUGlobalVars
     //int64_t SelectedMemorySection = -1;
 }
 
-void CPUParser_::AddressesGetter()
-{
-    //if (MenuBarGlobalVars::EventTabGlobalVars::EventTabCheckbox[MenuBarGlobalVars::EventTabGlobalVars::EventTabCheckbox_::SystemBreakpoint])
-    //{
-    //
-    //}
-
-}
-
-void CPUParser_::OpcodesGetter()
-{
-    //if (MenuBarGlobalVars::EventTabGlobalVars::EventTabCheckbox[MenuBarGlobalVars::EventTabGlobalVars::EventTabCheckbox_::SystemBreakpoint])
-    //{
-    //
-    //}
-
-}
-
 static const ZydisSymbol SYMBOL_TABLE[3] =
 {
     { 0x007FFFFFFF401000, "SomeModule.EntryPoint"   },
@@ -96,7 +78,7 @@ void CPUParser_::DisassemblyGetter(std::pair<peparse::VA, peparse::VA> RipSectio
     {
         ZydisDecoderDecodeFull(&decoder, BaseSec, length, &instruction, operands.data());
 
-        vCpuInfo.Address.push_back(RuntimeAddr);
+        //vCpuInfo.Address.push_back(RuntimeAddr);
 
         ZydisFormatterFormatInstruction(&formatter, &instruction, operands.data(),
             instruction.operand_count_visible, buffer.data(), buffer.size(), RuntimeAddr,
@@ -114,6 +96,35 @@ void CPUParser_::DisassemblyGetter(std::pair<peparse::VA, peparse::VA> RipSectio
         length -= instruction.length;
         RuntimeAddr += instruction.length;
     }
+}
+
+void CPUParser_::CountInstructions(std::pair<peparse::VA, peparse::VA> RipSectionRange)
+{
+    ZydisDecoder decoder;
+    //ZydisDecoderInit(&decoder, ZYDIS_MACHINE_MODE_LONG_64, ZYDIS_STACK_WIDTH_64);
+    decoder.decoder_mode = ZYDIS_DECODER_MODE_MINIMAL;
+    decoder.machine_mode = ZYDIS_MACHINE_MODE_LONG_64;
+    decoder.stack_width = ZYDIS_STACK_WIDTH_64;
+
+    ZydisDecodedInstruction instruction;
+    std::vector<ZydisDecodedOperand> operands(ZYDIS_MAX_OPERAND_COUNT);
+
+    ZyanU8* BaseSec = (ZyanU8*)RipSectionRange.first;
+    ZyanUSize length = RipSectionRange.second;
+
+    while (length)
+    {
+        ZydisDecoderDecodeFull(&decoder, BaseSec, length, &instruction, operands.data());
+
+        vCpuInfo.Address.push_back((uint64_t)BaseSec);
+
+        BaseSec += instruction.length;
+        length -= instruction.length;
+    }
+
+    printf("%llxn\n", vCpuInfo.Address[vCpuInfo.Address.size() - 1]);
+
+    return;
 }
 
 void CPUParser_::GetThreadData(PSYSTEM_PROCESS_INFORMATION spi)
@@ -137,6 +148,69 @@ ParsedPeRefDll CPUParser_::OpenExecutable(std::string path) noexcept {
         return ParsedPeRefDll(nullptr, peparse::DestructParsedPE);
     }
     return obj;
+}
+
+void CPUParser_::ToDisassemble(uint64_t CountOfInstrsToDisasm, uint64_t RelativeRip)
+{
+    vCpuInfo.Mnemonics.clear(); vCpuInfo.Opcodes.clear();
+    ZydisDecoder decoder;
+    ZydisDecoderInit(&decoder, ZYDIS_MACHINE_MODE_LONG_64, ZYDIS_STACK_WIDTH_64);
+
+    ZydisFormatter formatter;
+    ZydisFormatterInit(&formatter, ZYDIS_FORMATTER_STYLE_INTEL);
+    ZydisFormatterSetProperty(&formatter, ZYDIS_FORMATTER_PROP_FORCE_SEGMENT, ZYAN_TRUE);
+    ZydisFormatterSetProperty(&formatter, ZYDIS_FORMATTER_PROP_FORCE_SIZE, ZYAN_TRUE);
+
+    DefaultPrintAddressAbsolute = (ZydisFormatterFunc)&ZydisFormatterPrintAddressAbsolute;
+    ZydisFormatterSetHook(&formatter, ZYDIS_FORMATTER_FUNC_PRINT_ADDRESS_ABS,
+        (const void**)&DefaultPrintAddressAbsolute);
+
+    ZydisDecodedInstruction instruction;
+    std::vector<ZydisDecodedOperand> operands(ZYDIS_MAX_OPERAND_COUNT);
+    std::string buffer; buffer.resize(260);
+
+    uint64_t Rip = vCpuInfo.Address[RelativeRip];
+
+    ZyanU8* BaseSec = (ZyanU8*)Rip;
+    ZyanUSize length = ZYDIS_MAX_INSTRUCTION_LENGTH;
+
+    while (CountOfInstrsToDisasm)
+    {
+        ZydisDecoderDecodeFull(&decoder, BaseSec, length, &instruction, operands.data());
+
+        ZydisFormatterFormatInstruction(&formatter, &instruction, operands.data(),
+            instruction.operand_count_visible, buffer.data(), buffer.size(), (ZyanU64)BaseSec,
+            ZYAN_NULL);
+        vCpuInfo.Mnemonics.push_back(buffer);
+
+        std::ostringstream opcodeStream;
+        for (ZyanU64 i = 0; i < instruction.length; ++i) {
+            opcodeStream << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(BaseSec[i]) << " ";
+        }
+
+        vCpuInfo.Opcodes.push_back(opcodeStream.str());
+
+        BaseSec += instruction.length;
+        --CountOfInstrsToDisasm;
+    }
+
+    Cache.vCpuInfo = vCpuInfo;
+}
+
+uint64_t CPUParser_::FindAddrByRip()
+{
+    auto lRip = context.Rip;
+    auto it = std::find_if(vCpuInfo.Address.begin(), vCpuInfo.Address.end(),
+        [lRip](const uint64_t Addr) {
+            return Addr == lRip;
+        });
+
+    if (it != vCpuInfo.Address.end() /*&& (it->second - BackSize) >= 0*/)
+    { 
+        auto IndexFind = std::distance(vCpuInfo.Address.begin(), it);
+        return IndexFind;
+    }
+    return 0;
 }
 
 void CPUParser_::GetCpuData()
@@ -202,9 +276,7 @@ void CPUParser_::GetCpuData()
         DataFromSections.ModuleInfo->mbi.AllocationBase = AllocationBase;
     }
 
- //   //printf("secBase: %p | Size of section: %p\n", DataFromSections.RipSectionRange.first, DataFromSections.RipSectionRange.second);
+    return CountInstructions(DataFromSections.RipSectionRange);
+	//DisassemblyGetter(DataFromSections.RipSectionRange);
 
-	DisassemblyGetter(DataFromSections.RipSectionRange);
-
-    //delete ModuleInfo;
 }

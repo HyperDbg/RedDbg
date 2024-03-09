@@ -114,6 +114,7 @@ void CustomTitleBar_::CustomWindowInTitleBarRender(MenuBarDispatcher_* Instance)
 
             PeParser Parser;
             GlobalVarsOfPeTab::objPEInformation = Parser.Open(ImGuiFileDialog::Instance()->GetFilePathName(), true);
+            GlobalVarsOfPeTab::objPEInformation->Path = ImGuiFileDialog::Instance()->GetFilePathName();
 
             static PIMAGE_NT_HEADERS pImageNTHeader = (PIMAGE_NT_HEADERS)((uint64_t)GlobalVarsOfPeTab::objPEInformation->Pe->fileBuffer->buf + (uint64_t)GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.dos.e_lfanew);
             static PIMAGE_SECTION_HEADER pImageSectionHeader = (PIMAGE_SECTION_HEADER)((uint64_t)pImageNTHeader + 4 + sizeof(IMAGE_FILE_HEADER) + GlobalVarsOfPeTab::objPEInformation->Pe->peHeader.nt.FileHeader.SizeOfOptionalHeader);
@@ -223,7 +224,7 @@ void CustomTitleBar_::CustomTitleBarMenuRender()
                     Names.Windowses.TitleBarMenu.OpenFile.OpenID.data(),
                     Names.Windowses.TitleBarMenu.OpenFile.OpenTitle.data(),
                     Names.Windowses.TitleBarMenu.OpenFile.Filter.data(),
-                    "D:\\Programs\\Games\\JustCause4\\JustCause4",
+                    "D:\\Programs\\Soft\\Coding\\MASM\\ASM Visual\\Coders\\MASM\\prog1\\bin\\Debug",//"D:\\Programs\\Games\\JustCause4\\JustCause4",
                     "");
             }
 
@@ -249,7 +250,7 @@ void CustomTitleBar_::CustomTitleBarMenuRender()
                     Names.Windowses.TitleBarMenu.OpenFile.OpenID.data(),
                     Names.Windowses.TitleBarMenu.OpenFile.OpenTitle.data(),
                     Names.Windowses.TitleBarMenu.OpenFile.Filter.data(),
-                    "D:\\Programs\\Games\\JustCause4\\JustCause4",
+                    "D:\\Programs\\Soft\\Coding\\MASM\\ASM Visual\\Coders\\MASM\\prog1\\bin\\Debug",//"D:\\Programs\\Games\\JustCause4\\JustCause4",
                     "");
             }
             ImGui::Separator();

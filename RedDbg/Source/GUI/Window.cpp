@@ -122,9 +122,9 @@ void Window_::ChildWindowDispatcher(const WindowCodes Code, std::any ObjOfClass)
             case RegisterAndCallConventionWindowCode: return MethodsFromMainClass.CPURegisterAndCallConventionWindowRender();
             case StackAndDumpWindowCode: return MethodsFromMainClass.StackAndDumpWindowRender();
             case StackWindowCode: return MethodsFromMainClass.StackTableRender();
-            case DumpWindowCode: return;
-            case RegisterWindowCode: return;
-            case CallConventionWindowCode: return;
+            case DumpWindowCode: return MethodsFromMainClass.DumpRender();
+            case RegisterWindowCode: return MethodsFromMainClass.RegisterRender();
+            case CallConventionWindowCode: return MethodsFromMainClass.CallConventionRender();
             case DisassemblyWindowCode: return MethodsFromMainClass.DisassemblyTableRender();
             case InfoWindowCode: return;
             }

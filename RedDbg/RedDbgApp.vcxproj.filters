@@ -264,6 +264,12 @@
     <ClCompile Include="Source\GUI\MenuOfMainTabs\PeMenuBegin\Parser\PEReader_.cpp">
       <Filter>Source Files\GUI\MenuOfMainTabs\PeMenuBegin</Filter>
     </ClCompile>
+    <ClCompile Include="Source\GUI\MenuOfMainTabs\CPUMenuBegin\Hex.cpp">
+      <Filter>Source Files\GUI\MenuOfMainTabs\CPUMenuBegin\Parser</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GUI\MenuOfMainTabs\CPUMenuBegin\HexTab.cpp">
+      <Filter>Source Files\GUI\MenuOfMainTabs\CPUMenuBegin</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\GUI\UI\ImGui\Opengl3&amp;WinApi\imgui_impl_win32.h">
@@ -382,6 +388,12 @@
     </ClInclude>
     <ClInclude Include="Include\GUI\MenuOfMainTabs\MemoryMapMenuBegin\SystemMemory.hpp">
       <Filter>Header Files\GUI\MenuOfMainTabs\MemoryMapMenuBegin\Parser</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\GUI\MenuOfMainTabs\CPUMenuBegin\Hex.hpp">
+      <Filter>Header Files\GUI\MenuOfMainTabs\CPUMenuBegin\Parser</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\GUI\MenuOfMainTabs\CPUMenuBegin\HexTab.hpp">
+      <Filter>Header Files\GUI\MenuOfMainTabs\CPUMenuBegin</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

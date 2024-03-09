@@ -44,6 +44,7 @@ public:
 typedef struct _PeReader
 {
 	ParsedPeRef Pe = nullptr;
+	std::string Path;
 	STARTUPINFOW StartupInfo = { sizeof(StartupInfo) };
 	PROCESS_INFORMATION ProcessInfo;
 	std::vector<DllsApi_*> Dlls;
